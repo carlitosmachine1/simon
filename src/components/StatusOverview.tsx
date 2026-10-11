@@ -3,6 +3,7 @@ import {
   HURRICANE_CURRENT_STATUS,
   INFRASTRUCTURE_STATUS,
 } from '../data/hurricaneData';
+import { DynamicHurricaneStatus } from '../utils/hurricaneTracking';
 import {
   Wind,
   Compass,
@@ -19,8 +20,17 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-export const StatusOverview: React.FC = () => {
+interface StatusOverviewProps {
+  dynamicStatus?: DynamicHurricaneStatus;
+}
+
+export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus }) => {
   const [activeInfraFilter, setActiveInfraFilter] = useState<'todos' | 'puerto' | 'carretera' | 'rio' | 'aeropuerto'>('todos');
+
+  const status = dynamicStatus || {
+    ...HURRICANE_CURRENT_STATUS,
+    timeText: '05:45',
+  };
 
   const filteredInfra = INFRASTRUCTURE_STATUS.filter((item) => {
     if (activeInfraFilter === 'todos') return true;
@@ -39,8 +49,8 @@ export const StatusOverview: React.FC = () => {
                 Ciclón Tropical Activo • Pacífico Nororiental
               </span>
               <span className="text-[#DDE1DF]">|</span>
-              <span className="text-[11px] text-[#687078] font-tabular">
-                {HURRICANE_CURRENT_STATUS.lastUpdate}
+              <span className="text-[11px] text-[#245A66] font-semibold bg-[#245A66]/8 px-2 py-0.5 rounded-[3px] font-tabular">
+                {status.lastUpdate}
               </span>
             </div>
 
@@ -54,8 +64,8 @@ export const StatusOverview: React.FC = () => {
             </div>
 
             <p className="text-xs sm:text-sm text-[#687078] max-w-2xl leading-relaxed">
-              Ojo ciclónico estructurado a 197 km al SSO de Manzanillo, desplazándose lentamente al norte (4 km/h).
-              Se pronostican vientos sostenidos de 240 km/h y oleaje de 6 a 8 metros en el litoral de Colima, Jalisco y Nayarit.
+              Ojo ciclónico estructurado {status.distanceReference.toLowerCase()}, desplazándose {status.movement.toLowerCase()} a {status.movementSpeedKmh} km/h.
+              Se registran vientos sostenidos de {status.windSpeedKmh} km/h (rachas de {status.windGustsKmh} km/h) y oleaje de {status.waveHeightMeters} en el litoral de Colima, Jalisco y Nayarit.
             </p>
           </div>
 
@@ -65,13 +75,13 @@ export const StatusOverview: React.FC = () => {
               Viento Máximo Sostenido
             </div>
             <div className="text-3xl sm:text-4xl font-semibold text-[#245A66] font-tabular mt-0.5">
-              240 <span className="text-sm font-normal text-[#687078]">km/h</span>
+              {status.windSpeedKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs text-[#252A2E] font-tabular mt-0.5">
-              Rachas de <strong className="font-semibold text-[#B84A45]">295 km/h</strong> (150 mph)
+              Rachas de <strong className="font-semibold text-[#B84A45]">{status.windGustsKmh} km/h</strong> ({status.windSpeedMph} mph)
             </div>
             <div className="text-[11px] text-[#687078] font-tabular mt-1 pt-1.5 border-t border-[#DDE1DF]">
-              Posición: {HURRICANE_CURRENT_STATUS.coordinatesText}
+              Posición actual: <strong className="text-[#245A66]">{status.coordinatesText}</strong>
             </div>
           </div>
         </div>
@@ -91,7 +101,7 @@ export const StatusOverview: React.FC = () => {
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
               <div className="bg-[#245A66] h-1" style={{ width: '92%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">27.82 inHg (gradiente extremo)</div>
+            <div className="text-[11px] text-[#687078]">27.90 inHg (gradiente extremo)</div>
           </div>
 
           {/* Indicador 2: Desplazamiento */}
@@ -104,9 +114,9 @@ export const StatusOverview: React.FC = () => {
               {HURRICANE_CURRENT_STATUS.movementSpeedKmh} <span className="text-xs font-normal text-[#687078]">km/h</span>
             </div>
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
-              <div className="bg-[#7D9B8A] h-1" style={{ width: '20%' }} />
+              <div className="bg-[#7D9B8A] h-1" style={{ width: '45%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">Norte (360°) • Avance lento</div>
+            <div className="text-[11px] text-[#687078]">{HURRICANE_CURRENT_STATUS.movement}</div>
           </div>
 
           {/* Indicador 3: Oleaje */}
@@ -116,12 +126,12 @@ export const StatusOverview: React.FC = () => {
               <Waves className="w-3.5 h-3.5 text-[#A66C19] stroke-[1.75]" />
             </div>
             <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
-              6.0 – 8.0 <span className="text-xs font-normal text-[#687078]">m</span>
+              {HURRICANE_CURRENT_STATUS.waveHeightMeters}
             </div>
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
-              <div className="bg-[#A66C19] h-1" style={{ width: '85%' }} />
+              <div className="bg-[#A66C19] h-1" style={{ width: '90%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">Marea de tormenta costera</div>
+            <div className="text-[11px] text-[#687078]">Marea de tormenta e impacto costero</div>
           </div>
 
           {/* Indicador 4: Precipitación acumulada */}

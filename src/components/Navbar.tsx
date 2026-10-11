@@ -10,6 +10,7 @@ import {
   BookOpen,
   Briefcase,
   AlertTriangle,
+  Camera,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -28,9 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navLinks = [
     { id: 'resumen', label: 'Resumen', href: '#resumen', icon: Compass },
     { id: 'mapa-trayectoria', label: 'Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
+    { id: 'fotos-satelitales', label: 'Fotos Satelitales', href: '#fotos-satelitales', icon: Camera },
     { id: 'refugios', label: 'Refugios', href: '#refugios', icon: ShieldCheck },
-    { id: 'satelite', label: 'Satélite NOAA', href: '#satelite', icon: Satellite },
-    { id: 'infraestructura', label: 'Infraestructura', href: '#infraestructura', icon: AlertTriangle },
     { id: 'guia', label: 'Guía y Mochila', href: '#guia', icon: Briefcase },
     { id: 'fuentes', label: 'Fuentes', href: '#fuentes', icon: BookOpen },
   ];

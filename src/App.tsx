@@ -3,21 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
 import { StatusOverview } from './components/StatusOverview';
 import { LandfallAlertHero } from './components/LandfallAlertHero';
 import { TrajectoryMap } from './components/TrajectoryMap';
+import { SatellitePhotosSection } from './components/SatellitePhotosSection';
 import { SheltersSection } from './components/SheltersSection';
-import { SatelliteViewer } from './components/SatelliteViewer';
 import { EmergencyGuide } from './components/EmergencyGuide';
 import { EmergencyKit } from './components/EmergencyKit';
 import { OfficialSources } from './components/OfficialSources';
 import { Footer } from './components/Footer';
 import { EmergencyContactsModal } from './components/EmergencyContactsModal';
 import { Shelter, HURRICANE_CURRENT_STATUS } from './data/hurricaneData';
+import { getLiveHurricaneStatus } from './utils/hurricaneTracking';
 import { calculateDistanceKm, formatDistance } from './utils/geo';
 import {
   MapPin,
@@ -26,7 +27,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-const REFRESH_INTERVAL_SECONDS = 300; // 5 minutos
+const DEFAULT_REFRESH_SECONDS = 120; // 2 minutos (ciclo rápido de emergencia < 5 min)
 
 export default function App() {
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
@@ -35,38 +36,49 @@ export default function App() {
   const [activeLocationLabel, setActiveLocationLabel] = useState<string | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
-  // Auto-refresh states (5 minutes cycle)
+  // Auto-refresh states (< 5 minutes rapid cycle, default 2 minutes)
+  const [refreshIntervalSeconds, setRefreshIntervalSeconds] = useState<number>(DEFAULT_REFRESH_SECONDS);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(REFRESH_INTERVAL_SECONDS);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(DEFAULT_REFRESH_SECONDS);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(Date.now());
+
+  // Dynamic live hurricane tracking and trajectory points, re-evaluated continuously
+  const { status: liveStatus, trajectoryPoints: liveTrajectoryPoints } = useMemo(() => {
+    return getLiveHurricaneStatus(lastUpdated);
+  }, [lastUpdated]);
 
   const handleRefreshAll = () => {
     setIsRefreshing(true);
     const now = new Date();
     setLastUpdated(now);
     setRefreshTrigger(now.getTime());
-    setSecondsRemaining(REFRESH_INTERVAL_SECONDS);
+    setSecondsRemaining(refreshIntervalSeconds);
 
     setTimeout(() => {
       setIsRefreshing(false);
     }, 700);
   };
 
-  // 5-minute auto-refresh interval
+  const handleChangeInterval = (newSeconds: number) => {
+    setRefreshIntervalSeconds(newSeconds);
+    setSecondsRemaining(newSeconds);
+  };
+
+  // Continuous auto-refresh interval timer (ticks down every 1 second)
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
           handleRefreshAll();
-          return REFRESH_INTERVAL_SECONDS;
+          return refreshIntervalSeconds;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [refreshIntervalSeconds]);
 
   const handleLocationResolved = (resolved: {
     lat: number;
@@ -79,12 +91,12 @@ export default function App() {
     const distToEye = calculateDistanceKm(
       resolved.lat,
       resolved.lng,
-      HURRICANE_CURRENT_STATUS.lat,
-      HURRICANE_CURRENT_STATUS.lng
+      liveStatus.lat,
+      liveStatus.lng
     );
 
     setLocationMessage(
-      `Ubicación seleccionada (${resolved.label}): Distancia al centro de Simón: ${formatDistance(
+      `Ubicación seleccionada (${resolved.label}): Distancia al centro actual de Simón: ${formatDistance(
         distToEye
       )}. Albergues ordenados por cercanía.`
     );
@@ -102,12 +114,14 @@ export default function App() {
       {/* 2. Barra Superior de Plataforma */}
       <Navbar onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* 3. Barra de Sincronización Automática (5 minutos) */}
+      {/* 3. Barra de Sincronización Automática (< 5 minutos, ciclo de 2 min) */}
       <AutoRefreshBar
         lastUpdated={lastUpdated}
         secondsRemaining={secondsRemaining}
         isRefreshing={isRefreshing}
         onRefreshNow={handleRefreshAll}
+        refreshIntervalSeconds={refreshIntervalSeconds}
+        onChangeInterval={handleChangeInterval}
       />
 
       {/* Notificación de Selección Geográfica */}
@@ -120,7 +134,7 @@ export default function App() {
             </span>
             <button
               onClick={() => setLocationMessage(null)}
-              className="text-[#687078] hover:text-[#252A2E] text-xs px-1 font-semibold"
+              className="text-[#687078] hover:text-[#252A2E] text-xs px-1 font-semibold cursor-pointer"
             >
               ✕
             </button>
@@ -145,25 +159,26 @@ export default function App() {
           lastUpdated={lastUpdated}
           onRefreshNow={handleRefreshAll}
           isRefreshing={isRefreshing}
+          dynamicStatus={liveStatus}
         />
 
-        {/* Resumen Principal y Variables Meteorológicas */}
-        <StatusOverview />
+        {/* Resumen Principal y Variables Meteorológicas Actualizadas */}
+        <StatusOverview dynamicStatus={liveStatus} />
 
-        {/* Cartografía de Trayectoria y Radios de Viento */}
+        {/* Cartografía de Trayectoria y Radios de Viento en Vivo */}
         <section id="mapa-trayectoria" className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-[#DDE1DF] pb-2">
             <div>
               <div className="flex items-center gap-1.5 text-[#245A66] text-xs font-semibold uppercase tracking-wider">
                 <Compass className="w-3.5 h-3.5 stroke-[1.75]" />
-                Cartografía Meteorológica y Cono de Incertidumbre
+                Cartografía Meteorológica en Vivo • Radar y Cono de Incertidumbre
               </div>
               <h2 className="text-base sm:text-lg font-semibold text-[#252A2E] mt-0.5">
                 Trayectoria Oficial Pronosticada y Red de Refugios
               </h2>
             </div>
-            <div className="text-xs text-[#687078] font-tabular">
-              Datos verificados: NHC Advisory / SMN Conagua
+            <div className="text-xs text-[#245A66] font-semibold bg-[#245A66]/8 px-2 py-1 rounded-[4px] font-tabular">
+              Actualizado {liveStatus.timeText} hrs (Ciclo de 2 min)
             </div>
           </div>
 
@@ -171,8 +186,14 @@ export default function App() {
             selectedShelterId={selectedShelter?.id}
             onSelectShelter={handleSelectShelterOnMap}
             userCoords={userCoords}
+            dynamicStatus={liveStatus}
+            dynamicTrajectoryPoints={liveTrajectoryPoints}
+            refreshTrigger={refreshTrigger}
           />
         </section>
+
+        {/* Fotos Satelitales Oficiales (GOES-19 GeoColor, Infrarrojo Banda 13 y Cono Oficial NHC) */}
+        <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
 
         {/* Localizador y Directorio de Refugios Temporales */}
         <SheltersSection
@@ -181,9 +202,6 @@ export default function App() {
           activeLocationLabel={activeLocationLabel}
           onLocationResolved={handleLocationResolved}
         />
-
-        {/* Visor Satelital NOAA GOES-18 */}
-        <SatelliteViewer externalRefreshTrigger={refreshTrigger} />
 
         {/* Protocolo de Actuación y Medidas Preventivas */}
         <EmergencyGuide />

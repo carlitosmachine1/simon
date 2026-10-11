@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { calculateDistanceKm, formatDistance } from '../utils/geo';
+import { DynamicHurricaneStatus } from '../utils/hurricaneTracking';
 import {
   AlertTriangle,
   Clock,
@@ -25,6 +26,7 @@ interface LandfallAlertHeroProps {
   lastUpdated?: Date;
   onRefreshNow?: () => void;
   isRefreshing?: boolean;
+  dynamicStatus?: DynamicHurricaneStatus;
 }
 
 // Coordenadas oficiales y datos de pronóstico del punto de impacto (Landfall) según modelo oficial NHC / SMN
@@ -34,24 +36,24 @@ const LANDFALL_DATA = {
   lat: 19.30,
   lng: -104.90,
   coordinatesText: '19.30° N, 104.90° O',
-  // Landfall estimado: 11 de Octubre a las 03:00 hrs UTC-6 (09:00 UTC)
-  targetTimestampIso: '2026-10-11T03:00:00-06:00',
+  // Landfall estimado: 11 de Octubre a las 07:00 hrs UTC-6 (13:00 UTC)
+  targetTimestampIso: '2026-10-11T07:00:00-06:00',
   targetDateFormatted: 'Domingo 11 de Octubre',
-  targetTimeFormatted: '03:00 hrs (Ventana estimada: 02:30 a 05:00 hrs UTC-6)',
+  targetTimeFormatted: '07:00 hrs (Ventana estimada: 06:00 a 08:30 hrs UTC-6)',
   category: 4,
   categoryName: 'Categoría 4 (Saffir-Simpson)',
   expectedWindSpeedKmh: 220,
   expectedWindGustsKmh: 275,
   expectedPressureHpa: 950,
   expectedStormSurgeMeters: '4.5 a 6.0 metros',
-  expectedWaveHeightMeters: '6.0 a 8.5 metros',
-  expectedRainfallMm: '250 a 450 mm (extraordinarias hasta 600 mm)',
-  confidenceProbability: '92%',
-  // Posición actual del ojo del huracán para cálculos dinámicos
-  currentEyeLat: 17.60,
-  currentEyeLng: -104.80,
-  currentSpeedKmh: 4.0,
-  currentHeadingText: 'Norte (360°)',
+  expectedWaveHeightMeters: '7.0 a 9.5 metros',
+  expectedRainfallMm: '250 a 450 mm (extraordinarias hasta 650 mm)',
+  confidenceProbability: '95%',
+  // Posición actual del ojo del huracán para cálculos dinámicos (Actualizado 04:00 AM)
+  currentEyeLat: 18.60,
+  currentEyeLng: -104.90,
+  currentSpeedKmh: 12.0,
+  currentHeadingText: 'Norte-Noroeste (345°)',
 };
 
 export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
@@ -62,6 +64,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
   lastUpdated = new Date(),
   onRefreshNow,
   isRefreshing = false,
+  dynamicStatus,
 }) => {
   // Real-time dynamic clock & countdown updated every 1 second
   const [now, setNow] = useState<Date>(new Date());
@@ -73,6 +76,11 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const currentEyeLat = dynamicStatus ? dynamicStatus.lat : LANDFALL_DATA.currentEyeLat;
+  const currentEyeLng = dynamicStatus ? dynamicStatus.lng : LANDFALL_DATA.currentEyeLng;
+  const currentMovementText = dynamicStatus ? dynamicStatus.movement : LANDFALL_DATA.currentHeadingText;
+  const currentSpeed = dynamicStatus ? dynamicStatus.movementSpeedKmh : LANDFALL_DATA.currentSpeedKmh;
 
   // Landfall Target Time
   const targetTime = useMemo(() => {
@@ -107,12 +115,12 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
   // Real-time calculation of distance from Hurricane Eye to Landfall
   const distanceEyeToLandfallKm = useMemo(() => {
     return calculateDistanceKm(
-      LANDFALL_DATA.currentEyeLat,
-      LANDFALL_DATA.currentEyeLng,
+      currentEyeLat,
+      currentEyeLng,
       LANDFALL_DATA.lat,
       LANDFALL_DATA.lng
     );
-  }, []);
+  }, [currentEyeLat, currentEyeLng]);
 
   // Dynamic user distance to landfall if user location is resolved
   const userDistanceToLandfallKm = useMemo(() => {
@@ -131,10 +139,10 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
     return calculateDistanceKm(
       userCoords.lat,
       userCoords.lng,
-      LANDFALL_DATA.currentEyeLat,
-      LANDFALL_DATA.currentEyeLng
+      currentEyeLat,
+      currentEyeLng
     );
-  }, [userCoords]);
+  }, [userCoords, currentEyeLat, currentEyeLng]);
 
   // Estimated arrival of tropical storm-force winds (prior to the eye)
   const tropicalStormArrivalHours = useMemo(() => {
@@ -267,14 +275,16 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                   {formatDistance(distanceEyeToLandfallKm)}
                 </div>
                 <div className="text-[11px] text-[#687078] mt-0.5 font-tabular">
-                  Rumbo: {LANDFALL_DATA.currentHeadingText} a {LANDFALL_DATA.currentSpeedKmh} km/h
+                  Rumbo: {currentMovementText} a {currentSpeed} km/h
                 </div>
               </div>
             </div>
 
             <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
-              <span>Posición del ojo:</span>
-              <strong className="text-[#245A66]">17.6° N, 104.8° O</strong>
+              <span>Posición actual del ojo:</span>
+              <strong className="text-[#245A66] font-semibold">
+                {currentEyeLat.toFixed(2)}° N, {Math.abs(currentEyeLng).toFixed(2)}° O
+              </strong>
             </div>
           </div>
 

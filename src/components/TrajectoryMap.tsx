@@ -5,7 +5,9 @@ import {
   TRAJECTORY_POINTS,
   SHELTERS_DATA,
   Shelter,
+  TrajectoryPoint,
 } from '../data/hurricaneData';
+import { DynamicHurricaneStatus, getLiveHurricaneStatus } from '../utils/hurricaneTracking';
 import { getGoogleMapsDirectionsUrl } from '../utils/geo';
 import {
   Crosshair,
@@ -14,19 +16,35 @@ import {
   Layers,
   PawPrint,
   Info,
+  Eye,
+  EyeOff,
+  Zap,
 } from 'lucide-react';
 
 interface TrajectoryMapProps {
   selectedShelterId?: string | null;
   onSelectShelter?: (shelter: Shelter) => void;
   userCoords?: { lat: number; lng: number } | null;
+  dynamicStatus?: DynamicHurricaneStatus;
+  dynamicTrajectoryPoints?: TrajectoryPoint[];
+  refreshTrigger?: number;
 }
 
 export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   selectedShelterId,
   onSelectShelter,
   userCoords,
+  dynamicStatus,
+  dynamicTrajectoryPoints,
+  refreshTrigger,
 }) => {
+  // Use dynamic status or compute live on the fly
+  const liveData = dynamicStatus && dynamicTrajectoryPoints
+    ? { status: dynamicStatus, trajectoryPoints: dynamicTrajectoryPoints }
+    : getLiveHurricaneStatus(new Date());
+
+  const currentStatus = dynamicStatus || liveData.status;
+  const activeTrajectoryPoints = dynamicTrajectoryPoints || liveData.trajectoryPoints;
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -39,6 +57,13 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   const [showWindZones, setShowWindZones] = useState(true);
   const [filterPetsOnly, setFilterPetsOnly] = useState(false);
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('todos');
+
+  // If a shelter is selected externally from directory, ensure shelters are visible
+  useEffect(() => {
+    if (selectedShelterId && !showShelters) {
+      setShowShelters(true);
+    }
+  }, [selectedShelterId]);
 
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
@@ -119,7 +144,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
     // 1. Wind Danger Zones around current eye
     if (showWindZones) {
       // Hurricane Force Winds (> 118 km/h ~ 75 km radius)
-      L.circle([HURRICANE_CURRENT_STATUS.lat, HURRICANE_CURRENT_STATUS.lng], {
+      L.circle([currentStatus.lat, currentStatus.lng], {
         radius: 80000,
         color: '#B84A45',
         fillColor: '#B84A45',
@@ -127,14 +152,14 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
         weight: 1.5,
         dashArray: '3, 3',
       })
-        .bindTooltip('Vientos Huracanados Cat. 4 (> 118 km/h y rachas 295 km/h)', {
+        .bindTooltip(`Vientos Huracanados Cat. 4 (${currentStatus.windSpeedKmh} km/h y rachas ${currentStatus.windGustsKmh} km/h)`, {
           permanent: false,
           direction: 'top',
         })
         .addTo(zonesLayerRef.current);
 
       // Tropical Storm Force Winds (> 63 km/h ~ 240 km radius)
-      L.circle([HURRICANE_CURRENT_STATUS.lat, HURRICANE_CURRENT_STATUS.lng], {
+      L.circle([currentStatus.lat, currentStatus.lng], {
         radius: 240000,
         color: '#A66C19',
         fillColor: '#A66C19',
@@ -172,8 +197,8 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
     }
 
     // 2. Trajectory Polylines
-    const historicalPoints = TRAJECTORY_POINTS.filter((p) => p.type === 'histórico' || p.type === 'actual');
-    const forecastPoints = TRAJECTORY_POINTS.filter((p) => p.type === 'actual' || p.type === 'pronóstico');
+    const historicalPoints = activeTrajectoryPoints.filter((p) => p.type === 'histórico' || p.type === 'actual');
+    const forecastPoints = activeTrajectoryPoints.filter((p) => p.type === 'actual' || p.type === 'pronóstico');
 
     const historicalCoords: [number, number][] = historicalPoints.map((p) => [p.lat, p.lng]);
     const forecastCoords: [number, number][] = forecastPoints.map((p) => [p.lat, p.lng]);
@@ -194,19 +219,20 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
     }).addTo(markersLayerRef.current);
 
     // 3. Trajectory Points Markers
-    TRAJECTORY_POINTS.forEach((pt) => {
+    activeTrajectoryPoints.forEach((pt) => {
       const isCurrent = pt.type === 'actual';
 
       let iconHtml = '';
       if (isCurrent) {
         iconHtml = `
           <div class="relative flex items-center justify-center font-sans">
-            <span class="absolute w-6 h-6 bg-[#245A66]/20 rounded-full"></span>
-            <div class="relative w-6 h-6 bg-[#245A66] border-2 border-white rounded-[3px] flex items-center justify-center text-white font-bold text-[10px] shadow-sm">
+            <span class="absolute w-8 h-8 bg-[#B84A45]/30 rounded-full animate-ping"></span>
+            <span class="absolute w-6 h-6 bg-[#245A66]/25 rounded-full"></span>
+            <div class="relative w-6 h-6 bg-[#B84A45] border-2 border-white rounded-[3px] flex items-center justify-center text-white font-bold text-[10px] shadow-md">
               S4
             </div>
-            <span class="absolute -bottom-4 whitespace-nowrap bg-white text-[#245A66] border border-[#DDE1DF] text-[9px] font-semibold px-1 py-0.2 rounded-[2px] shadow-sm">
-              Actual
+            <span class="absolute -bottom-4.5 whitespace-nowrap bg-[#252A2E] text-white border border-white/20 text-[9px] font-semibold px-1.5 py-0.2 rounded-[2px] shadow-sm">
+              Ojo Actual (${currentStatus.timeText} hrs)
             </span>
           </div>
         `;
@@ -236,16 +262,16 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
           <div class="flex items-center justify-between border-b border-[#DDE1DF] pb-1 mb-1.5">
             <span class="font-semibold text-[#245A66]">Huracán Simón</span>
             <span class="text-[10px] px-1 py-0.5 rounded-[2px] font-medium ${
-              pt.type === 'actual' ? 'bg-[#245A66] text-white' : 'bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF]'
+              pt.type === 'actual' ? 'bg-[#245A66] text-white font-semibold' : 'bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF]'
             }">
-              ${pt.category} (${pt.type})
+              ${pt.category} (${pt.type === 'actual' ? 'En Vivo' : pt.type})
             </span>
           </div>
           <div class="text-[11px] text-[#687078] mb-1 font-medium font-tabular">${pt.dateTimeFormatted}</div>
           <div class="space-y-0.5 mb-1.5 text-[11px] font-tabular">
             <div><strong>Viento sostenido:</strong> ${pt.windSpeedKmh} km/h (${pt.windSpeedMph} mph)</div>
             <div><strong>Presión mínima:</strong> ${pt.pressureHpa} hPa</div>
-            <div><strong>Posición:</strong> ${pt.lat.toFixed(1)}°N, ${Math.abs(pt.lng).toFixed(1)}°O</div>
+            <div><strong>Posición:</strong> ${pt.lat.toFixed(2)}°N, ${Math.abs(pt.lng).toFixed(2)}°O</div>
           </div>
           <p class="text-[11px] text-[#687078] bg-[#F7F7F4] p-1.5 rounded-[3px] border border-[#DDE1DF]">${pt.statusText}</p>
         </div>
@@ -255,7 +281,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
         .bindPopup(popupContent)
         .addTo(markersLayerRef.current!);
     });
-  }, [showWindZones]);
+  }, [showWindZones, currentStatus.lat, currentStatus.lng, currentStatus.timeText, refreshTrigger]);
 
   // Render Shelters Markers
   useEffect(() => {
@@ -376,7 +402,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   const handleCenterHurricane = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setView(
-        [HURRICANE_CURRENT_STATUS.lat, HURRICANE_CURRENT_STATUS.lng],
+        [currentStatus.lat, currentStatus.lng],
         8,
         { animate: true }
       );
@@ -419,6 +445,33 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
         {/* Focus and Filter Controls */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Toggle: Show / Hide Shelters for fast loading */}
+          <button
+            onClick={() => setShowShelters((prev) => !prev)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border ${
+              showShelters
+                ? 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
+                : 'bg-[#FDF4E7] text-[#9A5B18] border-[#E8C28A] hover:bg-[#FAE8CC]'
+            }`}
+            title={
+              showShelters
+                ? 'Ocultar los 272 refugios para que el mapa cargue y se desplace con máxima agilidad'
+                : 'Mostrar los 272 refugios en el mapa'
+            }
+          >
+            {showShelters ? (
+              <>
+                <Eye className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Refugios: Visibles (272)</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="w-3.5 h-3.5 stroke-[2] text-[#9A5B18]" />
+                <span>Refugios: Ocultos (Modo Ágil ⚡)</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={handleCenterHurricane}
             className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition"
@@ -467,6 +520,21 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
       {/* Map Canvas */}
       <div className="relative w-full h-[460px] md:h-[520px]">
+        {/* Floating Agile Mode indicator if shelters are hidden */}
+        {!showShelters && (
+          <div className="absolute top-3 left-3 z-[400] bg-[#FFFFFF]/95 backdrop-blur-xs border border-[#E8C28A] text-[#252A2E] rounded-[4px] px-2.5 py-1.5 text-xs shadow-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#D99A38] animate-pulse"></span>
+            <span className="font-medium text-[#9A5B18]">Modo ágil activo:</span>
+            <span className="text-[#687078]">Refugios ocultos para acelerar carga.</span>
+            <button
+              onClick={() => setShowShelters(true)}
+              className="text-[#245A66] hover:underline font-semibold text-xs ml-1 cursor-pointer"
+            >
+              Mostrar refugios
+            </button>
+          </div>
+        )}
+
         <div ref={mapContainerRef} className="w-full h-full z-0" />
       </div>
 
@@ -480,7 +548,10 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
               onChange={(e) => setShowShelters(e.target.checked)}
               className="accent-[#245A66]"
             />
-            <span>Refugios ({SHELTERS_DATA.length})</span>
+            <span>Mostrar Refugios ({SHELTERS_DATA.length})</span>
+            <span className="text-[11px] text-[#687078] font-normal">
+              {showShelters ? '(Desactiva para agilizar)' : '(Ocultos para agilizar carga)'}
+            </span>
           </label>
 
           <label className="flex items-center gap-1.5 cursor-pointer text-[#252A2E] font-medium">
@@ -507,8 +578,11 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
           </label>
         </div>
 
-        <div className="text-[11px] text-[#687078]">
-          Fuente: Cartografía OpenStreetMap • Datos de trayectoria: NHC / SMN Conagua
+        <div className="text-[11px] text-[#687078] flex items-center gap-2">
+          <span>Fuente: OpenStreetMap • Trayectoria: NHC / SMN</span>
+          <span className="text-[#245A66] font-semibold bg-[#245A66]/8 px-1.5 py-0.5 rounded-[3px]">
+            Actualizado {currentStatus.timeText} hrs
+          </span>
         </div>
       </div>
     </div>
