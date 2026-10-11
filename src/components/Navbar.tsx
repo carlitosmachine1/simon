@@ -11,6 +11,7 @@ import {
   Briefcase,
   AlertTriangle,
   Camera,
+  Video,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -30,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'resumen', label: 'Resumen', href: '#resumen', icon: Compass },
     { id: 'mapa-trayectoria', label: 'Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
     { id: 'fotos-satelitales', label: 'Fotos Satelitales', href: '#fotos-satelitales', icon: Camera },
+    { id: 'webcams', label: 'Webcams en Vivo', href: '#webcams', icon: Video },
     { id: 'refugios', label: 'Refugios', href: '#refugios', icon: ShieldCheck },
     { id: 'guia', label: 'Guía y Mochila', href: '#guia', icon: Briefcase },
     { id: 'fuentes', label: 'Fuentes', href: '#fuentes', icon: BookOpen },

@@ -11,6 +11,7 @@ import { StatusOverview } from './components/StatusOverview';
 import { LandfallAlertHero } from './components/LandfallAlertHero';
 import { TrajectoryMap } from './components/TrajectoryMap';
 import { SatellitePhotosSection } from './components/SatellitePhotosSection';
+import { WebcamsSection } from './components/WebcamsSection';
 import { SheltersSection } from './components/SheltersSection';
 import { EmergencyGuide } from './components/EmergencyGuide';
 import { EmergencyKit } from './components/EmergencyKit';
@@ -194,6 +195,9 @@ export default function App() {
 
         {/* Fotos Satelitales Oficiales (GOES-19 GeoColor, Infrarrojo Banda 13 y Cono Oficial NHC) */}
         <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
+
+        {/* Webcams en Vivo • Monitoreo Costero */}
+        <WebcamsSection />
 
         {/* Localizador y Directorio de Refugios Temporales */}
         <SheltersSection
