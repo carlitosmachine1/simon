@@ -28,13 +28,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navLinks = [
-    { id: 'resumen', label: 'Resumen', href: '#resumen', icon: Compass },
-    { id: 'mapa-trayectoria', label: 'Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
+    { id: 'mapa-viento-zoom', label: 'Viento en Vivo', href: '#mapa-viento-zoom', icon: Compass },
     { id: 'fotos-satelitales', label: 'Fotos Satelitales', href: '#fotos-satelitales', icon: Camera },
     { id: 'webcams', label: 'Webcams en Vivo', href: '#webcams', icon: Video },
+    { id: 'mapa-trayectoria', label: 'Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
     { id: 'refugios', label: 'Refugios', href: '#refugios', icon: ShieldCheck },
-    { id: 'guia', label: 'Guía y Mochila', href: '#guia', icon: Briefcase },
-    { id: 'fuentes', label: 'Fuentes', href: '#fuentes', icon: BookOpen },
+    { id: 'fuentes', label: 'Fuentes Oficiales', href: '#fuentes', icon: BookOpen },
   ];
 
   return (

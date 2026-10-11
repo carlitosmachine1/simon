@@ -8,18 +8,17 @@ import { Analytics } from "@vercel/analytics/next";
 import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
-import { StatusOverview } from './components/StatusOverview';
 import { LandfallAlertHero } from './components/LandfallAlertHero';
-import { TrajectoryMap } from './components/TrajectoryMap';
+import { ZoomEarthSection } from './components/ZoomEarthSection';
 import { SatellitePhotosSection } from './components/SatellitePhotosSection';
 import { WebcamsSection } from './components/WebcamsSection';
+import { TrajectoryMap } from './components/TrajectoryMap';
 import { SheltersSection } from './components/SheltersSection';
 import { EmergencyGuide } from './components/EmergencyGuide';
-import { EmergencyKit } from './components/EmergencyKit';
 import { OfficialSources } from './components/OfficialSources';
 import { Footer } from './components/Footer';
 import { EmergencyContactsModal } from './components/EmergencyContactsModal';
-import { Shelter, HURRICANE_CURRENT_STATUS } from './data/hurricaneData';
+import { Shelter } from './data/hurricaneData';
 import { getLiveHurricaneStatus } from './utils/hurricaneTracking';
 import { calculateDistanceKm, formatDistance } from './utils/geo';
 import {
@@ -27,9 +26,13 @@ import {
   Phone,
   Compass,
   CheckCircle2,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Radio,
 } from 'lucide-react';
 
-const DEFAULT_REFRESH_SECONDS = 120; // 2 minutos (ciclo rápido de emergencia < 5 min)
+const DEFAULT_REFRESH_SECONDS = 120; // 2 minutos (< 5 min)
 
 export default function App() {
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
@@ -37,6 +40,9 @@ export default function App() {
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [activeLocationLabel, setActiveLocationLabel] = useState<string | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+
+  // UX Requirement: Ocultar los refugios por defecto, mostrarlos solo a petición del usuario
+  const [showSheltersSection, setShowSheltersSection] = useState(false);
 
   // Auto-refresh states (< 5 minutes rapid cycle, default 2 minutes)
   const [refreshIntervalSeconds, setRefreshIntervalSeconds] = useState<number>(DEFAULT_REFRESH_SECONDS);
@@ -100,23 +106,35 @@ export default function App() {
     setLocationMessage(
       `Ubicación seleccionada (${resolved.label}): Distancia al centro actual de Simón: ${formatDistance(
         distToEye
-      )}. Albergues ordenados por cercanía.`
+      )}.`
     );
   };
 
   const handleSelectShelterOnMap = (shelter: Shelter) => {
     setSelectedShelter(shelter);
+    // Asegurar que la sección y el mapa muestren el refugio si el usuario lo selecciona
+    setShowSheltersSection(true);
+    const mapEl = document.getElementById('mapa-trayectoria');
+    if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleOpenShelters = () => {
+    setShowSheltersSection(true);
+    setTimeout(() => {
+      const el = document.getElementById('refugios');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F4] text-[#252A2E] flex flex-col font-['Montserrat',sans-serif]">
-      {/* 1. Aviso de Situación Meteorológica (Alerta Sobria) */}
+    <div className="min-h-screen bg-[#F7F7F4] text-[#252A2E] flex flex-col font-['Montserrat',sans-serif] text-base leading-relaxed">
+      {/* 1. Aviso de Emergencia Superior (Alerta Roja) */}
       <AlertBanner onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* 2. Barra Superior de Plataforma */}
+      {/* 2. Barra de Navegación */}
       <Navbar onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* 3. Barra de Sincronización Automática (< 5 minutos, ciclo de 2 min) */}
+      {/* 3. Barra de Sincronización Automática (< 5 minutos) */}
       <AutoRefreshBar
         lastUpdated={lastUpdated}
         secondsRemaining={secondsRemaining}
@@ -128,15 +146,15 @@ export default function App() {
 
       {/* Notificación de Selección Geográfica */}
       {locationMessage && (
-        <div className="bg-[#FFFFFF] border-b border-[#DDE1DF] text-[#245A66] text-xs px-4 py-2">
+        <div className="bg-[#FFFFFF] border-b border-[#DDE1DF] text-[#245A66] text-sm px-4 py-2.5">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-            <span className="flex items-center gap-1.5 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#3F8063] shrink-0 stroke-[2]" />
+            <span className="flex items-center gap-2 font-medium">
+              <CheckCircle2 className="w-4 h-4 text-[#3F8063] shrink-0 stroke-[2]" />
               <span>{locationMessage}</span>
             </span>
             <button
               onClick={() => setLocationMessage(null)}
-              className="text-[#687078] hover:text-[#252A2E] text-xs px-1 font-semibold cursor-pointer"
+              className="text-[#687078] hover:text-[#252A2E] text-sm px-1.5 font-semibold cursor-pointer"
             >
               ✕
             </button>
@@ -144,9 +162,9 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. Área Principal del Dashboard Meteorológico */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Panel de Alerta de Impacto en Tierra (Landfall Warning) con Cálculos en Vivo */}
+      {/* 4. Área Principal del Dashboard: Prioridad Visual y Datos Digeribles */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
+        {/* Panel de Datos Duros y Alerta de Huracán (Sin texto de relleno) */}
         <LandfallAlertHero
           userCoords={userCoords}
           activeLocationLabel={activeLocationLabel}
@@ -154,32 +172,35 @@ export default function App() {
             const el = document.getElementById('mapa-trayectoria');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }}
-          onScrollToShelters={() => {
-            const el = document.getElementById('refugios');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
+          onScrollToShelters={handleOpenShelters}
           lastUpdated={lastUpdated}
           onRefreshNow={handleRefreshAll}
           isRefreshing={isRefreshing}
           dynamicStatus={liveStatus}
         />
 
-        {/* Resumen Principal y Variables Meteorológicas Actualizadas */}
-        <StatusOverview dynamicStatus={liveStatus} />
+        {/* ORDEN SOLICITADO: 1. AL INICIO: Embed de Zoom Earth (Ráfagas de Viento y Radar) */}
+        <ZoomEarthSection externalRefreshTrigger={refreshTrigger} />
 
-        {/* Cartografía de Trayectoria y Radios de Viento en Vivo */}
-        <section id="mapa-trayectoria" className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-[#DDE1DF] pb-2">
+        {/* ORDEN SOLICITADO: 2. DESPUÉS: Fotos Satelitales Oficiales (GOES-19 y Cono NHC) */}
+        <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
+
+        {/* ORDEN SOLICITADO: 3. ENSEGUIDA: Webcams en Vivo con Mejor Visualización de Pestañas */}
+        <WebcamsSection />
+
+        {/* 4. Cartografía de Trayectoria Oficial (Refugios apagados por defecto para agilidad) */}
+        <section id="mapa-trayectoria" className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1DF] pb-2.5">
             <div>
-              <div className="flex items-center gap-1.5 text-[#245A66] text-xs font-semibold uppercase tracking-wider">
-                <Compass className="w-3.5 h-3.5 stroke-[1.75]" />
-                Cartografía Meteorológica en Vivo • Radar y Cono de Incertidumbre
+              <div className="flex items-center gap-2 text-[#245A66] text-xs sm:text-sm font-bold uppercase tracking-wider">
+                <Compass className="w-4 h-4 stroke-[2]" />
+                Cartografía Meteorológica en Vivo • Radar y Trayectoria
               </div>
-              <h2 className="text-base sm:text-lg font-semibold text-[#252A2E] mt-0.5">
-                Trayectoria Oficial Pronosticada y Red de Refugios
+              <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E] mt-0.5">
+                Trayectoria Oficial Pronosticada
               </h2>
             </div>
-            <div className="text-xs text-[#245A66] font-semibold bg-[#245A66]/8 px-2 py-1 rounded-[4px] font-tabular">
+            <div className="text-xs sm:text-sm text-[#245A66] font-bold bg-[#245A66]/10 px-3 py-1.5 rounded-[4px] font-tabular">
               Actualizado {liveStatus.timeText} hrs (Ciclo de 2 min)
             </div>
           </div>
@@ -194,31 +215,66 @@ export default function App() {
           />
         </section>
 
-        {/* Fotos Satelitales Oficiales (GOES-19 GeoColor, Infrarrojo Banda 13 y Cono Oficial NHC) */}
-        <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
+        {/* ORDEN SOLICITADO: 5. REFUGIOS: Ocultos por defecto, solo a petición del usuario */}
+        <section id="refugios" className="space-y-3">
+          <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[8px] p-5 sm:p-6 transition shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-[#245A66] font-bold text-xs sm:text-sm uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-[#3F8063]" />
+                  <span>REFUGIOS Y ALBERGUES TEMPORALES</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E]">
+                  Red de Refugios Habilitados (14 albergues verificados)
+                </h2>
+                <p className="text-sm sm:text-base text-[#687078]">
+                  {showSheltersSection
+                    ? 'Listado y buscador de refugios activo. Puedes buscar por municipio o filtrar por mascotas.'
+                    : 'Ocultos por defecto para que la página cargue más rápido. Haz clic en el botón para consultarlos.'}
+                </p>
+              </div>
 
-        {/* Webcams en Vivo • Monitoreo Costero */}
-        <WebcamsSection />
+              {/* Botón de Petición del Usuario */}
+              <button
+                onClick={() => setShowSheltersSection((prev) => !prev)}
+                className="flex items-center gap-2 bg-[#245A66] hover:bg-[#1D4852] text-white font-bold text-sm sm:text-base px-5 py-3 rounded-[6px] shadow-sm transition active:scale-98 cursor-pointer shrink-0 self-start sm:self-auto"
+              >
+                {showSheltersSection ? (
+                  <>
+                    <EyeOff className="w-5 h-5" />
+                    <span>Ocultar Refugios ▲</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-5 h-5" />
+                    <span>Ver Refugios Temporales ▼</span>
+                  </>
+                )}
+              </button>
+            </div>
 
-        {/* Localizador y Directorio de Refugios Temporales */}
-        <SheltersSection
-          onSelectShelterOnMap={handleSelectShelterOnMap}
-          userCoords={userCoords}
-          activeLocationLabel={activeLocationLabel}
-          onLocationResolved={handleLocationResolved}
-        />
+            {/* Despliegue de Refugios solo a petición del usuario */}
+            {showSheltersSection && (
+              <div className="mt-6 pt-6 border-t border-[#DDE1DF] animate-in fade-in duration-200">
+                <SheltersSection
+                  onSelectShelterOnMap={handleSelectShelterOnMap}
+                  userCoords={userCoords}
+                  activeLocationLabel={activeLocationLabel}
+                  onLocationResolved={handleLocationResolved}
+                />
+              </div>
+            )}
+          </div>
+        </section>
 
-        {/* Protocolo de Actuación y Medidas Preventivas */}
+        {/* 6. Protocolo de Actuación y Medidas Preventivas */}
         <EmergencyGuide />
 
-        {/* Mochila de Emergencia de 72 Horas */}
-        <EmergencyKit />
-
-        {/* Directorio de Fuentes Oficiales */}
+        {/* 7. Directorio de Fuentes Oficiales */}
         <OfficialSources />
       </main>
 
-      {/* 5. Pie de Página Editorial */}
+      {/* 5. Pie de Página */}
       <Footer />
 
       {/* 6. Directorio Telefónico de Auxilio */}
@@ -229,19 +285,19 @@ export default function App() {
 
       {/* Barra de Acceso Rápido Móvil */}
       <div className="md:hidden fixed bottom-3 left-3 right-3 z-30">
-        <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-1.5 shadow-md flex items-center gap-2">
-          <a
-            href="#refugios"
-            className="flex-1 bg-[#245A66] text-white font-medium py-2 px-2.5 rounded-[3px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
+        <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-2 shadow-lg flex items-center gap-2">
+          <button
+            onClick={handleOpenShelters}
+            className="flex-1 bg-[#245A66] hover:bg-[#1D4852] text-white font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
           >
-            <MapPin className="w-3.5 h-3.5 stroke-[1.75]" />
-            <span>Refugio Cercano</span>
-          </a>
+            <MapPin className="w-4 h-4 stroke-[2]" />
+            <span>Ver Refugios</span>
+          </button>
           <button
             onClick={() => setIsContactsModalOpen(true)}
-            className="flex-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-medium py-2 px-2.5 rounded-[3px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
+            className="flex-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
           >
-            <Phone className="w-3.5 h-3.5 text-[#B84A45] stroke-[2]" />
+            <Phone className="w-4 h-4 text-[#B84A45] stroke-[2.5]" />
             <span>Auxilio 911</span>
           </button>
         </div>

@@ -55,7 +55,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   const userMarkerRef = useRef<L.Marker | null>(null);
 
   const [activeTile, setActiveTile] = useState<'osm' | 'satellite'>('osm');
-  const [showShelters, setShowShelters] = useState(true);
+  const [showShelters, setShowShelters] = useState(false);
   const [showWindZones, setShowWindZones] = useState(true);
   const [filterPetsOnly, setFilterPetsOnly] = useState(false);
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('todos');

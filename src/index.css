@@ -15,6 +15,10 @@
   --color-critical: #B84A45;
 }
 
+html {
+  font-size: 16.5px;
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
