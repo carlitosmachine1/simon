@@ -36,7 +36,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   const zonesLayerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [activeTile, setActiveTile] = useState<'osm' | 'satellite' | 'dark'>('dark');
+  const [activeTile, setActiveTile] = useState<'osm' | 'satellite'>('osm');
   const [showShelters, setShowShelters] = useState(true);
   const [showWindZones, setShowWindZones] = useState(true);
   const [filterPetsOnly, setFilterPetsOnly] = useState(false);
@@ -52,7 +52,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
     // Center between hurricane and the Pacific Mexican coast (Colima / Jalisco)
     const initialMap = L.map(mapContainerRef.current, {
-      center: [19.2, -105.0],
+      center: [18.8, -104.9],
       zoom: 7,
       minZoom: 5,
       maxZoom: 17,
@@ -62,17 +62,17 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
     // Custom Zoom control position
     L.control.zoom({ position: 'topright' }).addTo(initialMap);
 
-    // Initial tile layer (CartoDB Dark Matter for emergency high-contrast look)
-    const darkTile = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    // Initial tile layer: OpenStreetMap Standard (100% free, zero API key)
+    const osmTile = L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }
     ).addTo(initialMap);
 
-    tileLayerRef.current = darkTile;
+    tileLayerRef.current = osmTile;
 
     // Layer groups
     const zonesGroup = L.layerGroup().addTo(initialMap);
@@ -102,10 +102,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
     if (activeTile === 'satellite') {
       url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-      attr = 'Tiles &copy; Esri, Maxar, Earthstar Geographics, CNES/Airbus';
-    } else if (activeTile === 'dark') {
-      url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-      attr = '&copy; OpenStreetMap contributors &copy; CARTO';
+      attr = 'Tiles &copy; Esri, Maxar, Earthstar Geographics';
     } else {
       url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
       attr = '&copy; OpenStreetMap contributors';
@@ -428,47 +425,37 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
       {/* Top Floating Controls Bar */}
       <div className="absolute top-3 left-3 right-3 sm:right-auto z-10 flex flex-wrap items-center gap-2">
-        {/* Layer style toggle */}
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-1 flex items-center shadow-lg text-xs">
-          <button
-            onClick={() => setActiveTile('dark')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
-              activeTile === 'dark'
-                ? 'bg-slate-700 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Oscuro
-          </button>
+        {/* Layer style toggle (100% Free & Open, zero API keys) */}
+        <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-1 flex items-center shadow-lg text-xs">
           <button
             onClick={() => setActiveTile('osm')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-3 py-1 rounded-lg font-medium transition ${
               activeTile === 'osm'
-                ? 'bg-slate-700 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-sky-600 text-white font-bold shadow'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            Calles
+            Mapa OpenStreetMap
           </button>
           <button
             onClick={() => setActiveTile('satellite')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-3 py-1 rounded-lg font-medium transition ${
               activeTile === 'satellite'
-                ? 'bg-slate-700 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-sky-600 text-white font-bold shadow'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            Satélite
+            Satélite Esri
           </button>
         </div>
 
         {/* Quick centers */}
         <button
           onClick={handleCenterHurricane}
-          className="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-1.5 transition active:scale-95 border border-red-500/40"
+          className="bg-slate-900/95 hover:bg-slate-800 text-sky-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-1.5 transition active:scale-95 border border-sky-500/40"
         >
-          <Crosshair className="w-3.5 h-3.5" />
-          <span>Ojo Simón Cat 4</span>
+          <Crosshair className="w-3.5 h-3.5 text-sky-400" />
+          <span>Ojo Simón (Actual)</span>
         </button>
 
         <button

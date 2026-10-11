@@ -72,10 +72,10 @@ export const StatusOverview: React.FC = () => {
             <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
               Ubicación Referencial
             </div>
-            <div className="text-xl font-bold text-white mt-0.5">95 km al SO de Manzanillo</div>
-            <div className="text-xs text-slate-300">190 km al Sur de Puerto Vallarta</div>
+            <div className="text-xl font-bold text-white mt-0.5">197 km al SSO de Manzanillo</div>
+            <div className="text-xs text-slate-300">320 km al Sur de Puerto Vallarta</div>
             <div className="text-[11px] text-slate-400 font-mono mt-1">
-              Coordenadas: {HURRICANE_CURRENT_STATUS.coordinatesText}
+              Coordenadas: {HURRICANE_CURRENT_STATUS.coordinatesText} • Avance 4 km/h al Norte
             </div>
           </div>
         </div>
@@ -133,9 +133,9 @@ export const StatusOverview: React.FC = () => {
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold text-white">{HURRICANE_CURRENT_STATUS.movementSpeedKmh} <span className="text-xs font-normal text-slate-400">km/h</span></div>
-            <div className="text-[11px] text-teal-300">Rumbo Norte (355°)</div>
+            <div className="text-[11px] text-teal-300">Rumbo Norte (360°)</div>
           </div>
-          <div className="text-[10px] text-slate-400 mt-1">Velocidad constante</div>
+          <div className="text-[10px] text-slate-400 mt-1">Avance lento hacia la costa</div>
         </div>
 
         {/* Metric 4: Oleaje */}
