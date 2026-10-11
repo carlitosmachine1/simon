@@ -11,10 +11,11 @@ import {
   Copy,
   Check,
   CheckCircle2,
-  Users,
   ShieldCheck,
   AlertCircle,
   Info,
+  ExternalLink,
+  Building,
 } from 'lucide-react';
 
 interface SheltersSectionProps {
@@ -24,6 +25,35 @@ interface SheltersSectionProps {
   onLocationResolved: (coords: { lat: number; lng: number; label: string }) => void;
 }
 
+const COLIMA_MUNICIPALITIES = [
+  { name: 'Manzanillo', count: 60 },
+  { name: 'Tecomán', count: 25 },
+  { name: 'Minatitlán', count: 23 },
+  { name: 'Cuauhtémoc', count: 20 },
+  { name: 'Armería', count: 18 },
+  { name: 'Coquimatlán', count: 16 },
+  { name: 'Ixtlahuacán', count: 16 },
+  { name: 'Colima', count: 15 },
+  { name: 'Villa de Álvarez', count: 12 },
+  { name: 'Comala', count: 11 },
+];
+
+const JALISCO_MUNICIPALITIES = [
+  { name: 'Puerto Vallarta', count: 8 },
+  { name: 'La Huerta', count: 6 },
+  { name: 'Cihuatlán', count: 6 },
+  { name: 'Cabo Corrientes', count: 3 },
+  { name: 'Tomatlán', count: 3 },
+];
+
+const NAYARIT_MUNICIPALITIES = [
+  { name: 'Bahía de Banderas', count: 10 },
+  { name: 'San Blas', count: 4 },
+  { name: 'Compostela', count: 4 },
+  { name: 'Santiago Ixcuintla', count: 4 },
+  { name: 'Tecuala', count: 4 },
+];
+
 export const SheltersSection: React.FC<SheltersSectionProps> = ({
   onSelectShelterOnMap,
   userCoords,
@@ -31,6 +61,7 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
   onLocationResolved,
 }) => {
   const [selectedState, setSelectedState] = useState<string>('todos');
+  const [selectedMun, setSelectedMun] = useState<string>('todos');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [onlyPets, setOnlyPets] = useState<boolean>(false);
   const [onlyActive, setOnlyActive] = useState<boolean>(false);
@@ -58,6 +89,9 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
     return sheltersWithDistance
       .filter((s) => {
         if (selectedState !== 'todos' && s.state !== selectedState) return false;
+        if (selectedMun !== 'todos' && s.municipality !== selectedMun) {
+          return false;
+        }
         if (onlyPets && !s.petsAllowed) return false;
         if (onlyActive && s.status !== 'Activo / Abierto') return false;
         if (searchQuery.trim() !== '') {
@@ -75,9 +109,14 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
         if (a.distanceKm !== null && b.distanceKm !== null) {
           return a.distanceKm - b.distanceKm;
         }
+        if (a.distanceKm !== null) return -1;
+        if (b.distanceKm !== null) return 1;
+        if (a.state !== b.state) {
+          return a.state.localeCompare(b.state);
+        }
         return 0;
       });
-  }, [sheltersWithDistance, selectedState, onlyPets, onlyActive, searchQuery]);
+  }, [sheltersWithDistance, selectedState, selectedMun, onlyPets, onlyActive, searchQuery]);
 
   const handleCopyAddress = (id: string, address: string) => {
     navigator.clipboard.writeText(address);
@@ -93,6 +132,18 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
     return SHELTERS_DATA.filter((s) => s.petsAllowed).length;
   }, []);
 
+  const colimaCount = useMemo(() => {
+    return SHELTERS_DATA.filter((s) => s.state === 'Colima').length;
+  }, []);
+
+  const jaliscoCount = useMemo(() => {
+    return SHELTERS_DATA.filter((s) => s.state === 'Jalisco').length;
+  }, []);
+
+  const nayaritCount = useMemo(() => {
+    return SHELTERS_DATA.filter((s) => s.state === 'Nayarit').length;
+  }, []);
+
   return (
     <section id="refugios" className="space-y-4">
       {/* 1. Location Finder Panel */}
@@ -103,7 +154,208 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
         onSelectShelter={onSelectShelterOnMap}
       />
 
-      {/* 2. Shelter Directory Panel */}
+      {/* 2. Official Sources Integration Banner */}
+      <div className="bg-[#FFFFFF] border border-[#245A66]/30 rounded-[6px] p-4 text-xs text-[#252A2E] space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-[#245A66] uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
+                Fuentes Oficiales Estatales de Refugios Temporales
+              </span>
+              <span className="text-[#DDE1DF]">|</span>
+              <span className="text-[11px] text-[#687078] font-tabular">
+                {SHELTERS_DATA.length} Sedes Verificadas (Colima, Jalisco y Nayarit)
+              </span>
+            </div>
+            <p className="text-xs text-[#687078] max-w-3xl leading-relaxed">
+              Integración de censos y directorios gubernamentales de protección civil: 
+              <strong> 216 de Colima</strong> (Sistema GIR UEPC), 
+              <strong> 26 de Jalisco</strong> (Costa Norte y Costa Sur / UEPCBJ / DIF) y 
+              <strong> 26 de Nayarit</strong> (Bahía de Banderas, Compostela, San Blas, Santiago y Tecuala / SSPC Nayarit).
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href="https://refugios-proteccioncivil.col.gob.mx/refugios/publico"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#245A66] border border-[#DDE1DF] font-medium px-2.5 py-1.5 rounded-[4px] text-[11px] flex items-center gap-1 transition"
+            >
+              <span>Portal GIR Colima</span>
+              <ExternalLink className="w-3 h-3 stroke-[2]" />
+            </a>
+            <a
+              href="https://proteccioncivil.jalisco.gob.mx/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#245A66] border border-[#DDE1DF] font-medium px-2.5 py-1.5 rounded-[4px] text-[11px] flex items-center gap-1 transition"
+            >
+              <span>PC Jalisco</span>
+              <ExternalLink className="w-3 h-3 stroke-[2]" />
+            </a>
+            <a
+              href="https://bahiadebanderas.gob.mx/refugios/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#245A66] border border-[#DDE1DF] font-medium px-2.5 py-1.5 rounded-[4px] text-[11px] flex items-center gap-1 transition"
+            >
+              <span>PC Bahía de Banderas</span>
+              <ExternalLink className="w-3 h-3 stroke-[2]" />
+            </a>
+          </div>
+        </div>
+
+        {/* State Quick Switch Tabs */}
+        <div className="pt-2 border-t border-[#DDE1DF] flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] text-[#687078] font-medium mr-1">Filtrar por Estado:</span>
+          <button
+            onClick={() => {
+              setSelectedState('todos');
+              setSelectedMun('todos');
+            }}
+            className={`text-[11px] font-tabular px-2.5 py-1 rounded-[3px] border transition ${
+              selectedState === 'todos'
+                ? 'bg-[#245A66] text-white border-[#245A66]'
+                : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+            }`}
+          >
+            Todos ({SHELTERS_DATA.length})
+          </button>
+          <button
+            onClick={() => {
+              setSelectedState('Colima');
+              setSelectedMun('todos');
+            }}
+            className={`text-[11px] font-tabular px-2.5 py-1 rounded-[3px] border transition ${
+              selectedState === 'Colima'
+                ? 'bg-[#245A66] text-white border-[#245A66]'
+                : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+            }`}
+          >
+            Colima ({colimaCount} oficial GIR)
+          </button>
+          <button
+            onClick={() => {
+              setSelectedState('Jalisco');
+              setSelectedMun('todos');
+            }}
+            className={`text-[11px] font-tabular px-2.5 py-1 rounded-[3px] border transition ${
+              selectedState === 'Jalisco'
+                ? 'bg-[#245A66] text-white border-[#245A66]'
+                : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+            }`}
+          >
+            Jalisco ({jaliscoCount} Costa Norte y Sur)
+          </button>
+          <button
+            onClick={() => {
+              setSelectedState('Nayarit');
+              setSelectedMun('todos');
+            }}
+            className={`text-[11px] font-tabular px-2.5 py-1 rounded-[3px] border transition ${
+              selectedState === 'Nayarit'
+                ? 'bg-[#245A66] text-white border-[#245A66]'
+                : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+            }`}
+          >
+            Nayarit ({nayaritCount} Bahía / San Blas / Costa)
+          </button>
+        </div>
+
+        {/* Municipality Quick Chips for Colima */}
+        {selectedState === 'Colima' && (
+          <div className="pt-2 border-t border-[#DDE1DF] flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] text-[#687078] mr-1 font-medium">Municipios de Colima:</span>
+            <button
+              onClick={() => setSelectedMun('todos')}
+              className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                selectedMun === 'todos'
+                  ? 'bg-[#245A66] text-white border-[#245A66]'
+                  : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+              }`}
+            >
+              Todos ({colimaCount})
+            </button>
+            {COLIMA_MUNICIPALITIES.map((mun) => (
+              <button
+                key={mun.name}
+                onClick={() => setSelectedMun(mun.name)}
+                className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                  selectedMun === mun.name
+                    ? 'bg-[#245A66] text-white border-[#245A66]'
+                    : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+                }`}
+              >
+                {mun.name} ({mun.count})
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Municipality Quick Chips for Jalisco */}
+        {selectedState === 'Jalisco' && (
+          <div className="pt-2 border-t border-[#DDE1DF] flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] text-[#687078] mr-1 font-medium">Municipios de Jalisco:</span>
+            <button
+              onClick={() => setSelectedMun('todos')}
+              className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                selectedMun === 'todos'
+                  ? 'bg-[#245A66] text-white border-[#245A66]'
+                  : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+              }`}
+            >
+              Todos ({jaliscoCount})
+            </button>
+            {JALISCO_MUNICIPALITIES.map((mun) => (
+              <button
+                key={mun.name}
+                onClick={() => setSelectedMun(mun.name)}
+                className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                  selectedMun === mun.name
+                    ? 'bg-[#245A66] text-white border-[#245A66]'
+                    : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+                }`}
+              >
+                {mun.name} ({mun.count})
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Municipality Quick Chips for Nayarit */}
+        {selectedState === 'Nayarit' && (
+          <div className="pt-2 border-t border-[#DDE1DF] flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] text-[#687078] mr-1 font-medium">Municipios de Nayarit:</span>
+            <button
+              onClick={() => setSelectedMun('todos')}
+              className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                selectedMun === 'todos'
+                  ? 'bg-[#245A66] text-white border-[#245A66]'
+                  : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+              }`}
+            >
+              Todos ({nayaritCount})
+            </button>
+            {NAYARIT_MUNICIPALITIES.map((mun) => (
+              <button
+                key={mun.name}
+                onClick={() => setSelectedMun(mun.name)}
+                className={`text-[11px] font-tabular px-2 py-0.5 rounded-[3px] border transition ${
+                  selectedMun === mun.name
+                    ? 'bg-[#245A66] text-white border-[#245A66]'
+                    : 'bg-[#F7F7F4] text-[#252A2E] border-[#DDE1DF] hover:bg-[#EAEAE4]'
+                }`}
+              >
+                {mun.name} ({mun.count})
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 3. Shelter Directory Panel */}
       <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#DDE1DF] pb-3">
           <div>
@@ -144,8 +396,14 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
             </div>
           </div>
           <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5">
-            <div className="text-[#687078] text-[11px]">Estados con Cobertura</div>
-            <div className="text-lg font-semibold text-[#7D9B8A] font-tabular mt-0.5">5 Estados</div>
+            <div className="text-[#687078] text-[11px]">Distribución Estatal</div>
+            <div className="text-xs font-semibold text-[#3F8063] font-tabular mt-1 flex items-center gap-1.5">
+              <span>Col: {colimaCount}</span>
+              <span>•</span>
+              <span>Jal: {jaliscoCount}</span>
+              <span>•</span>
+              <span>Nay: {nayaritCount}</span>
+            </div>
           </div>
         </div>
 
@@ -173,13 +431,16 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
 
             <select
               value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
+              onChange={(e) => {
+                setSelectedState(e.target.value);
+                setSelectedMun('todos');
+              }}
               className="bg-[#F7F7F4] border border-[#DDE1DF] text-[#252A2E] text-xs rounded-[4px] px-2.5 py-1.5 focus:outline-none focus:border-[#245A66]"
             >
-              <option value="todos">Todos los Estados</option>
-              <option value="Jalisco">Jalisco (Puerto Vallarta / Costalegre)</option>
-              <option value="Colima">Colima (Manzanillo / Tecomán / Armería)</option>
-              <option value="Nayarit">Nayarit (Bahía de Banderas / San Blas)</option>
+              <option value="todos">Todos los Estados ({SHELTERS_DATA.length})</option>
+              <option value="Colima">Colima ({colimaCount} oficial GIR)</option>
+              <option value="Jalisco">Jalisco ({jaliscoCount} sedes costeras)</option>
+              <option value="Nayarit">Nayarit ({nayaritCount} sedes Bahía / San Blas)</option>
               <option value="Michoacán">Michoacán (Lázaro Cárdenas / Coahuayana)</option>
               <option value="Baja California Sur">Baja California Sur (Los Cabos / La Paz)</option>
             </select>
@@ -211,32 +472,17 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
               <span>Solo Abiertos / Habilitados</span>
             </button>
 
-            {(selectedState !== 'todos' || searchQuery || onlyPets || onlyActive) && (
-              <button
-                onClick={() => {
-                  setSelectedState('todos');
-                  setSearchQuery('');
-                  setOnlyPets(false);
-                  setOnlyActive(false);
-                }}
-                className="text-xs text-[#245A66] hover:underline px-2 py-0.5 font-medium"
-              >
-                Restablecer filtros
-              </button>
-            )}
-
-            <span className="text-xs text-[#687078] ml-auto font-tabular">
-              Mostrando {filteredShelters.length} de {SHELTERS_DATA.length} sedes
-              {userCoords && ' (ordenados por distancia)'}
+            <span className="text-[11px] text-[#687078] ml-auto font-tabular">
+              Mostrando <strong>{filteredShelters.length}</strong> de {SHELTERS_DATA.length} refugios
             </span>
           </div>
         </div>
 
-        {/* Shelter Cards Grid */}
+        {/* Shelters Cards Grid */}
         {filteredShelters.length === 0 ? (
-          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-6 text-center text-xs text-[#687078]">
-            <AlertCircle className="w-6 h-6 text-[#A66C19] mx-auto mb-1.5 stroke-[1.75]" />
-            <div className="text-sm font-semibold text-[#252A2E]">No se encontraron albergues</div>
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-8 text-center text-xs text-[#687078]">
+            <AlertCircle className="w-5 h-5 mx-auto mb-1.5 text-[#A66C19] stroke-[1.75]" />
+            <p className="font-medium text-[#252A2E]">No se encontraron refugios con los filtros seleccionados.</p>
             <p className="mt-0.5">Pruebe restableciendo los filtros de estado o término de búsqueda.</p>
           </div>
         ) : (
@@ -247,6 +493,9 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
                 shelter.lng,
                 shelter.name
               );
+              const isColimaGov = shelter.state === 'Colima';
+              const isJaliscoGov = shelter.state === 'Jalisco';
+              const isNayaritGov = shelter.state === 'Nayarit';
 
               return (
                 <div
@@ -263,6 +512,21 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
                         <span className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[2px]">
                           {shelter.municipality}
                         </span>
+                        {isColimaGov && (
+                          <span className="text-[9px] font-medium text-[#3F8063] bg-[#3F8063]/10 border border-[#3F8063]/25 px-1 py-0.5 rounded-[2px]" title="Extraído de refugios-proteccioncivil.col.gob.mx/refugios/publico">
+                            GIR Colima
+                          </span>
+                        )}
+                        {isJaliscoGov && (
+                          <span className="text-[9px] font-medium text-[#245A66] bg-[#245A66]/10 border border-[#245A66]/25 px-1 py-0.5 rounded-[2px]" title="Oficial UEPCBJ / DIF Jalisco">
+                            PC Jalisco
+                          </span>
+                        )}
+                        {isNayaritGov && (
+                          <span className="text-[9px] font-medium text-[#A66C19] bg-[#A66C19]/10 border border-[#A66C19]/25 px-1 py-0.5 rounded-[2px]" title="Oficial Protección Ciudadana Nayarit / Bahía de Banderas">
+                            PC Nayarit
+                          </span>
+                        )}
                       </div>
 
                       {shelter.distanceKm !== null && (
@@ -320,9 +584,16 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
                       </div>
                     </div>
 
+                    {shelter.facilities && shelter.facilities.length > 0 && (
+                      <div className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] p-1.5 rounded-[2px] leading-tight space-y-0.5">
+                        <span className="font-medium text-[#252A2E]">Servicios: </span>
+                        <span>{shelter.facilities.slice(0, 3).join(' • ')}</span>
+                      </div>
+                    )}
+
                     {shelter.notes && (
-                      <p className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] p-1.5 rounded-[2px] leading-tight">
-                        {shelter.notes}
+                      <p className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] p-1.5 rounded-[2px] leading-tight italic">
+                        "{shelter.notes.slice(0, 110)}{shelter.notes.length > 110 ? '...' : ''}"
                       </p>
                     )}
                   </div>
@@ -355,26 +626,28 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
 
                     <div className="flex items-center justify-between text-[11px] pt-0.5">
                       <button
-                        onClick={() => handleCopyAddress(shelter.id, shelter.address)}
+                        onClick={() => handleCopyAddress(shelter.id, `${shelter.name}, ${shelter.address}`)}
                         className="text-[#687078] hover:text-[#252A2E] flex items-center gap-1 transition"
                       >
                         {copiedId === shelter.id ? (
-                          <span className="text-[#3F8063] font-medium flex items-center gap-0.5">
-                            <Check className="w-3 h-3" /> Copiado
-                          </span>
+                          <>
+                            <Check className="w-3 h-3 text-[#3F8063]" />
+                            <span className="text-[#3F8063]">Copiado</span>
+                          </>
                         ) : (
-                          <span className="flex items-center gap-0.5">
-                            <Copy className="w-3 h-3 stroke-[1.75]" /> Copiar dirección
-                          </span>
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copiar dirección</span>
+                          </>
                         )}
                       </button>
 
                       {shelter.phone && (
                         <a
                           href={`tel:${shelter.phone.replace(/\s+/g, '')}`}
-                          className="text-[#245A66] hover:underline font-medium font-tabular flex items-center gap-0.5"
+                          className="text-[#245A66] hover:underline flex items-center gap-1 font-mono font-medium"
                         >
-                          <Phone className="w-3 h-3 stroke-[1.75]" />
+                          <Phone className="w-3 h-3" />
                           <span>{shelter.phone}</span>
                         </a>
                       )}

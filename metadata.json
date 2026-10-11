@@ -1,6 +1,6 @@
 {
   "name": "Huracán Simón - Portal Informativo de Emergencia y Refugios",
-  "description": "Centro de información oficial en tiempo real sobre el Huracán Simón en el Pacífico: trayectoria, satélite NOAA, directorio y mapa de refugios temporales, avisos de Protección Civil y SMN.",
+  "description": "Centro No oficial pero si fuentes oficiales en tiempo real sobre el Huracán Simón en el Pacífico: trayectoria, satélite NOAA, directorio de 216 refugios de Colima (refugios-proteccioncivil.col.gob.mx/refugios/publico), avisos de Protección Civil y SMN.",
   "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -438,15 +438,29 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
           {/* State selector */}
           <select
             value={selectedStateFilter}
-            onChange={(e) => setSelectedStateFilter(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedStateFilter(val);
+              if (mapInstanceRef.current) {
+                if (val === 'Colima') {
+                  mapInstanceRef.current.setView([19.12, -104.05], 9, { animate: true });
+                } else if (val === 'Jalisco') {
+                  mapInstanceRef.current.setView([20.15, -105.1], 8, { animate: true });
+                } else if (val === 'Nayarit') {
+                  mapInstanceRef.current.setView([21.4, -105.2], 8, { animate: true });
+                } else if (val === 'todos') {
+                  mapInstanceRef.current.setView([18.8, -104.9], 7, { animate: true });
+                }
+              }
+            }}
             className="bg-[#F7F7F4] border border-[#DDE1DF] text-[#252A2E] text-xs rounded-[4px] px-2 py-1 outline-none focus:border-[#245A66]"
           >
-            <option value="todos">Todos los Estados</option>
-            <option value="Jalisco">Jalisco</option>
-            <option value="Colima">Colima</option>
-            <option value="Nayarit">Nayarit</option>
-            <option value="Michoacán">Michoacán</option>
-            <option value="Baja California Sur">Baja California Sur</option>
+            <option value="todos">Todos los Estados (272 refugios)</option>
+            <option value="Colima">Colima (216 oficial GIR UEPC)</option>
+            <option value="Jalisco">Jalisco (26 Costa Norte/Sur UEPCBJ)</option>
+            <option value="Nayarit">Nayarit (26 Bahía/Costa SSPC)</option>
+            <option value="Michoacán">Michoacán (2 refugios)</option>
+            <option value="Baja California Sur">Baja California Sur (2 refugios)</option>
           </select>
         </div>
       </div>
