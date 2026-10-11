@@ -5,8 +5,8 @@ import {
   Minimize2,
   ExternalLink,
   RefreshCw,
-  Compass,
-  Radio,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 
 interface WindyMapSectionProps {
@@ -19,6 +19,9 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Scroll protection: locked by default on mobile so user does not get trapped while scrolling
+  const [isLockedForScroll, setIsLockedForScroll] = useState<boolean>(true);
 
   const WINDY_EMBED_URL =
     'https://embed.windy.com/embed2.html?lat=20.278&lon=-105.317&zoom=7&level=surface&overlay=gust&product=icon&type=map&metricWind=default';
@@ -53,7 +56,34 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
           </div>
 
           {/* Acciones Rápidas */}
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+            {/* Botón de Protección de Scroll */}
+            <button
+              onClick={() => setIsLockedForScroll((prev) => !prev)}
+              className={`flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-[4px] border transition cursor-pointer ${
+                isLockedForScroll
+                  ? 'bg-[#3F8063]/10 text-[#3F8063] border-[#3F8063]/30 hover:bg-[#3F8063]/20'
+                  : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1D4852]'
+              }`}
+              title={
+                isLockedForScroll
+                  ? 'El mapa está bloqueado para permitir deslizar la página en móvil sin atascarse.'
+                  : 'El mapa está desbloqueado para interactuar (arrastrar o hacer zoom).'
+              }
+            >
+              {isLockedForScroll ? (
+                <>
+                  <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Scroll Seguro (Bloqueado)</span>
+                </>
+              ) : (
+                <>
+                  <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Interactuando (Toca para Bloquear)</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleReload}
               className="flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAECE8] text-[#252A2E] border border-[#DDE1DF] text-xs sm:text-sm font-medium px-3 py-1.5 rounded-[4px] transition cursor-pointer"
@@ -62,6 +92,7 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
               <RefreshCw className="w-4 h-4 text-[#245A66]" />
               <span>Recargar</span>
             </button>
+
             <a
               href={WINDY_EXTERNAL_URL}
               target="_blank"
@@ -71,8 +102,12 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
               <ExternalLink className="w-4 h-4" />
               <span>Abrir en Windy</span>
             </a>
+
             <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
+              onClick={() => {
+                setIsFullscreen(!isFullscreen);
+                if (!isFullscreen) setIsLockedForScroll(false); // In fullscreen allow interaction
+              }}
               className="hidden sm:flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAECE8] text-[#252A2E] border border-[#DDE1DF] text-xs sm:text-sm font-medium px-3 py-1.5 rounded-[4px] transition cursor-pointer"
               title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
             >
@@ -91,7 +126,7 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
           </div>
         </div>
 
-        {/* Contenedor del Iframe Embebido Oficial de Windy */}
+        {/* Contenedor del Iframe Embebido Oficial de Windy con Protección de Scroll */}
         <div
           className={`mt-4 relative bg-[#1A1E24] rounded-[6px] overflow-hidden border border-[#DDE1DF] transition-all duration-300 ${
             isFullscreen
@@ -124,15 +159,45 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
             </div>
           )}
 
+          {/* Iframe: Cuando está bloqueado (isLockedForScroll=true), pointer-events-none evita que capture los toques del usuario en móvil */}
           <iframe
             key={reloadKey}
             src={WINDY_EMBED_URL}
             title="Windy - Mapa en Vivo de Ráfagas de Viento"
-            className="w-full h-full border-0"
+            className={`w-full h-full border-0 ${
+              isLockedForScroll && !isFullscreen ? 'pointer-events-none' : 'pointer-events-auto'
+            }`}
             allow="geolocation; fullscreen"
             loading="eager"
             onLoad={() => setIsLoading(false)}
           />
+
+          {/* Capa de Scroll Seguro en Modo Bloqueado (Permite scroll libre de la página) */}
+          {isLockedForScroll && !isFullscreen && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-5 pointer-events-none">
+              <button
+                onClick={() => setIsLockedForScroll(false)}
+                className="pointer-events-auto bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2 transition active:scale-95 cursor-pointer backdrop-blur-xs"
+              >
+                <Unlock className="w-4 h-4 text-[#48A9A6]" />
+                <span>Toca para interactuar con el mapa</span>
+              </button>
+            </div>
+          )}
+
+          {/* Botón flotante para re-bloquear cuando está activo */}
+          {!isLockedForScroll && !isFullscreen && (
+            <div className="absolute top-3 right-3 z-20">
+              <button
+                onClick={() => setIsLockedForScroll(true)}
+                className="bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-white/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer backdrop-blur-xs"
+                title="Bloquear para volver a deslizar la página libremente"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#3F8063]" />
+                <span>Bloquear Scroll</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Barra de Datos Rápidos del Visor */}
