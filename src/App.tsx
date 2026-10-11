@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Analytics } from "@vercel/analytics/next";
 import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
@@ -245,6 +246,9 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }
