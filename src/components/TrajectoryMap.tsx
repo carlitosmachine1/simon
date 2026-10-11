@@ -22,6 +22,7 @@ import {
   Lock,
   Unlock,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface TrajectoryMapProps {
   selectedShelterId?: string | null;
@@ -40,6 +41,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   dynamicTrajectoryPoints,
   refreshTrigger,
 }) => {
+  const { t } = useLanguage();
   // Use dynamic status or compute live on the fly
   const liveData = dynamicStatus && dynamicTrajectoryPoints
     ? { status: dynamicStatus, trajectoryPoints: dynamicTrajectoryPoints }
@@ -451,7 +453,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
                 : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
             }`}
           >
-            Cartografía OpenStreetMap
+            {t.baseOSM}
           </button>
           <button
             onClick={() => setActiveTile('satellite')}
@@ -461,7 +463,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
                 : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
             }`}
           >
-            Satélite Esri
+            {t.baseSatellite}
           </button>
         </div>
 
@@ -478,21 +480,16 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
                 ? 'bg-[#3F8063]/10 text-[#3F8063] border-[#3F8063]/30 hover:bg-[#3F8063]/20'
                 : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
             }`}
-            title={
-              isMapLockedForScroll
-                ? 'El mapa está bloqueado para permitir deslizar la página con total libertad en móvil sin atorarse.'
-                : 'El mapa está desbloqueado para interactuar (arrastrar o hacer zoom).'
-            }
           >
             {isMapLockedForScroll ? (
               <>
                 <Lock className="w-3.5 h-3.5 stroke-[2]" />
-                <span>Scroll Seguro: Activo (Mapa Fijo)</span>
+                <span>{t.scrollSafeLockedMap}</span>
               </>
             ) : (
               <>
                 <Unlock className="w-3.5 h-3.5 stroke-[2]" />
-                <span>Navegando Mapa (Toca para Bloquear)</span>
+                <span>{t.scrollNavigatingMap}</span>
               </>
             )}
           </button>
@@ -505,21 +502,16 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
                 ? 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
                 : 'bg-[#FDF4E7] text-[#9A5B18] border-[#E8C28A] hover:bg-[#FAE8CC]'
             }`}
-            title={
-              showShelters
-                ? 'Ocultar los 272 refugios para que el mapa cargue y se desplace con máxima agilidad'
-                : 'Mostrar los 272 refugios en el mapa'
-            }
           >
             {showShelters ? (
               <>
                 <Eye className="w-3.5 h-3.5 stroke-[2]" />
-                <span>Refugios: Visibles (272)</span>
+                <span>{t.sheltersVisibleBtn}</span>
               </>
             ) : (
               <>
                 <EyeOff className="w-3.5 h-3.5 stroke-[2] text-[#9A5B18]" />
-                <span>Refugios: Ocultos (Modo Ágil ⚡)</span>
+                <span>{t.sheltersHiddenBtn}</span>
               </>
             )}
           </button>
@@ -529,7 +521,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
             className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition cursor-pointer"
           >
             <Crosshair className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
-            <span>Centrar en Simón</span>
+            <span>{t.centerSimonBtn}</span>
           </button>
 
           <button

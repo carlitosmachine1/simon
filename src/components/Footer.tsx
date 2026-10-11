@@ -1,27 +1,29 @@
 import React from 'react';
-import { ShieldCheck, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Footer: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
-    <footer className="bg-[#FFFFFF] border-t border-[#DDE1DF] pt-8 pb-14 text-xs text-[#687078]">
+    <footer className="bg-[#FFFFFF] border-t border-[#DDE1DF] pt-8 pb-14 text-xs sm:text-sm text-[#687078]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-2 space-y-2">
-            <div className="flex items-center gap-2 text-[#252A2E] font-semibold text-sm">
+            <div className="flex items-center gap-2 text-[#252A2E] font-bold text-sm sm:text-base">
               <span className="w-6 h-6 rounded-[3px] bg-[#245A66] text-white flex items-center justify-center text-xs font-bold">
                 S4
               </span>
-              <span>Portal Meteorológico • Huracán Simón</span>
+              <span>{t.footerCopyright}</span>
             </div>
-            <p className="text-[#687078] leading-relaxed max-w-md text-xs">
-              Herramienta informativa diseñada bajo estándares de análisis y datos meteorológicos abiertos. 
-              Orientada a la consulta técnica, localización de albergues y prevención ciudadana en costas del Pacífico mexicano.
+            <p className="text-[#687078] leading-relaxed max-w-md text-xs sm:text-sm">
+              {t.footerDisclaimer}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <div className="font-semibold text-[#252A2E] text-xs">Organismos Fuentes</div>
-            <ul className="space-y-1 text-xs text-[#687078]">
+            <div className="font-bold text-[#252A2E] text-xs sm:text-sm">{t.navSources}</div>
+            <ul className="space-y-1 text-xs sm:text-sm text-[#687078]">
               <li>
                 <a
                   href="https://smn.conagua.gob.mx"
@@ -66,25 +68,18 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="space-y-1.5">
-            <div className="font-semibold text-[#252A2E] text-xs">Líneas de Atención</div>
-            <div className="space-y-0.5 text-xs">
-              <div>Emergencias: <strong className="text-[#252A2E] font-tabular">911</strong></div>
-              <div>CFE Fallas: <strong className="text-[#252A2E] font-tabular">071</strong></div>
-              <div>Guardia Nacional: <strong className="text-[#252A2E] font-tabular">088</strong></div>
-              <div className="text-[11px] text-[#687078] pt-1">
-                Servicios gratuitos disponibles las 24 horas.
-              </div>
+            <div className="font-bold text-[#252A2E] text-xs sm:text-sm">{t.directory911}</div>
+            <div className="text-xs sm:text-sm text-[#687078] space-y-1">
+              <div>Emergencias Nacional: <strong className="text-[#B84A45]">911</strong></div>
+              <div>Cruz Roja Mexicana: <strong className="text-[#252A2E]">065</strong></div>
+              <div>CFE Fallas de Energía: <strong className="text-[#245A66]">071</strong></div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-[#DDE1DF] pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#687078]">
-          <div>
-            Procesamiento y representación de datos públicos de NOAA STAR NESDIS, SMN y Unidades Estatales de Protección Civil.
-          </div>
-          <div>
-            Centro No oficial pero si fuentes oficiales
-          </div>
+        <div className="pt-4 border-t border-[#DDE1DF] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#687078]">
+          <div>{t.footerSyncNotice}</div>
+          <div className="text-[11px] font-tabular">© 2026 • Hurricane Simon Public Advisory</div>
         </div>
       </div>
     </footer>

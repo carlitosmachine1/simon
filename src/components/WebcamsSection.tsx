@@ -7,6 +7,7 @@ import {
   X,
   RefreshCw,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface WebcamFeed {
   id: string;
@@ -43,6 +44,7 @@ const WEBCAMS: WebcamFeed[] = [
 ];
 
 export const WebcamsSection: React.FC = () => {
+  const { t } = useLanguage();
   const [activeCamId, setActiveCamId] = useState<string>('webcam-1');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -55,7 +57,7 @@ export const WebcamsSection: React.FC = () => {
 
   return (
     <section id="webcams" className="space-y-4">
-      {/* Encabezado Editorial Limpio sin opción de agregar transmisión */}
+      {/* Encabezado Editorial Limpio */}
       <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-4 sm:p-5 shadow-none">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DDE1DF] pb-3">
           <div>
@@ -64,22 +66,22 @@ export const WebcamsSection: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B84A45] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#B84A45]"></span>
               </span>
-              <span>WEBCAMS EN VIVO</span>
+              <span>{t.webcamsBadge}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E] mt-1 tracking-tight">
-              Transmisiones en Vivo
+              {t.webcamsTitle}
             </h2>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
             <div className="text-xs sm:text-sm text-[#B84A45] font-bold bg-[#B84A45]/10 border border-[#B84A45]/20 px-3 py-1.5 rounded-[4px] flex items-center gap-1.5 font-tabular">
               <Radio className="w-4 h-4 animate-pulse" />
-              <span>{WEBCAMS.length} Cámaras</span>
+              <span>{WEBCAMS.length} {t.camerasCount}</span>
             </div>
           </div>
         </div>
 
-        {/* Pestañas de Selección: Solo Webcam 1, Webcam 2, etc. sin nombres ni descripciones */}
+        {/* Pestañas de Selección: Solo Webcam 1, Webcam 2, etc. */}
         <div className="mt-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             {WEBCAMS.map((cam) => {
@@ -111,7 +113,7 @@ export const WebcamsSection: React.FC = () => {
                       }`}
                     />
                     <span className={isActive ? 'text-white' : 'text-[#B84A45]'}>
-                      EN VIVO
+                      {t.liveBadge}
                     </span>
                   </span>
 
@@ -126,12 +128,12 @@ export const WebcamsSection: React.FC = () => {
 
         {/* Reproductor de Video */}
         <div className="mt-4 bg-[#111315] border border-[#DDE1DF] rounded-[6px] overflow-hidden shadow-sm">
-          {/* Barra de título de la cámara activa: Solo nombre de la webcam */}
+          {/* Barra de título de la cámara activa */}
           <div className="bg-[#1A1E24] px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-[#2C323B]">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-[#B84A45] px-2.5 py-1 rounded-[3px] shrink-0">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <span>EN DIRECTO</span>
+                <span>{t.onAirBadge}</span>
               </div>
               <div className="text-base sm:text-lg font-bold text-white truncate">
                 {activeCam.label}
@@ -142,10 +144,10 @@ export const WebcamsSection: React.FC = () => {
               <button
                 onClick={handleReloadPlayer}
                 className="flex items-center gap-1.5 text-xs sm:text-sm text-white hover:text-white bg-[#2A303A] hover:bg-[#353D4A] px-3 py-1.5 rounded-[4px] transition cursor-pointer"
-                title="Recargar reproductor"
+                title={t.reloadPlayer}
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Recargar</span>
+                <span>{t.reloadPlayer}</span>
               </button>
               <a
                 href={activeCam.sourceUrl}
@@ -154,7 +156,7 @@ export const WebcamsSection: React.FC = () => {
                 className="flex items-center gap-1.5 text-xs sm:text-sm text-[#48A9A6] hover:text-white bg-[#2A303A] hover:bg-[#353D4A] px-3 py-1.5 rounded-[4px] transition"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>YouTube</span>
+                <span>{t.openYoutube}</span>
               </a>
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
@@ -163,12 +165,12 @@ export const WebcamsSection: React.FC = () => {
                 {isFullscreen ? (
                   <>
                     <Minimize2 className="w-3.5 h-3.5" />
-                    <span>Reducir</span>
+                    <span>{t.minimize}</span>
                   </>
                 ) : (
                   <>
                     <Maximize2 className="w-3.5 h-3.5" />
-                    <span>Ampliar</span>
+                    <span>{t.fullscreen}</span>
                   </>
                 )}
               </button>

@@ -8,14 +8,14 @@ import {
   Lock,
   Unlock,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface WindyMapSectionProps {
   externalRefreshTrigger?: number;
 }
 
-export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
-  externalRefreshTrigger,
-}) => {
+export const ZoomEarthSection: React.FC<WindyMapSectionProps> = () => {
+  const { t } = useLanguage();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,13 +45,13 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#245A66] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#245A66]"></span>
               </span>
-              <span>MAPA EN VIVO DE RÁFAGAS DE VIENTO • WINDY (MODELO ICON)</span>
+              <span>{t.windyBadge}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E] mt-1 tracking-tight">
-              Visualizador de Viento y Ráfagas en Tiempo Real
+              {t.windyTitle}
             </h2>
             <p className="text-sm sm:text-base text-[#687078] mt-1">
-              Simulación meteorológica de ráfagas superficiales frente a las costas de Colima, Jalisco y Nayarit.
+              {t.windySubtitle}
             </p>
           </div>
 
@@ -65,21 +65,17 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
                   ? 'bg-[#3F8063]/10 text-[#3F8063] border-[#3F8063]/30 hover:bg-[#3F8063]/20'
                   : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1D4852]'
               }`}
-              title={
-                isLockedForScroll
-                  ? 'El mapa está bloqueado para permitir deslizar la página en móvil sin atascarse.'
-                  : 'El mapa está desbloqueado para interactuar (arrastrar o hacer zoom).'
-              }
+              title={isLockedForScroll ? t.safeScrollLocked : t.safeScrollInteracting}
             >
               {isLockedForScroll ? (
                 <>
                   <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Scroll Seguro (Bloqueado)</span>
+                  <span>{t.safeScrollLocked}</span>
                 </>
               ) : (
                 <>
                   <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Interactuando (Toca para Bloquear)</span>
+                  <span>{t.safeScrollInteracting}</span>
                 </>
               )}
             </button>
@@ -87,10 +83,10 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
             <button
               onClick={handleReload}
               className="flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAECE8] text-[#252A2E] border border-[#DDE1DF] text-xs sm:text-sm font-medium px-3 py-1.5 rounded-[4px] transition cursor-pointer"
-              title="Recargar mapa interactivo"
+              title={t.reload}
             >
               <RefreshCw className="w-4 h-4 text-[#245A66]" />
-              <span>Recargar</span>
+              <span>{t.reload}</span>
             </button>
 
             <a
@@ -100,26 +96,26 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
               className="flex items-center gap-1.5 bg-[#245A66] hover:bg-[#1D4852] text-white text-xs sm:text-sm font-medium px-3 py-1.5 rounded-[4px] transition cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
-              <span>Abrir en Windy</span>
+              <span>{t.openInWindy}</span>
             </a>
 
             <button
               onClick={() => {
                 setIsFullscreen(!isFullscreen);
-                if (!isFullscreen) setIsLockedForScroll(false); // In fullscreen allow interaction
+                if (!isFullscreen) setIsLockedForScroll(false);
               }}
               className="hidden sm:flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAECE8] text-[#252A2E] border border-[#DDE1DF] text-xs sm:text-sm font-medium px-3 py-1.5 rounded-[4px] transition cursor-pointer"
-              title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+              title={isFullscreen ? t.minimize : t.fullscreen}
             >
               {isFullscreen ? (
                 <>
                   <Minimize2 className="w-4 h-4 text-[#245A66]" />
-                  <span>Reducir</span>
+                  <span>{t.minimize}</span>
                 </>
               ) : (
                 <>
                   <Maximize2 className="w-4 h-4 text-[#245A66]" />
-                  <span>Ampliar</span>
+                  <span>{t.fullscreen}</span>
                 </>
               )}
             </button>
@@ -138,14 +134,14 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
             <div className="bg-[#252A2E] text-white px-4 py-2 flex items-center justify-between border-b border-[#3E454D]">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Wind className="w-4 h-4 text-[#48A9A6]" />
-                <span>Windy • Ráfagas de Viento y Modelo ICON</span>
+                <span>Windy • ICON</span>
               </div>
               <button
                 onClick={() => setIsFullscreen(false)}
                 className="flex items-center gap-1 text-xs bg-[#3E454D] hover:bg-[#4E5660] text-white px-2.5 py-1 rounded transition cursor-pointer"
               >
                 <Minimize2 className="w-3.5 h-3.5" />
-                <span>Cerrar Pantalla Completa</span>
+                <span>{t.close}</span>
               </button>
             </div>
           )}
@@ -154,16 +150,16 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
             <div className="absolute inset-0 bg-[#1A1E24] flex flex-col items-center justify-center text-white z-10 gap-3">
               <div className="w-8 h-8 border-3 border-[#245A66] border-t-transparent rounded-full animate-spin" />
               <div className="text-sm font-medium text-[#EAECE8]">
-                Cargando mapa en vivo de Windy...
+                Loading Windy live map...
               </div>
             </div>
           )}
 
-          {/* Iframe: Cuando está bloqueado (isLockedForScroll=true), pointer-events-none evita que capture los toques del usuario en móvil */}
+          {/* Iframe */}
           <iframe
             key={reloadKey}
             src={WINDY_EMBED_URL}
-            title="Windy - Mapa en Vivo de Ráfagas de Viento"
+            title="Windy - Live Wind Gusts Map"
             className={`w-full h-full border-0 ${
               isLockedForScroll && !isFullscreen ? 'pointer-events-none' : 'pointer-events-auto'
             }`}
@@ -172,7 +168,7 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
             onLoad={() => setIsLoading(false)}
           />
 
-          {/* Capa de Scroll Seguro en Modo Bloqueado (Permite scroll libre de la página) */}
+          {/* Capa de Scroll Seguro en Modo Bloqueado */}
           {isLockedForScroll && !isFullscreen && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-5 pointer-events-none">
               <button
@@ -180,21 +176,21 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
                 className="pointer-events-auto bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2 transition active:scale-95 cursor-pointer backdrop-blur-xs"
               >
                 <Unlock className="w-4 h-4 text-[#48A9A6]" />
-                <span>Toca para interactuar con el mapa</span>
+                <span>{t.tapToInteractMap}</span>
               </button>
             </div>
           )}
 
-          {/* Botón flotante para re-bloquear cuando está activo */}
+          {/* Botón flotante para re-bloquear */}
           {!isLockedForScroll && !isFullscreen && (
             <div className="absolute top-3 right-3 z-20">
               <button
                 onClick={() => setIsLockedForScroll(true)}
                 className="bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-white/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer backdrop-blur-xs"
-                title="Bloquear para volver a deslizar la página libremente"
+                title={t.lockScroll}
               >
                 <Lock className="w-3.5 h-3.5 text-[#3F8063]" />
-                <span>Bloquear Scroll</span>
+                <span>{t.lockScroll}</span>
               </button>
             </div>
           )}
@@ -205,11 +201,11 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#3F8063]" />
             <span className="font-medium text-[#252A2E]">
-              Centro: 20.278°N, 105.317°O (Costa Jalisco / Bahía de Banderas / Nayarit)
+              {t.windyCenterCoords}
             </span>
           </div>
           <div className="text-xs sm:text-sm text-[#245A66] font-medium font-tabular">
-            Capa: Ráfagas (Gust) • Modelo: ICON
+            {t.windyLayerInfo}
           </div>
         </div>
       </div>

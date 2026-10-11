@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Analytics } from "@vercel/analytics/next";
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
@@ -18,6 +19,7 @@ import { EmergencyGuide } from './components/EmergencyGuide';
 import { OfficialSources } from './components/OfficialSources';
 import { Footer } from './components/Footer';
 import { EmergencyContactsModal } from './components/EmergencyContactsModal';
+import { ShareModal } from './components/ShareModal';
 import { Shelter } from './data/hurricaneData';
 import { getLiveHurricaneStatus } from './utils/hurricaneTracking';
 import { calculateDistanceKm, formatDistance } from './utils/geo';
@@ -29,13 +31,15 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
-  Radio,
 } from 'lucide-react';
 
 const DEFAULT_REFRESH_SECONDS = 120; // 2 minutos (< 5 min)
 
-export default function App() {
+function AppContent() {
+  const { t, language } = useLanguage();
+
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [activeLocationLabel, setActiveLocationLabel] = useState<string | null>(null);
@@ -104,15 +108,14 @@ export default function App() {
     );
 
     setLocationMessage(
-      `Ubicación seleccionada (${resolved.label}): Distancia al centro actual de Simón: ${formatDistance(
-        distToEye
-      )}.`
+      language === 'en'
+        ? `Selected location (${resolved.label}): Distance to Hurricane Simon eye: ${formatDistance(distToEye)}.`
+        : `Ubicación seleccionada (${resolved.label}): Distancia al centro actual de Simón: ${formatDistance(distToEye)}.`
     );
   };
 
   const handleSelectShelterOnMap = (shelter: Shelter) => {
     setSelectedShelter(shelter);
-    // Asegurar que la sección y el mapa muestren el refugio si el usuario lo selecciona
     setShowSheltersSection(true);
     const mapEl = document.getElementById('mapa-trayectoria');
     if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth' });
@@ -131,8 +134,11 @@ export default function App() {
       {/* 1. Aviso de Emergencia Superior (Alerta Roja) */}
       <AlertBanner onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* 2. Barra de Navegación */}
-      <Navbar onOpenContacts={() => setIsContactsModalOpen(true)} />
+      {/* 2. Barra de Navegación con Switch de Idioma y Botón Compartir */}
+      <Navbar
+        onOpenContacts={() => setIsContactsModalOpen(true)}
+        onOpenShare={() => setIsShareModalOpen(true)}
+      />
 
       {/* 3. Barra de Sincronización Automática (< 5 minutos) */}
       <AutoRefreshBar
@@ -164,7 +170,7 @@ export default function App() {
 
       {/* 4. Área Principal del Dashboard: Prioridad Visual y Datos Digeribles */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
-        {/* Panel de Datos Duros y Alerta de Huracán (Sin texto de relleno) */}
+        {/* Panel de Datos Duros y Alerta de Huracán */}
         <LandfallAlertHero
           userCoords={userCoords}
           activeLocationLabel={activeLocationLabel}
@@ -179,13 +185,13 @@ export default function App() {
           dynamicStatus={liveStatus}
         />
 
-        {/* ORDEN SOLICITADO: 1. AL INICIO: Embed de Zoom Earth (Ráfagas de Viento y Radar) */}
+        {/* ORDEN SOLICITADO: 1. AL INICIO: Embed de Windy (Ráfagas de Viento y Radar) con Scroll Protegido */}
         <ZoomEarthSection externalRefreshTrigger={refreshTrigger} />
 
         {/* ORDEN SOLICITADO: 2. DESPUÉS: Fotos Satelitales Oficiales (GOES-19 y Cono NHC) */}
         <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
 
-        {/* ORDEN SOLICITADO: 3. ENSEGUIDA: Webcams en Vivo con Mejor Visualización de Pestañas */}
+        {/* ORDEN SOLICITADO: 3. ENSEGUIDA: Webcams en Vivo con Pestañas */}
         <WebcamsSection />
 
         {/* 4. Cartografía de Trayectoria Oficial (Refugios apagados por defecto para agilidad) */}
@@ -194,14 +200,14 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2 text-[#245A66] text-xs sm:text-sm font-bold uppercase tracking-wider">
                 <Compass className="w-4 h-4 stroke-[2]" />
-                Cartografía Meteorológica en Vivo • Radar y Trayectoria
+                {t.trajBadge}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E] mt-0.5">
-                Trayectoria Oficial Pronosticada
+                {t.trajTitle}
               </h2>
             </div>
             <div className="text-xs sm:text-sm text-[#245A66] font-bold bg-[#245A66]/10 px-3 py-1.5 rounded-[4px] font-tabular">
-              Actualizado {liveStatus.timeText} hrs (Ciclo de 2 min)
+              {t.updatedText} {liveStatus.timeText} hrs ({t.twoMinCycle})
             </div>
           </div>
 
@@ -222,15 +228,13 @@ export default function App() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-[#245A66] font-bold text-xs sm:text-sm uppercase tracking-wider">
                   <ShieldCheck className="w-4 h-4 text-[#3F8063]" />
-                  <span>REFUGIOS Y ALBERGUES TEMPORALES</span>
+                  <span>{t.sheltersBadge}</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E]">
-                  Red de Refugios Habilitados (14 albergues verificados)
+                  {t.sheltersTitle}
                 </h2>
                 <p className="text-sm sm:text-base text-[#687078]">
-                  {showSheltersSection
-                    ? 'Listado y buscador de refugios activo. Puedes buscar por municipio o filtrar por mascotas.'
-                    : 'Ocultos por defecto para que la página cargue más rápido. Haz clic en el botón para consultarlos.'}
+                  {showSheltersSection ? t.sheltersDescOpen : t.sheltersDescHidden}
                 </p>
               </div>
 
@@ -242,12 +246,12 @@ export default function App() {
                 {showSheltersSection ? (
                   <>
                     <EyeOff className="w-5 h-5" />
-                    <span>Ocultar Refugios ▲</span>
+                    <span>{t.btnHideShelters}</span>
                   </>
                 ) : (
                   <>
                     <Eye className="w-5 h-5" />
-                    <span>Ver Refugios Temporales ▼</span>
+                    <span>{t.btnShowShelters}</span>
                   </>
                 )}
               </button>
@@ -283,6 +287,12 @@ export default function App() {
         onClose={() => setIsContactsModalOpen(false)}
       />
 
+      {/* 7. Modal de Compartir en Redes Sociales */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
+
       {/* Barra de Acceso Rápido Móvil */}
       <div className="md:hidden fixed bottom-3 left-3 right-3 z-30">
         <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-2 shadow-lg flex items-center gap-2">
@@ -291,14 +301,14 @@ export default function App() {
             className="flex-1 bg-[#245A66] hover:bg-[#1D4852] text-white font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
           >
             <MapPin className="w-4 h-4 stroke-[2]" />
-            <span>Ver Refugios</span>
+            <span>{t.mobileBtnShelters}</span>
           </button>
           <button
             onClick={() => setIsContactsModalOpen(true)}
             className="flex-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
           >
             <Phone className="w-4 h-4 text-[#B84A45] stroke-[2.5]" />
-            <span>Auxilio 911</span>
+            <span>{t.mobileBtn911}</span>
           </button>
         </div>
       </div>
@@ -306,5 +316,13 @@ export default function App() {
       {/* Vercel Web Analytics */}
       <Analytics />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { calculateDistanceKm, formatDistance } from '../utils/geo';
 import { DynamicHurricaneStatus } from '../utils/hurricaneTracking';
 import {
@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Radio,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface LandfallAlertHeroProps {
   userCoords?: { lat: number; lng: number } | null;
@@ -29,13 +30,13 @@ interface LandfallAlertHeroProps {
 export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
   userCoords,
   activeLocationLabel,
-  onScrollToMap,
   onScrollToShelters,
-  lastUpdated = new Date(),
   onRefreshNow,
   isRefreshing = false,
   dynamicStatus,
 }) => {
+  const { t, language } = useLanguage();
+
   const eyeLat = dynamicStatus ? dynamicStatus.lat : 18.9;
   const eyeLng = dynamicStatus ? dynamicStatus.lng : -105.2;
   const speedKmh = dynamicStatus ? dynamicStatus.movementSpeedKmh : 9;
@@ -58,23 +59,23 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           <span className="w-2.5 h-2.5 rounded-full bg-[#B84A45] animate-pulse shrink-0" />
           <span className="font-bold text-[#B84A45] uppercase text-xs sm:text-sm tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="w-4 h-4 stroke-[2]" />
-            AVISO OFICIAL EN VIVO • NHC ADVISORY #16A & SMN CONAGUA
+            {t.officialLiveAdvisory}
           </span>
         </div>
 
         <div className="flex items-center gap-3 text-xs sm:text-sm font-tabular ml-auto">
           <span className="flex items-center gap-1.5 text-[#3F8063] font-bold">
             <Radio className="w-3.5 h-3.5 animate-pulse" />
-            <span>Monitoreo Activo</span>
+            <span>{t.activeMonitoring}</span>
           </span>
           <button
             onClick={() => onRefreshNow && onRefreshNow()}
             disabled={isRefreshing}
-            className="bg-white hover:bg-[#F7F7F4] text-[#245A66] border border-[#DDE1DF] px-2.5 py-1 rounded-[3px] font-medium transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            title="Recalcular métricas"
+            className="bg-white hover:bg-[#F7F7F4] text-[#245A66] border border-[#DDE1DF] px-2.5 py-1 rounded-[3px] font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title={t.refreshNow}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Actualizar</span>
+            <span>{t.refreshNow}</span>
           </button>
         </div>
       </div>
@@ -85,17 +86,17 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="text-sm font-bold text-[#245A66] uppercase tracking-wide">
-                Ciclón Tropical de Gran Intensidad
+                {t.cycloneMajor}
               </span>
               <span className="bg-[#B84A45] text-white font-bold text-xs px-2 py-0.5 rounded-[3px]">
-                Categoría 4 (Saffir-Simpson)
+                {t.category4}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#252A2E] tracking-tight">
-              Huracán Simón
+              {t.hurricaneName}
             </h1>
             <p className="text-sm sm:text-base text-[#4A5568] mt-1 font-medium">
-              Ubicado a 95 km al oeste de Manzanillo y 175 km al sur-sureste de Cabo Corrientes (~215 km de Pto. Vallarta). Desplazamiento mar adentro frente al litoral.
+              {t.heroLocationSummary}
             </p>
           </div>
 
@@ -103,11 +104,11 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           <div className="flex flex-col gap-2 shrink-0">
             <div className="flex items-center gap-2 bg-[#B84A45]/10 border border-[#B84A45]/30 text-[#B84A45] font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
               <PlaneTakeoff className="w-4 h-4 shrink-0" />
-              <span>Aeropuertos PVR y ZLO: CERRADOS</span>
+              <span>{t.airportsClosedBadge}</span>
             </div>
             <div className="flex items-center gap-2 bg-[#B84A45]/10 border border-[#B84A45]/30 text-[#B84A45] font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
               <Anchor className="w-4 h-4 shrink-0" />
-              <span>Puertos de Manzanillo y Vallarta: CERRADOS</span>
+              <span>{t.portsClosedBadge}</span>
             </div>
           </div>
         </div>
@@ -117,56 +118,56 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           {/* Card 1: Vientos y Rachas */}
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[6px] p-3.5 sm:p-4 transition">
             <div className="flex items-center justify-between text-xs sm:text-sm text-[#687078]">
-              <span className="font-semibold">Vientos Máximos</span>
+              <span className="font-semibold">{t.maxWinds}</span>
               <Wind className="w-4 h-4 text-[#B84A45]" />
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#B84A45] font-tabular mt-1">
               {windKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs sm:text-sm font-semibold text-[#252A2E] mt-0.5">
-              Rachas: <span className="text-[#B84A45] font-bold">{gustsKmh} km/h</span>
+              {t.gusts} <span className="text-[#B84A45] font-bold">{gustsKmh} km/h</span>
             </div>
           </div>
 
           {/* Card 2: Presión Central */}
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[6px] p-3.5 sm:p-4 transition">
             <div className="flex items-center justify-between text-xs sm:text-sm text-[#687078]">
-              <span className="font-semibold">Presión Central</span>
+              <span className="font-semibold">{t.centralPressure}</span>
               <Gauge className="w-4 h-4 text-[#245A66]" />
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#252A2E] font-tabular mt-1">
               {pressure} <span className="text-sm font-normal text-[#687078]">hPa</span>
             </div>
             <div className="text-xs sm:text-sm font-medium text-[#687078] mt-0.5">
-              Presión mínima extrema
+              {t.pressureExtreme}
             </div>
           </div>
 
           {/* Card 3: Rumbo y Velocidad */}
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[6px] p-3.5 sm:p-4 transition">
             <div className="flex items-center justify-between text-xs sm:text-sm text-[#687078]">
-              <span className="font-semibold">Avance y Rumbo</span>
+              <span className="font-semibold">{t.headingSpeed}</span>
               <Compass className="w-4 h-4 text-[#245A66]" />
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#245A66] font-tabular mt-1">
               {speedKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs sm:text-sm font-semibold text-[#252A2E] mt-0.5 truncate">
-              {heading}
+              {language === 'en' ? 'NNW (335°)' : heading}
             </div>
           </div>
 
           {/* Card 4: Coordenadas del Ojo */}
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[6px] p-3.5 sm:p-4 transition">
             <div className="flex items-center justify-between text-xs sm:text-sm text-[#687078]">
-              <span className="font-semibold">Centro del Ciclón</span>
+              <span className="font-semibold">{t.cycloneCenter}</span>
               <Navigation className="w-4 h-4 text-[#245A66]" />
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#252A2E] font-tabular mt-1">
-              {eyeLat.toFixed(1)}°N, {Math.abs(eyeLng).toFixed(1)}°O
+              {eyeLat.toFixed(1)}°N, {Math.abs(eyeLng).toFixed(1)}°{language === 'en' ? 'W' : 'O'}
             </div>
             <div className="text-xs sm:text-sm font-medium text-[#687078] mt-0.5">
-              Pacífico Mexicano
+              {t.pacificCoast}
             </div>
           </div>
         </div>
@@ -177,11 +178,11 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#245A66] shrink-0" />
               <span className="text-[#252A2E]">
-                Tu ubicación ({activeLocationLabel || 'detectada'}): A{' '}
+                {t.yourLocation} ({activeLocationLabel || (language === 'en' ? 'detected' : 'detectada')}):{' '}
                 <strong className="text-[#245A66] font-bold font-tabular">
                   {formatDistance(userDistanceToEyeKm)}
                 </strong>{' '}
-                del ojo del huracán.
+                {t.fromEye}
               </span>
             </div>
             {onScrollToShelters && (
@@ -189,7 +190,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                 onClick={onScrollToShelters}
                 className="text-[#245A66] hover:underline font-bold text-xs sm:text-sm flex items-center gap-1 cursor-pointer"
               >
-                <span>Ver refugios cercanos</span>
+                <span>{t.viewNearbyShelters}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
