@@ -8,6 +8,7 @@ import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
 import { StatusOverview } from './components/StatusOverview';
+import { LandfallAlertHero } from './components/LandfallAlertHero';
 import { TrajectoryMap } from './components/TrajectoryMap';
 import { SheltersSection } from './components/SheltersSection';
 import { SatelliteViewer } from './components/SatelliteViewer';
@@ -129,6 +130,23 @@ export default function App() {
 
       {/* 4. Área Principal del Dashboard Meteorológico */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Panel de Alerta de Impacto en Tierra (Landfall Warning) con Cálculos en Vivo */}
+        <LandfallAlertHero
+          userCoords={userCoords}
+          activeLocationLabel={activeLocationLabel}
+          onScrollToMap={() => {
+            const el = document.getElementById('mapa-trayectoria');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onScrollToShelters={() => {
+            const el = document.getElementById('refugios');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          lastUpdated={lastUpdated}
+          onRefreshNow={handleRefreshAll}
+          isRefreshing={isRefreshing}
+        />
+
         {/* Resumen Principal y Variables Meteorológicas */}
         <StatusOverview />
 
