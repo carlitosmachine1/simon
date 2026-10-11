@@ -77,9 +77,22 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-[#DDE1DF] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#687078]">
+        <div className="pt-4 border-t border-[#DDE1DF] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#687078]">
           <div>{t.footerSyncNotice}</div>
-          <div className="text-[11px] font-tabular">© 2026 • Hurricane Simon Public Advisory</div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-[11px] font-tabular">© 2026 • Hurricane Simon Public Advisory</span>
+            <span className="text-[#DDE1DF] hidden sm:inline">•</span>
+            <div className="text-xs text-[#252A2E]">
+              {t.footerDevelopedBy}{' '}
+              <a
+                href="mailto:martesdetianguis@gmail.com"
+                className="font-bold text-[#245A66] hover:text-[#1D4852] underline underline-offset-2 transition"
+                title="martesdetianguis@gmail.com"
+              >
+                CARLITOS MACHINE
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

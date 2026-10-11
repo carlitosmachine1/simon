@@ -165,6 +165,7 @@ export interface Translations {
   footerCopyright: string;
   footerSyncNotice: string;
   footerDisclaimer: string;
+  footerDevelopedBy: string;
 
   // Mobile Bottom Bar
   mobileBtnShelters: string;
@@ -346,6 +347,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       'Datos sincronizados con boletines del National Hurricane Center (NHC/NOAA) y SMN CONAGUA.',
     footerDisclaimer:
       'Este portal recopila información pública de fuentes oficiales. En caso de evacuación, atiende puntualmente las indicaciones de Protección Civil.',
+    footerDevelopedBy: 'Desarrollada por',
 
     // Mobile Bottom Bar
     mobileBtnShelters: 'Ver Refugios',
@@ -525,6 +527,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       'Data synchronized with National Hurricane Center (NHC/NOAA) and SMN CONAGUA bulletins.',
     footerDisclaimer:
       'This portal aggregates public information from official sources. Follow Civil Protection evacuation orders without delay.',
+    footerDevelopedBy: 'Developed by',
 
     // Mobile Bottom Bar
     mobileBtnShelters: 'View Shelters',
