@@ -95,13 +95,13 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               <Gauge className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             </div>
             <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
-              {HURRICANE_CURRENT_STATUS.pressureHpa} <span className="text-xs font-normal text-[#687078]">hPa</span>
+              {status.pressureHpa} <span className="text-xs font-normal text-[#687078]">hPa</span>
             </div>
             {/* Fine scale indicator */}
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
               <div className="bg-[#245A66] h-1" style={{ width: '92%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">27.90 inHg (gradiente extremo)</div>
+            <div className="text-[11px] text-[#687078]">27.55 inHg (presión mínima extrema)</div>
           </div>
 
           {/* Indicador 2: Desplazamiento */}
@@ -111,12 +111,12 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               <Compass className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             </div>
             <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
-              {HURRICANE_CURRENT_STATUS.movementSpeedKmh} <span className="text-xs font-normal text-[#687078]">km/h</span>
+              {status.movementSpeedKmh} <span className="text-xs font-normal text-[#687078]">km/h</span>
             </div>
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
-              <div className="bg-[#7D9B8A] h-1" style={{ width: '45%' }} />
+              <div className="bg-[#7D9B8A] h-1" style={{ width: '35%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">{HURRICANE_CURRENT_STATUS.movement}</div>
+            <div className="text-[11px] text-[#687078]">{status.movement} (6 mph)</div>
           </div>
 
           {/* Indicador 3: Oleaje */}
@@ -126,12 +126,12 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               <Waves className="w-3.5 h-3.5 text-[#A66C19] stroke-[1.75]" />
             </div>
             <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
-              {HURRICANE_CURRENT_STATUS.waveHeightMeters}
+              {status.waveHeightMeters}
             </div>
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
               <div className="bg-[#A66C19] h-1" style={{ width: '90%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">Marea de tormenta e impacto costero</div>
+            <div className="text-[11px] text-[#687078]">Marea de tormenta peligrosa de 4 a 6 m</div>
           </div>
 
           {/* Indicador 4: Precipitación acumulada */}
@@ -141,12 +141,12 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               <CloudRain className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             </div>
             <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
-              250 – 450 <span className="text-xs font-normal text-[#687078]">mm</span>
+              250 – 500 <span className="text-xs font-normal text-[#687078]">mm</span>
             </div>
             <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
-              <div className="bg-[#245A66] h-1" style={{ width: '75%' }} />
+              <div className="bg-[#245A66] h-1" style={{ width: '85%' }} />
             </div>
-            <div className="text-[11px] text-[#687078]">Puntuales hasta 650 mm</div>
+            <div className="text-[11px] text-[#687078]">Puntuales extraordinarias hasta 650 mm</div>
           </div>
         </div>
       </div>

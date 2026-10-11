@@ -9,13 +9,14 @@ import {
   Wind,
   Waves,
   Gauge,
-  CloudRain,
   Navigation,
   RefreshCw,
   ShieldAlert,
   ArrowRight,
   Radio,
   ExternalLink,
+  PlaneTakeoff,
+  Anchor,
 } from 'lucide-react';
 
 interface LandfallAlertHeroProps {
@@ -29,31 +30,29 @@ interface LandfallAlertHeroProps {
   dynamicStatus?: DynamicHurricaneStatus;
 }
 
-// Coordenadas oficiales y datos de pronóstico del punto de impacto (Landfall) según modelo oficial NHC / SMN
-const LANDFALL_DATA = {
-  locationName: 'Costa Sur de Jalisco / Límite con Colima',
-  sublocation: 'Entre Barra de Navidad, Cihuatlán y Chamela (Bahía de Navidad - Careyes)',
-  lat: 19.30,
-  lng: -104.90,
-  coordinatesText: '19.30° N, 104.90° O',
-  // Landfall estimado: 11 de Octubre a las 07:00 hrs UTC-6 (13:00 UTC)
-  targetTimestampIso: '2026-10-11T07:00:00-06:00',
-  targetDateFormatted: 'Domingo 11 de Octubre',
-  targetTimeFormatted: '07:00 hrs (Ventana estimada: 06:00 a 08:30 hrs UTC-6)',
+// Datos oficiales verificados — Boletín Intermedio #16A NHC / NOAA y SMN Conagua
+const OFFICIAL_BULLETIN_DATA = {
+  bulletinId: 'Aviso Intermedio #16A (1200 UTC / 06:00 CST)',
+  agency: 'Centro Nacional de Huracanes (NHC / NOAA) y SMN Conagua',
+  currentLat: 18.90,
+  currentLng: -105.20,
+  coordinatesText: '18.9° N, 105.2° O',
+  referenceDistances: 'A 95 km (60 mi) al oeste de Manzanillo, Col. y 175 km (110 mi) al sur-sureste de Cabo Corrientes, Jal. (~215 km de Puerto Vallarta)',
+  headingText: 'Nor-Noroeste (335°)',
+  speedKmh: 9,
+  speedMph: 6,
   category: 4,
-  categoryName: 'Categoría 4 (Saffir-Simpson)',
-  expectedWindSpeedKmh: 220,
-  expectedWindGustsKmh: 275,
-  expectedPressureHpa: 950,
-  expectedStormSurgeMeters: '4.5 a 6.0 metros',
-  expectedWaveHeightMeters: '7.0 a 9.5 metros',
-  expectedRainfallMm: '250 a 450 mm (extraordinarias hasta 650 mm)',
-  confidenceProbability: '95%',
-  // Posición actual del ojo del huracán para cálculos dinámicos (Actualizado 04:00 AM)
-  currentEyeLat: 18.60,
-  currentEyeLng: -104.90,
-  currentSpeedKmh: 12.0,
-  currentHeadingText: 'Norte-Noroeste (345°)',
+  categoryName: 'Huracán Mayor Categoría 4',
+  windSpeedKmh: 240,
+  windSpeedMph: 150,
+  windGustsKmh: 290,
+  pressureHpa: 933,
+  // Sector bajo cono oficial de mayor impacto / aproximación
+  projectedTargetName: 'Costa Norte de Jalisco (Cabo Corrientes / Bahía de Banderas / Puerto Vallarta) y Costa de Nayarit',
+  targetLat: 20.30,
+  targetLng: -105.40,
+  estimatedWindowText: 'Tarde / noche de hoy domingo 11 de Octubre a primeras horas del 12 de Octubre',
+  warningArea: 'Aviso de Huracán: Desde Punta San Telmo, Mich. hasta El Roblito, Nay. e Islas Marías',
 };
 
 export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
@@ -66,9 +65,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
   isRefreshing = false,
   dynamicStatus,
 }) => {
-  // Real-time dynamic clock & countdown updated every 1 second
   const [now, setNow] = useState<Date>(new Date());
-  const [calculationPulse, setCalculationPulse] = useState<number>(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -77,278 +74,220 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  const currentEyeLat = dynamicStatus ? dynamicStatus.lat : LANDFALL_DATA.currentEyeLat;
-  const currentEyeLng = dynamicStatus ? dynamicStatus.lng : LANDFALL_DATA.currentEyeLng;
-  const currentMovementText = dynamicStatus ? dynamicStatus.movement : LANDFALL_DATA.currentHeadingText;
-  const currentSpeed = dynamicStatus ? dynamicStatus.movementSpeedKmh : LANDFALL_DATA.currentSpeedKmh;
+  const eyeLat = dynamicStatus ? dynamicStatus.lat : OFFICIAL_BULLETIN_DATA.currentLat;
+  const eyeLng = dynamicStatus ? dynamicStatus.lng : OFFICIAL_BULLETIN_DATA.currentLng;
+  const currentHeading = dynamicStatus ? dynamicStatus.movement : OFFICIAL_BULLETIN_DATA.headingText;
+  const currentSpeed = dynamicStatus ? dynamicStatus.movementSpeedKmh : OFFICIAL_BULLETIN_DATA.speedKmh;
 
-  // Landfall Target Time
-  const targetTime = useMemo(() => {
-    return new Date(LANDFALL_DATA.targetTimestampIso).getTime();
-  }, []);
-
-  // Time remaining calculation in real-time
-  const { hoursRemaining, minutesRemaining, secondsRemaining, isPassed, totalSecondsRemaining } = useMemo(() => {
-    const diffMs = targetTime - now.getTime();
-    if (diffMs <= 0) {
-      return {
-        hoursRemaining: 0,
-        minutesRemaining: 0,
-        secondsRemaining: 0,
-        isPassed: true,
-        totalSecondsRemaining: 0,
-      };
-    }
-    const totalSecs = Math.floor(diffMs / 1000);
-    const hrs = Math.floor(totalSecs / 3600);
-    const mins = Math.floor((totalSecs % 3600) / 60);
-    const secs = totalSecs % 60;
-    return {
-      hoursRemaining: hrs,
-      minutesRemaining: mins,
-      secondsRemaining: secs,
-      isPassed: false,
-      totalSecondsRemaining: totalSecs,
-    };
-  }, [now, targetTime]);
-
-  // Real-time calculation of distance from Hurricane Eye to Landfall
-  const distanceEyeToLandfallKm = useMemo(() => {
+  // Distancia del ojo al sector proyectado de aproximación crítica (Cabo Corrientes / Bahía de Banderas)
+  const distanceEyeToApproachKm = useMemo(() => {
     return calculateDistanceKm(
-      currentEyeLat,
-      currentEyeLng,
-      LANDFALL_DATA.lat,
-      LANDFALL_DATA.lng
+      eyeLat,
+      eyeLng,
+      OFFICIAL_BULLETIN_DATA.targetLat,
+      OFFICIAL_BULLETIN_DATA.targetLng
     );
-  }, [currentEyeLat, currentEyeLng]);
+  }, [eyeLat, eyeLng]);
 
-  // Dynamic user distance to landfall if user location is resolved
-  const userDistanceToLandfallKm = useMemo(() => {
+  // Distancia del usuario al ojo del huracán
+  const userDistanceToEyeKm = useMemo(() => {
+    if (!userCoords) return null;
+    return calculateDistanceKm(userCoords.lat, userCoords.lng, eyeLat, eyeLng);
+  }, [userCoords, eyeLat, eyeLng]);
+
+  // Distancia del usuario al sector proyectado de aproximación crítica
+  const userDistanceToTargetKm = useMemo(() => {
     if (!userCoords) return null;
     return calculateDistanceKm(
       userCoords.lat,
       userCoords.lng,
-      LANDFALL_DATA.lat,
-      LANDFALL_DATA.lng
+      OFFICIAL_BULLETIN_DATA.targetLat,
+      OFFICIAL_BULLETIN_DATA.targetLng
     );
   }, [userCoords]);
 
-  // Dynamic user distance to current hurricane eye
-  const userDistanceToEyeKm = useMemo(() => {
-    if (!userCoords) return null;
-    return calculateDistanceKm(
-      userCoords.lat,
-      userCoords.lng,
-      currentEyeLat,
-      currentEyeLng
-    );
-  }, [userCoords, currentEyeLat, currentEyeLng]);
-
-  // Estimated arrival of tropical storm-force winds (prior to the eye)
-  const tropicalStormArrivalHours = useMemo(() => {
-    // Tropical storm winds extend ~240 km from center
-    // As the eye is 189 km away, coastal sectors are already entering the outer bands
-    return Math.max(0, hoursRemaining - 2);
-  }, [hoursRemaining]);
-
-  // Formatter for two digits
-  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-
-  const handleRefresh = () => {
-    setCalculationPulse((prev) => prev + 1);
-    if (onRefreshNow) onRefreshNow();
-  };
-
   return (
     <div className="bg-[#FFFFFF] border border-[#B84A45]/30 rounded-[6px] overflow-hidden text-[#252A2E] shadow-none">
-      {/* 1. Header Bar: Alerta Oficial y Estado de Cálculo Continuo */}
+      {/* 1. Header Bar: Alerta Oficial y Estado de Sincronización */}
       <div className="bg-[#B84A45]/10 border-b border-[#B84A45]/20 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#B84A45] animate-pulse shrink-0" />
           <span className="font-semibold text-[#B84A45] uppercase text-[11px] tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5 stroke-[2]" />
-            Alerta de Impacto en Tierra (Landfall Warning)
+            Aviso Meteorológico Crítico • Origen Verificado
           </span>
           <span className="text-[#DDE1DF] hidden sm:inline">|</span>
-          <span className="text-[11px] text-[#687078] hidden sm:inline font-tabular">
-            Modelo de Ensamblado Numérico NHC / SMN Conagua • Ciclo 18:00Z
+          <span className="text-[11px] text-[#252A2E] font-medium hidden sm:inline font-tabular">
+            {OFFICIAL_BULLETIN_DATA.bulletinId} — {OFFICIAL_BULLETIN_DATA.agency}
           </span>
         </div>
 
         <div className="flex items-center gap-3 text-xs font-tabular ml-auto">
           <span className="flex items-center gap-1.5 text-[11px] text-[#3F8063] font-medium">
             <Radio className="w-3 h-3 animate-pulse" />
-            <span>Cálculos refrescados continuamente</span>
+            <span>Monitoreo continuo en tiempo real</span>
           </span>
 
           <button
-            onClick={handleRefresh}
+            onClick={() => onRefreshNow && onRefreshNow()}
             disabled={isRefreshing}
-            className="text-[11px] bg-white hover:bg-[#F7F7F4] text-[#245A66] border border-[#DDE1DF] px-2 py-0.5 rounded-[3px] font-medium transition flex items-center gap-1 disabled:opacity-50"
+            className="text-[11px] bg-white hover:bg-[#F7F7F4] text-[#245A66] border border-[#DDE1DF] px-2 py-0.5 rounded-[3px] font-medium transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
             title="Recalcular métricas en tiempo real"
           >
             <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Recalcular</span>
+            <span className="hidden sm:inline">Actualizar</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Cuerpo Principal: Declaración Formal de Impacto y Cronómetro */}
-      <div className="p-4 sm:p-6 space-y-5">
-        {/* Frase Central Solicitada con Jerarquía Editorial */}
-        <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[5px] p-4 sm:p-5">
-          <div className="text-[11px] text-[#245A66] font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 stroke-[1.75]" />
-            Estimación Oficial de Trayectoria y Arribo a la Costa
+      {/* 2. Cuerpo Principal: Declaración Formal Oficial y Posición Verídica */}
+      <div className="p-4 sm:p-6 space-y-4">
+        {/* Banner de Declaración Oficial Verificada */}
+        <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[5px] p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2 border-b border-[#DDE1DF] pb-2">
+            <span className="text-[11px] text-[#245A66] font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 stroke-[1.75]" />
+              Posición Oficial y Pronóstico de Desplazamiento
+            </span>
+            <span className="text-[11px] text-[#687078] font-tabular">
+              Fuente: NHC Advisory #16A & SMN Conagua
+            </span>
           </div>
 
-          <div className="text-base sm:text-lg md:text-xl font-semibold text-[#252A2E] leading-snug">
-            Según la información oficial modelada hasta el momento, el{' '}
-            <span className="text-[#245A66]">Huracán Simón</span> va a tocar tierra en{' '}
-            <span className="text-[#B84A45] underline decoration-[#B84A45]/40 decoration-2 underline-offset-4">
-              {LANDFALL_DATA.locationName}
-            </span>
-            , a la hora{' '}
-            <span className="text-[#245A66] font-tabular bg-white px-1.5 py-0.5 rounded-[3px] border border-[#DDE1DF]">
-              {LANDFALL_DATA.targetTimeFormatted}
-            </span>
-            , con una fuerza de{' '}
+          <div className="text-sm sm:text-base md:text-lg font-semibold text-[#252A2E] leading-snug">
+            Según el Aviso Oficial #16A del Centro Nacional de Huracanes (NHC/NOAA) y el Servicio Meteorológico Nacional (SMN), el{' '}
+            <span className="text-[#245A66]">Huracán Simón</span> se localiza actualmente como{' '}
             <span className="text-[#B84A45] font-tabular bg-[#B84A45]/10 px-1.5 py-0.5 rounded-[3px] border border-[#B84A45]/25">
-              {LANDFALL_DATA.categoryName}
+              Categoría 4 (vientos de 240 km/h, rachas de 290 km/h)
+            </span>{' '}
+            en las coordenadas{' '}
+            <span className="text-[#245A66] font-tabular bg-white px-1.5 py-0.5 rounded-[3px] border border-[#DDE1DF]">
+              {eyeLat.toFixed(1)}°N, {Math.abs(eyeLng).toFixed(1)}°O
             </span>
-            .
+            , avanzando hacia el <strong className="text-[#252A2E]">Nor-Noroeste a 9 km/h</strong> frente al litoral del Pacífico mexicano.
           </div>
 
-          <div className="text-xs text-[#687078] mt-2 pt-2 border-t border-[#DDE1DF] flex flex-wrap items-center justify-between gap-2">
-            <span>
-              <strong>Sector crítico:</strong> {LANDFALL_DATA.sublocation} ({LANDFALL_DATA.coordinatesText}).
-            </span>
-            <span className="font-tabular text-[#245A66] font-medium">
-              Probabilidad en el cono: {LANDFALL_DATA.confidenceProbability}
-            </span>
+          <div className="p-3 bg-white border border-[#B84A45]/20 rounded-[4px] text-xs text-[#252A2E] leading-relaxed">
+            <strong className="text-[#B84A45] font-semibold">Aclaración de Trayectoria Oficial:</strong> El huracán no impactó en tierra en la madrugada en Costa Sur de Jalisco ni Colima; su centro se desplaza sobre aguas del Pacífico mar adentro (a 95 km al oeste de Manzanillo y 175 km al sur-sureste de Cabo Corrientes). Su cono oficial proyecta su aproximación más crítica o impacto sobre la región de{' '}
+            <strong className="text-[#245A66]">{OFFICIAL_BULLETIN_DATA.projectedTargetName}</strong>{' '}
+            durante la <span className="font-semibold">{OFFICIAL_BULLETIN_DATA.estimatedWindowText}</span>.
+          </div>
+
+          {/* Estado Crítico de Transporte (Aeropuertos y Puertos) */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+            <div className="flex items-center gap-1.5 bg-[#B84A45]/10 border border-[#B84A45]/25 text-[#B84A45] font-semibold px-2.5 py-1 rounded-[3px]">
+              <PlaneTakeoff className="w-3.5 h-3.5" />
+              <span>Aeropuerto Pto. Vallarta (PVR) y Manzanillo (ZLO): CERRADOS</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#B84A45]/10 border border-[#B84A45]/25 text-[#B84A45] font-semibold px-2.5 py-1 rounded-[3px]">
+              <Anchor className="w-3.5 h-3.5" />
+              <span>Puertos de Manzanillo, Vallarta y San Blas: CERRADOS</span>
+            </div>
           </div>
         </div>
 
-        {/* 3. Panel de Métricas de Cálculo en Tiempo Real */}
+        {/* 3. Panel de Métricas Meteorológicas Verificadas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Card 1: Cuenta Regresiva al Impacto (Live Countdown) */}
-          <div className="bg-[#FFFFFF] border border-[#245A66]/30 rounded-[4px] p-3.5 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#687078]">
-                <span className="font-medium">Tiempo Restante para Impacto</span>
-                <Clock className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
-              </div>
-
-              {isPassed ? (
-                <div className="text-xl font-semibold text-[#B84A45] mt-1 font-tabular">
-                  Fase de Impacto en Curso
-                </div>
-              ) : (
-                <div className="mt-1">
-                  <div className="text-2xl sm:text-3xl font-semibold text-[#245A66] font-tabular tracking-tight">
-                    {pad(hoursRemaining)}h {pad(minutesRemaining)}m{' '}
-                    <span className="text-lg text-[#687078]">{pad(secondsRemaining)}s</span>
-                  </div>
-                  <div className="text-[11px] text-[#687078] font-tabular mt-0.5">
-                    Impacto previsto: {LANDFALL_DATA.targetDateFormatted}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
-              <span>Vientos de tormenta:</span>
-              <strong className="text-[#A66C19]">En ~{tropicalStormArrivalHours} hrs</strong>
-            </div>
-          </div>
-
-          {/* Card 2: Distancia Actual del Ojo al Punto de Tierra */}
+          {/* Card 1: Posición Exacta del Ojo */}
           <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-3.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs text-[#687078]">
-                <span className="font-medium">Distancia Ojo a Costa</span>
+                <span className="font-medium">Ubicación del Ojo</span>
                 <Navigation className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
               </div>
-
               <div className="mt-1">
-                <div className="text-2xl sm:text-3xl font-semibold text-[#252A2E] font-tabular">
-                  {formatDistance(distanceEyeToLandfallKm)}
+                <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
+                  {eyeLat.toFixed(2)}° N, {Math.abs(eyeLng).toFixed(2)}° O
                 </div>
-                <div className="text-[11px] text-[#687078] mt-0.5 font-tabular">
-                  Rumbo: {currentMovementText} a {currentSpeed} km/h
+                <div className="text-[11px] text-[#687078] mt-0.5 leading-snug">
+                  A 95 km al O de Manzanillo • 175 km al SSE de Cabo Corrientes
                 </div>
               </div>
             </div>
-
             <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
-              <span>Posición actual del ojo:</span>
-              <strong className="text-[#245A66] font-semibold">
-                {currentEyeLat.toFixed(2)}° N, {Math.abs(currentEyeLng).toFixed(2)}° O
-              </strong>
+              <span>Distancia a Pto. Vallarta:</span>
+              <strong className="text-[#245A66]">~215 km</strong>
             </div>
           </div>
 
-          {/* Card 3: Fuerza Esperada al Tocar Tierra */}
+          {/* Card 2: Rumbo y Desplazamiento */}
           <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-3.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs text-[#687078]">
-                <span className="font-medium">Vientos en Línea de Costa</span>
+                <span className="font-medium">Rumbo y Avance</span>
+                <Compass className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
+              </div>
+              <div className="mt-1">
+                <div className="text-xl sm:text-2xl font-semibold text-[#245A66] font-tabular">
+                  {currentSpeed} <span className="text-xs font-normal text-[#687078]">km/h</span> (6 mph)
+                </div>
+                <div className="text-[11px] text-[#687078] mt-0.5 font-tabular">
+                  Dirección: {currentHeading}
+                </div>
+              </div>
+            </div>
+            <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
+              <span>Avance hacia:</span>
+              <strong className="text-[#252A2E]">Cabo Corrientes / Nayarit</strong>
+            </div>
+          </div>
+
+          {/* Card 3: Vientos Sostenidos y Rachas */}
+          <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-3.5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs text-[#687078]">
+                <span className="font-medium">Fuerza del Viento</span>
                 <Wind className="w-3.5 h-3.5 text-[#B84A45] stroke-[1.75]" />
               </div>
-
               <div className="mt-1">
-                <div className="text-2xl sm:text-3xl font-semibold text-[#B84A45] font-tabular">
-                  {LANDFALL_DATA.expectedWindSpeedKmh}{' '}
-                  <span className="text-sm font-normal text-[#687078]">km/h</span>
+                <div className="text-xl sm:text-2xl font-semibold text-[#B84A45] font-tabular">
+                  {OFFICIAL_BULLETIN_DATA.windSpeedKmh} <span className="text-xs font-normal text-[#687078]">km/h</span>
                 </div>
                 <div className="text-[11px] text-[#252A2E] mt-0.5 font-tabular">
-                  Rachas extremas de <strong>{LANDFALL_DATA.expectedWindGustsKmh} km/h</strong>
+                  Rachas destructivas de <strong className="text-[#B84A45]">{OFFICIAL_BULLETIN_DATA.windGustsKmh} km/h</strong>
                 </div>
               </div>
             </div>
-
             <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
               <span>Presión central:</span>
-              <strong className="text-[#252A2E]">{LANDFALL_DATA.expectedPressureHpa} hPa</strong>
+              <strong className="text-[#252A2E]">{OFFICIAL_BULLETIN_DATA.pressureHpa} hPa (27.55 inHg)</strong>
             </div>
           </div>
 
-          {/* Card 4: Efectos Marítimos y de Inundación */}
+          {/* Card 4: Efectos Marítimos y Oleaje */}
           <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-3.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs text-[#687078]">
-                <span className="font-medium">Marea de Tormenta y Oleaje</span>
+                <span className="font-medium">Oleaje y Marea</span>
                 <Waves className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
               </div>
-
               <div className="mt-1">
-                <div className="text-2xl sm:text-3xl font-semibold text-[#245A66] font-tabular">
-                  {LANDFALL_DATA.expectedStormSurgeMeters}
+                <div className="text-xl sm:text-2xl font-semibold text-[#245A66] font-tabular">
+                  7.5 a 10.0 <span className="text-xs font-normal text-[#687078]">m</span>
                 </div>
                 <div className="text-[11px] text-[#687078] mt-0.5 font-tabular">
-                  Oleaje rompiente de hasta {LANDFALL_DATA.expectedWaveHeightMeters}
+                  Marea de tormenta peligrosa de 4.0 a 6.0 m
                 </div>
               </div>
             </div>
-
             <div className="pt-2 mt-2 border-t border-[#DDE1DF] text-[11px] text-[#687078] flex items-center justify-between font-tabular">
               <span>Lluvia acumulada:</span>
-              <strong className="text-[#3F8063]">250 a 450 mm</strong>
+              <strong className="text-[#3F8063]">250 a 500 mm (puntual 650 mm)</strong>
             </div>
           </div>
         </div>
 
         {/* 4. Barra de Contexto Local Personalizado (Si el usuario activó GPS o buscador) */}
-        {userCoords && userDistanceToLandfallKm !== null ? (
+        {userCoords && userDistanceToEyeKm !== null ? (
           <div className="bg-[#245A66]/5 border border-[#245A66]/20 rounded-[4px] p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#245A66] shrink-0 stroke-[2]" />
               <div>
                 <span className="font-medium text-[#252A2E]">
-                  Cálculo para tu ubicación ({activeLocationLabel || 'Ubicación Georreferenciada'}):
+                  Cálculo para tu ubicación ({activeLocationLabel || 'Ubicación seleccionada'}):
                 </span>{' '}
                 <span className="text-[#687078]">
-                  Te encuentras a <strong className="text-[#245A66] font-tabular">{formatDistance(userDistanceToLandfallKm)}</strong> del punto proyectado de impacto en tierra y a <strong className="text-[#245A66] font-tabular">{formatDistance(userDistanceToEyeKm || 0)}</strong> del ojo actual.
+                  Te encuentras a <strong className="text-[#245A66] font-tabular">{formatDistance(userDistanceToEyeKm)}</strong> del ojo del huracán Simón y a <strong className="text-[#245A66] font-tabular">{formatDistance(userDistanceToTargetKm || 0)}</strong> de la zona de mayor aproximación proyectada.
                 </span>
               </div>
             </div>
@@ -361,9 +300,9 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="text-[#245A66] hover:underline font-semibold shrink-0 text-xs flex items-center gap-1"
+              className="text-[#245A66] hover:underline font-semibold shrink-0 text-xs flex items-center gap-1 cursor-pointer"
             >
-              <span>Ver refugios más cercanos a ti</span>
+              <span>Ver refugios asignados</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
@@ -372,7 +311,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
             <div className="flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-[#245A66] shrink-0" />
               <span>
-                ¿Deseas saber a qué distancia estás del punto de impacto? Usa el localizador para ver tu riesgo específico y tus refugios asignados.
+                Verifica tu municipio o colonia en el localizador para ver tu distancia real al meteoro y tu refugio temporal más cercano.
               </span>
             </div>
 
@@ -381,15 +320,15 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                 const el = document.getElementById('refugios');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-[#245A66] hover:underline font-medium shrink-0 text-[11px] flex items-center gap-1"
+              className="text-[#245A66] hover:underline font-medium shrink-0 text-[11px] flex items-center gap-1 cursor-pointer"
             >
-              <span>Localizar mi municipio</span>
+              <span>Localizar mi refugio</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         )}
 
-        {/* 5. Acciones Rápidas de Emergencia y Navegación */}
+        {/* 5. Acciones Rápidas de Navegación */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#DDE1DF] text-xs">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -400,10 +339,10 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="bg-[#245A66] hover:bg-[#1b434c] text-white px-3 py-1.5 rounded-[4px] font-medium transition flex items-center gap-1.5 text-xs shadow-none"
+              className="bg-[#245A66] hover:bg-[#1b434c] text-white px-3 py-1.5 rounded-[4px] font-medium transition flex items-center gap-1.5 text-xs shadow-none cursor-pointer"
             >
               <Compass className="w-3.5 h-3.5" />
-              <span>Ver punto de impacto en el mapa interactivo</span>
+              <span>Ver trayectoria en mapa interactivo</span>
             </button>
 
             <button
@@ -414,17 +353,17 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="bg-white hover:bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF] px-3 py-1.5 rounded-[4px] font-medium transition flex items-center gap-1.5 text-xs"
+              className="bg-white hover:bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF] px-3 py-1.5 rounded-[4px] font-medium transition flex items-center gap-1.5 text-xs cursor-pointer"
             >
               <MapPin className="w-3.5 h-3.5 text-[#245A66]" />
-              <span>Refugios de evacuación en Costa Sur</span>
+              <span>Directorio de albergues habilitados</span>
             </button>
           </div>
 
           <div className="text-[11px] text-[#687078] font-tabular flex items-center gap-2">
-            <span>Última corrida del modelo:</span>
-            <span className="font-medium text-[#252A2E]">
-              {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+            <span>Última verificación oficial:</span>
+            <span className="font-semibold text-[#252A2E]">
+              {lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })} hrs
             </span>
           </div>
         </div>

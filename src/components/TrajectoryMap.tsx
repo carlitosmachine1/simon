@@ -19,6 +19,8 @@ import {
   Eye,
   EyeOff,
   Zap,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 
 interface TrajectoryMapProps {
@@ -57,6 +59,9 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   const [showWindZones, setShowWindZones] = useState(true);
   const [filterPetsOnly, setFilterPetsOnly] = useState(false);
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('todos');
+  // Scroll protection: locked by default on mobile so user doesn't get trapped while scrolling page
+  const [isMapLockedForScroll, setIsMapLockedForScroll] = useState<boolean>(true);
+  const [scrollHintMessage, setScrollHintMessage] = useState<string | null>(null);
 
   // If a shelter is selected externally from directory, ensure shelters are visible
   useEffect(() => {
@@ -73,11 +78,14 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
     if (mapInstanceRef.current) return;
 
     const initialMap = L.map(mapContainerRef.current, {
-      center: [18.8, -104.9],
+      center: [19.2, -105.1],
       zoom: 7,
       minZoom: 5,
       maxZoom: 17,
       zoomControl: false,
+      scrollWheelZoom: false, // Prevents unintended zoom when scrolling page on desktop
+      dragging: !isMapLockedForScroll,
+      touchZoom: !isMapLockedForScroll,
     });
 
     L.control.zoom({ position: 'topright' }).addTo(initialMap);
@@ -108,6 +116,20 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Synchronize Mobile & Page Scroll Lock
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (isMapLockedForScroll) {
+      mapInstanceRef.current.dragging.disable();
+      mapInstanceRef.current.touchZoom.disable();
+      mapInstanceRef.current.scrollWheelZoom.disable();
+    } else {
+      mapInstanceRef.current.dragging.enable();
+      mapInstanceRef.current.touchZoom.enable();
+      mapInstanceRef.current.scrollWheelZoom.enable();
+    }
+  }, [isMapLockedForScroll]);
 
   // Update Tile Layer
   useEffect(() => {
@@ -443,12 +465,42 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
           </button>
         </div>
 
-        {/* Focus and Filter Controls */}
+        {/* Focus, Scroll Protection, and Filter Controls */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Scroll Lock Toggle to prevent getting stuck on mobile / desktop */}
+          <button
+            onClick={() => {
+              setIsMapLockedForScroll((prev) => !prev);
+              setScrollHintMessage(null);
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border cursor-pointer ${
+              isMapLockedForScroll
+                ? 'bg-[#3F8063]/10 text-[#3F8063] border-[#3F8063]/30 hover:bg-[#3F8063]/20'
+                : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
+            }`}
+            title={
+              isMapLockedForScroll
+                ? 'El mapa está bloqueado para permitir deslizar la página con total libertad en móvil sin atorarse.'
+                : 'El mapa está desbloqueado para interactuar (arrastrar o hacer zoom).'
+            }
+          >
+            {isMapLockedForScroll ? (
+              <>
+                <Lock className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Scroll Seguro: Activo (Mapa Fijo)</span>
+              </>
+            ) : (
+              <>
+                <Unlock className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Navegando Mapa (Toca para Bloquear)</span>
+              </>
+            )}
+          </button>
+
           {/* Quick Toggle: Show / Hide Shelters for fast loading */}
           <button
             onClick={() => setShowShelters((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border cursor-pointer ${
               showShelters
                 ? 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
                 : 'bg-[#FDF4E7] text-[#9A5B18] border-[#E8C28A] hover:bg-[#FAE8CC]'
@@ -474,7 +526,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
           <button
             onClick={handleCenterHurricane}
-            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition"
+            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition cursor-pointer"
           >
             <Crosshair className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             <span>Centrar en Simón</span>
@@ -482,7 +534,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
           <button
             onClick={handleCenterShelters}
-            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition"
+            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition cursor-pointer"
           >
             <MapPin className="w-3.5 h-3.5 text-[#3F8063] stroke-[1.75]" />
             <span>Ver Costa y Refugios</span>
@@ -502,7 +554,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
                 } else if (val === 'Nayarit') {
                   mapInstanceRef.current.setView([21.4, -105.2], 8, { animate: true });
                 } else if (val === 'todos') {
-                  mapInstanceRef.current.setView([18.8, -104.9], 7, { animate: true });
+                  mapInstanceRef.current.setView([19.2, -105.1], 7, { animate: true });
                 }
               }
             }}
@@ -518,14 +570,57 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
         </div>
       </div>
 
-      {/* Map Canvas */}
-      <div className="relative w-full h-[460px] md:h-[520px]">
+      {/* Map Canvas with Mobile Scroll Lock Guard */}
+      <div
+        className="relative w-full h-[460px] md:h-[520px]"
+        onClick={() => {
+          if (isMapLockedForScroll) {
+            setScrollHintMessage('Scroll libre de página activo. Toca "Explorar Mapa" si deseas mover o acercar el mapa.');
+            setTimeout(() => setScrollHintMessage(null), 3500);
+          }
+        }}
+      >
+        {/* Floating Mobile Scroll Protection Indicator & Quick Toggle */}
+        <div className="absolute top-3 right-3 z-[400] md:hidden">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMapLockedForScroll((prev) => !prev);
+              setScrollHintMessage(null);
+            }}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-md border flex items-center gap-1.5 transition active:scale-95 ${
+              isMapLockedForScroll
+                ? 'bg-white/95 text-[#245A66] border-[#245A66]/30'
+                : 'bg-[#245A66] text-white border-white/30'
+            }`}
+          >
+            {isMapLockedForScroll ? (
+              <>
+                <Unlock className="w-3.5 h-3.5" />
+                <span>Explorar Mapa</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                <span>Permitir Scroll</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Temporary hint banner on mobile when touching locked map */}
+        {scrollHintMessage && isMapLockedForScroll && (
+          <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[400] bg-[#252A2E]/90 text-white text-xs px-3.5 py-1.5 rounded-full shadow-lg text-center max-w-[90%] pointer-events-none transition animate-fade-in">
+            {scrollHintMessage}
+          </div>
+        )}
+
         {/* Floating Agile Mode indicator if shelters are hidden */}
         {!showShelters && (
           <div className="absolute top-3 left-3 z-[400] bg-[#FFFFFF]/95 backdrop-blur-xs border border-[#E8C28A] text-[#252A2E] rounded-[4px] px-2.5 py-1.5 text-xs shadow-sm flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#D99A38] animate-pulse"></span>
             <span className="font-medium text-[#9A5B18]">Modo ágil activo:</span>
-            <span className="text-[#687078]">Refugios ocultos para acelerar carga.</span>
+            <span className="text-[#687078] hidden sm:inline">Refugios ocultos para acelerar carga.</span>
             <button
               onClick={() => setShowShelters(true)}
               className="text-[#245A66] hover:underline font-semibold text-xs ml-1 cursor-pointer"

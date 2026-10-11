@@ -16,7 +16,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ onOpenContacts }) => {
               Aviso Meteorológico:
             </span>
             <span className="text-[#252A2E]">
-              Huracán Simón (Cat. 4) en aproximación a costas de Colima y Jalisco. Refugios temporales habilitados.
+              Huracán Simón (Cat. 4) a 95 km al O de Manzanillo y 175 km al SSE de Cabo Corrientes. Aeropuertos PVR y ZLO cerrados. Alerta Roja en costas de Jalisco y Colima.
             </span>
           </div>
         </div>

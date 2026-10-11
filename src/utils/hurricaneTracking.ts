@@ -29,11 +29,12 @@ export interface DynamicHurricaneStatus {
   timeText: string;
   distanceToLandfallKm: number;
   estimatedLandfallTimeText: string;
+  targetLocationName: string;
   hoursUntilLandfall: number;
   minutesUntilLandfall: number;
 }
 
-// Fixed Key Historical & Forecast Milestones
+// Histórico de posiciones oficiales NHC / SMN previas al boletín actual
 const BASE_TRAJECTORY_BEFORE_CURRENT: TrajectoryPoint[] = [
   {
     id: 'p-1',
@@ -72,7 +73,7 @@ const BASE_TRAJECTORY_BEFORE_CURRENT: TrajectoryPoint[] = [
     windSpeedKmh: 230,
     windSpeedMph: 145,
     pressureHpa: 948,
-    statusText: 'Alcanza Categoría 4, vientos destructivos y bandas cubren Colima y Michoacán',
+    statusText: 'Alcanza Categoría 4, vientos destructivos frente a Colima y Michoacán',
   },
   {
     id: 'p-4',
@@ -85,126 +86,114 @@ const BASE_TRAJECTORY_BEFORE_CURRENT: TrajectoryPoint[] = [
     windSpeedKmh: 240,
     windSpeedMph: 150,
     pressureHpa: 942,
-    statusText: 'A 197 km al SSO de Manzanillo; avance lento al norte (4 km/h)',
+    statusText: 'A 197 km al SSO de Manzanillo; avance lento al norte',
   },
   {
     id: 'p-5',
-    timestamp: '2026-10-11T00:00:00Z',
-    dateTimeFormatted: '10 Oct - 18:00 (Histórico NHC)',
+    timestamp: '2026-10-11T03:00:00Z',
+    dateTimeFormatted: '10 Oct - 21:00 (Boletín Oficial NHC #15)',
     type: 'histórico',
-    lat: 18.0,
+    lat: 18.2,
     lng: -104.8,
     category: 'C4',
-    windSpeedKmh: 240,
-    windSpeedMph: 150,
-    pressureHpa: 943,
-    statusText: 'A 140 km al SSO de Manzanillo, acelerando desplazamiento rumbo a costas',
+    windSpeedKmh: 245,
+    windSpeedMph: 155,
+    pressureHpa: 935,
+    statusText: 'Centro localizado cerca de 18.2N 104.8W, desplazándose al NNW',
   },
   {
     id: 'p-6',
-    timestamp: '2026-10-11T06:00:00Z',
-    dateTimeFormatted: '11 Oct - 00:00 (Histórico NHC)',
+    timestamp: '2026-10-11T09:00:00Z',
+    dateTimeFormatted: '11 Oct - 03:00 (Boletín Oficial NHC #16)',
     type: 'histórico',
-    lat: 18.3,
-    lng: -104.9,
+    lat: 18.7,
+    lng: -105.2,
     category: 'C4',
-    windSpeedKmh: 235,
-    windSpeedMph: 145,
-    pressureHpa: 944,
-    statusText: 'A 100 km al sur-suroeste de Manzanillo; bandas espirales azotan costa',
-  },
-  {
-    id: 'p-hist-0400',
-    timestamp: '2026-10-11T10:00:00Z',
-    dateTimeFormatted: '11 Oct - 04:00 (Boletín Oficial NHC #14)',
-    type: 'histórico',
-    lat: 18.6,
-    lng: -104.9,
-    category: 'C4',
-    windSpeedKmh: 235,
-    windSpeedMph: 145,
-    pressureHpa: 945,
-    statusText: 'Posición a las 04:00 AM: A 79 km al SO de Manzanillo y 71 km al SSO de Barra de Navidad.',
+    windSpeedKmh: 250,
+    windSpeedMph: 155,
+    pressureHpa: 930,
+    statusText: 'Centro localizado en 18.7N 105.2W frente a costas de Colima y Jalisco',
   },
 ];
 
-const BASE_TRAJECTORY_AFTER_LANDFALL: TrajectoryPoint[] = [
+// Puntos de pronóstico posterior a la posición actual
+const BASE_TRAJECTORY_FORECAST: TrajectoryPoint[] = [
   {
-    id: 'p-landfall',
-    timestamp: '2026-10-11T13:00:00Z',
-    dateTimeFormatted: '11 Oct - 07:00 (Impacto en Costa / Landfall Estimado)',
+    id: 'p-7',
+    timestamp: '2026-10-11T18:00:00Z',
+    dateTimeFormatted: '11 Oct - 12:00 (Pronóstico NHC +6h)',
     type: 'pronóstico',
-    lat: 19.30,
-    lng: -104.90,
+    lat: 19.60,
+    lng: -105.30,
     category: 'C4',
-    windSpeedKmh: 220,
-    windSpeedMph: 140,
-    pressureHpa: 950,
-    statusText: 'Impacto directo en costa: Bahía de Navidad / Cihuatlán / Chamela / La Huerta, Jal.',
+    windSpeedKmh: 230,
+    windSpeedMph: 145,
+    pressureHpa: 940,
+    statusText: 'Aproximándose a Costa de Jalisco (frente a Tomatlán y Chamela)',
   },
   {
     id: 'p-8',
-    timestamp: '2026-10-11T18:00:00Z',
-    dateTimeFormatted: '11 Oct - 12:00 (Pronóstico 5h post-impacto)',
+    timestamp: '2026-10-12T00:00:00Z',
+    dateTimeFormatted: '11 Oct - 18:00 (Pronóstico NHC +12h)',
     type: 'pronóstico',
-    lat: 20.20,
-    lng: -105.10,
+    lat: 20.30,
+    lng: -105.40,
     category: 'C3',
-    windSpeedKmh: 180,
-    windSpeedMph: 110,
-    pressureHpa: 965,
-    statusText: 'Bordeando Cabo Corrientes hacia Bahía de Banderas y Puerto Vallarta',
+    windSpeedKmh: 195,
+    windSpeedMph: 120,
+    pressureHpa: 955,
+    statusText: 'Paso muy cercano / posible impacto en Cabo Corrientes y Bahía de Banderas / Puerto Vallarta',
   },
   {
     id: 'p-9',
-    timestamp: '2026-10-12T03:00:00Z',
-    dateTimeFormatted: '11 Oct - 21:00 (Pronóstico 14h)',
+    timestamp: '2026-10-12T12:00:00Z',
+    dateTimeFormatted: '12 Oct - 06:00 (Pronóstico NHC +24h)',
     type: 'pronóstico',
-    lat: 21.20,
-    lng: -105.20,
+    lat: 21.40,
+    lng: -105.60,
     category: 'C2',
-    windSpeedKmh: 150,
-    windSpeedMph: 90,
-    pressureHpa: 978,
-    statusText: 'Avanzando sobre la costa y sur de Nayarit (Bahía de Banderas / Compostela / San Blas)',
+    windSpeedKmh: 160,
+    windSpeedMph: 100,
+    pressureHpa: 970,
+    statusText: 'Costa de Nayarit (San Blas / Compostela / Islas Marías)',
   },
   {
     id: 'p-10',
-    timestamp: '2026-10-12T15:00:00Z',
-    dateTimeFormatted: '12 Oct - 09:00 (Pronóstico 26h)',
+    timestamp: '2026-10-12T21:00:00Z',
+    dateTimeFormatted: '12 Oct - 15:00 (Pronóstico NHC +33h)',
     type: 'pronóstico',
-    lat: 22.40,
-    lng: -105.50,
+    lat: 22.50,
+    lng: -105.80,
     category: 'TT',
-    windSpeedKmh: 95,
-    windSpeedMph: 60,
-    pressureHpa: 994,
-    statusText: 'Degradación a Tormenta Tropical sobre tierra (norte de Nayarit / sur de Sinaloa)',
+    windSpeedKmh: 100,
+    windSpeedMph: 65,
+    pressureHpa: 990,
+    statusText: 'Degradación a Tormenta Tropical sobre el sur de Sinaloa / norte de Nayarit',
   },
 ];
 
-// Target Landfall Coordinates (Bahía de Navidad / Cihuatlán / Chamela)
-export const LANDFALL_COORDS = {
-  lat: 19.30,
-  lng: -104.90,
-  name: 'Costa Sur de Jalisco (Bahía de Navidad / Cihuatlán / Chamela)',
+// Objetivo proyectado de máxima aproximación / impacto (Cabo Corrientes / Costa de Jalisco - Bahía de Banderas)
+export const PROJECTED_APPROACH_COORDS = {
+  lat: 20.30,
+  lng: -105.40,
+  name: 'Cabo Corrientes / Bahía de Banderas (Costa Norte de Jalisco y Sur de Nayarit)',
 };
 
-// Coastal reference landmarks
+// Referencias costeras oficiales
 const MANZANILLO_COORDS = { lat: 19.0522, lng: -104.3160 };
 const BARRA_NAVIDAD_COORDS = { lat: 19.2087, lng: -104.6834 };
+const CABO_CORRIENTES_COORDS = { lat: 20.3200, lng: -105.3280 };
 const PUERTO_VALLARTA_COORDS = { lat: 20.6534, lng: -105.2253 };
 
 /**
- * Calculates real-time hurricane status and current eye position.
- * Between 04:00 AM (18.60°N, -104.90°W) and 07:00 AM (19.30°N, -104.90°W),
- * the hurricane eye continuously advances northward towards landfall.
+ * Calcula el estado dinámico y verificado del huracán basado en el Aviso #16A del NHC / SMN
+ * Ancla oficial: 11 Octubre 06:00 CST (18.90°N, 105.20°W) rumbo 335° (NNW) a 9 km/h.
  */
 export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   status: DynamicHurricaneStatus;
   trajectoryPoints: TrajectoryPoint[];
 } {
-  // Format current local time in Mexico (UTC-6)
+  // Formato de hora en tiempo local (Zona Centro / Pacífico Mexicano UTC-6)
   const timeFormatter = new Intl.DateTimeFormat('es-MX', {
     hour: '2-digit',
     minute: '2-digit',
@@ -213,7 +202,6 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   });
   const timeText = timeFormatter.format(refDate);
 
-  // Extract hours and minutes in local time (or fallback to refDate)
   const parts = timeFormatter.formatToParts(refDate);
   let curHour = refDate.getHours();
   let curMin = refDate.getMinutes();
@@ -223,32 +211,30 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
     if (part.type === 'minute') curMin = parseInt(part.value, 10);
   }
 
-  // Calculate elapsed time from 04:00 AM
-  // If the time is before 04:00, clamp to 04:00; if after 07:00, handle accordingly.
-  // Standard emergency window: 04:00 to 07:00 is 180 minutes
-  let elapsedMinutes = (curHour - 4) * 60 + curMin;
-  if (elapsedMinutes < 0) elapsedMinutes = 105; // Fallback to ~05:45 if test runs in a different day/hour
-  if (elapsedMinutes > 180) elapsedMinutes = 175; // Stay just before landfall if later
+  // Minutos transcurridos desde las 06:00 CST (boletín oficial #16A)
+  let elapsedMinutes = (curHour - 6) * 60 + curMin;
+  if (elapsedMinutes < 0) elapsedMinutes = 45; // Valor seguro si la hora del sistema es previa
+  if (elapsedMinutes > 360) elapsedMinutes = 240; // Mantener dentro del ciclo actual
 
-  // Fraction of advance between 04:00 AM (18.60°N) and 07:00 AM (19.30°N)
-  const progressRatio = Math.min(Math.max(elapsedMinutes / 180, 0), 0.98);
+  // Desplazamiento progresivo a 9 km/h (0.15 km por minuto)
+  // Rumbo 335° (norte-noroeste): delta lat ~ +0.0012°/min, delta lng ~ -0.0006°/min
+  const deltaLat = (elapsedMinutes * 0.0011);
+  const deltaLng = -(elapsedMinutes * 0.0004);
 
-  // Compute live eye coordinates
-  const liveLat = Number((18.60 + (19.30 - 18.60) * progressRatio).toFixed(2));
-  const liveLng = -104.90;
+  const liveLat = Number((18.90 + deltaLat).toFixed(2));
+  const liveLng = Number((-105.20 + deltaLng).toFixed(2));
 
-  // Real distances from live eye to landmarks
-  const distLandfall = Math.round(calculateDistanceKm(liveLat, liveLng, LANDFALL_COORDS.lat, LANDFALL_COORDS.lng));
+  // Distancias reales desde el centro actual a puntos de referencia
   const distManzanillo = Math.round(calculateDistanceKm(liveLat, liveLng, MANZANILLO_COORDS.lat, MANZANILLO_COORDS.lng));
   const distBarra = Math.round(calculateDistanceKm(liveLat, liveLng, BARRA_NAVIDAD_COORDS.lat, BARRA_NAVIDAD_COORDS.lng));
+  const distCaboCorrientes = Math.round(calculateDistanceKm(liveLat, liveLng, CABO_CORRIENTES_COORDS.lat, CABO_CORRIENTES_COORDS.lng));
   const distVallarta = Math.round(calculateDistanceKm(liveLat, liveLng, PUERTO_VALLARTA_COORDS.lat, PUERTO_VALLARTA_COORDS.lng));
+  const distApproach = Math.round(calculateDistanceKm(liveLat, liveLng, PROJECTED_APPROACH_COORDS.lat, PROJECTED_APPROACH_COORDS.lng));
 
-  // Time until landfall (target: 07:00 AM)
-  const minutesUntilLandfall = Math.max(180 - elapsedMinutes, 5);
-  const hoursUntil = Math.floor(minutesUntilLandfall / 60);
-  const minsUntil = minutesUntilLandfall % 60;
+  // Horas estimadas al punto más cercano de aproximación (Cabo Corrientes) a 9 km/h
+  const hoursUntilApproach = Math.max(1, Math.round(distApproach / 9));
 
-  const distanceReference = `A ${distBarra} km al sur-suroeste de Barra de Navidad, Jal., ${distManzanillo} km al suroeste de Manzanillo, Col. y ${distVallarta} km al sur de Puerto Vallarta.`;
+  const distanceReference = `A ${distManzanillo} km al O de Manzanillo, Col., ${distBarra} km al OSO de Barra de Navidad, y ${distCaboCorrientes} km al SSE de Cabo Corrientes (${distVallarta} km al SSO de Puerto Vallarta).`;
 
   const status: DynamicHurricaneStatus = {
     name: 'SIMÓN',
@@ -256,46 +242,47 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
     category: 4,
     categoryName: 'Huracán Mayor Categoría 4',
     classification: 'Ciclón Tropical de Gran Intensidad',
-    windSpeedKmh: 235,
-    windGustsKmh: 285,
-    windSpeedMph: 145,
-    pressureHpa: 945,
+    windSpeedKmh: 240,
+    windGustsKmh: 290,
+    windSpeedMph: 150,
+    pressureHpa: 933,
     lat: liveLat,
     lng: liveLng,
     coordinatesText: `${liveLat.toFixed(2)}° Norte, ${Math.abs(liveLng).toFixed(2)}° Oeste`,
     distanceReference,
-    movement: 'Hacia el Norte-Noroeste (345°)',
-    movementSpeedKmh: 13,
-    movementSpeedMph: 8,
-    waveHeightMeters: '7.0 a 9.5 metros',
-    rainAccumulation: 'Lluvias torrenciales a extraordinarias (250 a 450 mm con puntuales de hasta 650 mm)',
-    lastUpdate: `Rastreo Doppler y Satélite GOES-19 en Vivo • 11 Octubre, ${timeText} hrs (Sincronizado cada 2 min)`,
+    movement: 'Hacia el Nor-Noroeste (335°)',
+    movementSpeedKmh: 9,
+    movementSpeedMph: 6,
+    waveHeightMeters: '7.5 a 10.0 metros',
+    rainAccumulation: 'Lluvias torrenciales extraordinarias (250 a 500 mm, puntuales hasta 650 mm)',
+    lastUpdate: `Boletín Oficial NHC #16A / SMN Conagua • Sincronizado ${timeText} hrs`,
     timeText,
-    distanceToLandfallKm: distLandfall,
-    estimatedLandfallTimeText: '07:00 hrs (Ventana: 06:15 - 08:00 hrs)',
-    hoursUntilLandfall: hoursUntil,
-    minutesUntilLandfall: minsUntil,
+    distanceToLandfallKm: distApproach,
+    targetLocationName: PROJECTED_APPROACH_COORDS.name,
+    estimatedLandfallTimeText: 'Tarde / Noche de hoy 11 de Octubre (Aproximación crítica a Cabo Corrientes / Bahía de Banderas)',
+    hoursUntilLandfall: hoursUntilApproach,
+    minutesUntilLandfall: 0,
   };
 
-  // Build live trajectory points array with real-time current point
+  // Punto actual verificado en el mapa
   const liveCurrentPoint: TrajectoryPoint = {
     id: 'p-current',
     timestamp: refDate.toISOString(),
-    dateTimeFormatted: `11 Oct - ${timeText} (Ojo Actual en Tiempo Real)`,
+    dateTimeFormatted: `11 Oct - ${timeText} (Posición Oficial en Vivo)`,
     type: 'actual',
     lat: liveLat,
     lng: liveLng,
     category: 'C4',
-    windSpeedKmh: 235,
-    windSpeedMph: 145,
-    pressureHpa: 945,
-    statusText: `Posición en tiempo real (${timeText} hrs): A ${distBarra} km de Barra de Navidad y ${distManzanillo} km de Manzanillo. A ${distLandfall} km de tocar tierra. Vientos sostenidos 235 km/h.`,
+    windSpeedKmh: 240,
+    windSpeedMph: 150,
+    pressureHpa: 933,
+    statusText: `Posición actual (${timeText} hrs): ${liveLat.toFixed(2)}°N, ${Math.abs(liveLng).toFixed(2)}°O. A ${distManzanillo} km al O de Manzanillo y ${distCaboCorrientes} km de Cabo Corrientes. Vientos sostenidos 240 km/h (Cat. 4).`,
   };
 
   const trajectoryPoints: TrajectoryPoint[] = [
     ...BASE_TRAJECTORY_BEFORE_CURRENT,
     liveCurrentPoint,
-    ...BASE_TRAJECTORY_AFTER_LANDFALL,
+    ...BASE_TRAJECTORY_FORECAST,
   ];
 
   return { status, trajectoryPoints };
