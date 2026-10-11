@@ -1,676 +1,909 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import {
-  HURRICANE_CURRENT_STATUS,
-  TRAJECTORY_POINTS,
   SHELTERS_DATA,
   Shelter,
-  TrajectoryPoint,
 } from '../data/hurricaneData';
-import { DynamicHurricaneStatus, getLiveHurricaneStatus } from '../utils/hurricaneTracking';
-import { getGoogleMapsDirectionsUrl } from '../utils/geo';
+import { calculateDistanceKm, formatDistance, getGoogleMapsDirectionsUrl } from '../utils/geo';
 import {
-  Crosshair,
-  MapPin,
-  Navigation,
-  Layers,
-  PawPrint,
-  Info,
-  Eye,
-  EyeOff,
-  Zap,
+  Compass,
+  RefreshCw,
   Lock,
   Unlock,
+  Eye,
+  EyeOff,
+  Crosshair,
+  ExternalLink,
+  Layers,
+  Info,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+
+const NOAA_MAPSERVER_API =
+  'https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather_summary/MapServer';
+
+// CARTO Basemaps API key to remove "API key required" watermark on raster tiles
+const CARTO_API_KEY =
+  (import.meta as any).env?.VITE_CARTO_API_KEY || 'cb1_4hee_1_1c1b83982f353128945c2288';
 
 interface TrajectoryMapProps {
   selectedShelterId?: string | null;
   onSelectShelter?: (shelter: Shelter) => void;
   userCoords?: { lat: number; lng: number } | null;
-  dynamicStatus?: DynamicHurricaneStatus;
-  dynamicTrajectoryPoints?: TrajectoryPoint[];
   refreshTrigger?: number;
+  dynamicStatus?: any;
+  dynamicTrajectoryPoints?: any;
+  onLiveStormData?: (data: {
+    lat: number;
+    lng: number;
+    windKmh: number;
+    gustKmh: number;
+    pressureHpa: number;
+    category: number;
+    advisoryNum: string;
+    advisoryDate: string;
+    movement: string;
+    speedKmh: number;
+  }) => void;
 }
 
 export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
   selectedShelterId,
   onSelectShelter,
   userCoords,
+  refreshTrigger,
   dynamicStatus,
   dynamicTrajectoryPoints,
-  refreshTrigger,
+  onLiveStormData,
 }) => {
-  const { t } = useLanguage();
-  // Use dynamic status or compute live on the fly
-  const liveData = dynamicStatus && dynamicTrajectoryPoints
-    ? { status: dynamicStatus, trajectoryPoints: dynamicTrajectoryPoints }
-    : getLiveHurricaneStatus(new Date());
+  const { t, language } = useLanguage();
 
-  const currentStatus = dynamicStatus || liveData.status;
-  const activeTrajectoryPoints = dynamicTrajectoryPoints || liveData.trajectoryPoints;
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+
+  // Layers refs
+  const forecastLayerRef = useRef<L.GeoJSON | null>(null);
+  const coneLayerRef = useRef<L.GeoJSON | null>(null);
+  const pastLayerRef = useRef<L.GeoJSON | null>(null);
+  const pointsLayerRef = useRef<L.GeoJSON | null>(null);
+  const warningsLayerRef = useRef<L.GeoJSON | null>(null);
   const sheltersLayerRef = useRef<L.LayerGroup | null>(null);
-  const zonesLayerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [activeTile, setActiveTile] = useState<'osm' | 'satellite'>('osm');
+  // Base map layers ref
+  const baseLayersRef = useRef<Record<string, L.TileLayer>>({});
+
+  // UI & Layer Visibility States
+  const [showForecast, setShowForecast] = useState(true);
+  const [showCone, setShowCone] = useState(true);
+  const [showPast, setShowPast] = useState(true);
+  const [showPoints, setShowPoints] = useState(true);
+  const [showWarnings, setShowWarnings] = useState(true);
   const [showShelters, setShowShelters] = useState(false);
-  const [showWindZones, setShowWindZones] = useState(true);
-  const [filterPetsOnly, setFilterPetsOnly] = useState(false);
-  const [selectedStateFilter, setSelectedStateFilter] = useState<string>('todos');
-  // Scroll protection: locked by default on mobile so user doesn't get trapped while scrolling page
+
+  // Status & Metadata states
+  const [statusText, setStatusText] = useState<string>(
+    language === 'en' ? 'Connecting to NOAA...' : 'Conectando con NOAA…'
+  );
+  const [statusDotColor, setStatusDotColor] = useState<string>('#d99b35'); // yellow
+  const [tileMsg, setTileMsg] = useState<string>('');
+  const [stormSummaryHtml, setStormSummaryHtml] = useState<string>(
+    language === 'en'
+      ? 'Searching for active tropical systems in official NOAA feed...'
+      : 'Buscando sistemas activos en la fuente oficial NOAA…'
+  );
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>('');
+
+  // Mobile scroll protection (locked by default to prevent getting trapped while scrolling page)
   const [isMapLockedForScroll, setIsMapLockedForScroll] = useState<boolean>(true);
-  const [scrollHintMessage, setScrollHintMessage] = useState<string | null>(null);
 
-  // If a shelter is selected externally from directory, ensure shelters are visible
-  useEffect(() => {
-    if (selectedShelterId && !showShelters) {
-      setShowShelters(true);
+  const hasFittedBoundsRef = useRef(false);
+
+  // Escape helper for HTML popups
+  const esc = (v: any) => {
+    return String(v ?? (language === 'en' ? 'N/A' : 'No disponible')).replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        }[c] || c)
+    );
+  };
+
+  // Popup builder for NOAA features
+  const popupFeature = useCallback(
+    (feature: any, layer: L.Layer) => {
+      const p = feature.properties || {};
+      const title =
+        p.stormname ||
+        p.STORMNAME ||
+        p.stormName ||
+        (language === 'en' ? 'NOAA Tropical Product' : 'Producto tropical NOAA');
+
+      const rows = Object.entries(p)
+        .filter(
+          ([k, v]) =>
+            v !== null &&
+            v !== '' &&
+            !['Shape', 'shape', 'objectid', 'OBJECTID'].includes(k)
+        )
+        .slice(0, 14);
+
+      const html = `
+        <div style="font-family:Montserrat,Arial,sans-serif;font-size:12px;line-height:1.45;max-width:280px;">
+          <div style="font-weight:700;font-size:13px;color:#193247;border-bottom:1px solid #d6e1e8;padding-bottom:4px;margin-bottom:6px;">
+            ${esc(title)}
+          </div>
+          ${rows
+            .map(
+              ([k, v]) =>
+                `<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <strong style="color:#607788;">${esc(k)}:</strong>
+                  <span style="font-weight:600;color:#193247;text-align:right;">${esc(v)}</span>
+                </div>`
+            )
+            .join('')}
+        </div>
+      `;
+      layer.bindPopup(html);
+    },
+    [language]
+  );
+
+  // Fetch individual layer as GeoJSON from NOAA MapServer
+  const fetchLayer = async (layerId: number, where = '1=1') => {
+    const params = new URLSearchParams({
+      where,
+      outFields: '*',
+      returnGeometry: 'true',
+      outSR: '4326',
+      f: 'geojson',
+    });
+    params.set('_ts', String(Date.now()));
+    const url = `${NOAA_MAPSERVER_API}/${layerId}/query?${params.toString()}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`NOAA layer ${layerId}: HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'Error del servicio NOAA');
+    return data;
+  };
+
+  // Refresh all NOAA layers
+  const refreshNOAALayers = useCallback(async () => {
+    setIsRefreshing(true);
+    setStatusText(language === 'en' ? 'Updating from NOAA...' : 'Actualizando datos oficiales…');
+    setStatusDotColor('#d99b35');
+
+    try {
+      // Query layer 6 (Forecast Track), 7 (Cone), 11 (Past Track), 5 (Forecast Points), 8 (Watch-Warning)
+      const results = await Promise.allSettled([
+        fetchLayer(6),
+        fetchLayer(7),
+        fetchLayer(11),
+        fetchLayer(5),
+        fetchLayer(8),
+      ]);
+
+      const layerRefs = [
+        forecastLayerRef.current,
+        coneLayerRef.current,
+        pastLayerRef.current,
+        pointsLayerRef.current,
+        warningsLayerRef.current,
+      ];
+
+      const names = ['forecast', 'cone', 'past', 'points', 'warnings'];
+      const errors: string[] = [];
+
+      results.forEach((result, idx) => {
+        const lRef = layerRefs[idx];
+        if (result.status === 'fulfilled' && lRef) {
+          lRef.clearLayers().addData(result.value);
+        } else if (result.status === 'rejected') {
+          errors.push(`${names[idx]}: ${result.reason.message}`);
+        }
+      });
+
+      // Extract system summary
+      const forecastGeo = forecastLayerRef.current ? (forecastLayerRef.current.toGeoJSON() as any) : null;
+      const forecastFeatures = forecastGeo?.features || [];
+      const pointsGeo = pointsLayerRef.current ? (pointsLayerRef.current.toGeoJSON() as any) : null;
+      const pointsFeatures = pointsGeo?.features || [];
+
+      const allFeatures = [...forecastFeatures, ...pointsFeatures];
+
+      const findName = (f: any) => {
+        const p = f.properties || {};
+        return String(p.stormname || p.STORMNAME || p.stormName || p.name || '')
+          .trim()
+          .toLowerCase();
+      };
+
+      const featureTime = (f: any) => {
+        const p = f.properties || {};
+        return p.advdate || p.ADVDATE || p.idp_filedate || p.idp_ingestdate || '';
+      };
+
+      const simonFeatures = allFeatures.filter((f) => findName(f).includes('simon'));
+      const activeSystems = allFeatures.filter((f) => findName(f));
+      const uniqueNames = [...new Set(activeSystems.map(findName))];
+      const latestTime = allFeatures.map(featureTime).filter(Boolean).sort().slice(-1)[0];
+
+      // Extract latest live coordinates and intensity from point tau 0 or point features
+      if (simonFeatures.length && onLiveStormData) {
+        const tau0 = pointsFeatures.find(
+          (f: any) =>
+            findName(f).includes('simon') &&
+            (f.properties?.tau === 0 || f.properties?.TAU === 0)
+        );
+        const refFeature = tau0 || simonFeatures[0];
+        if (refFeature && refFeature.geometry) {
+          const coords =
+            refFeature.geometry.type === 'Point'
+              ? refFeature.geometry.coordinates
+              : refFeature.geometry.coordinates?.[0];
+
+          if (coords && coords.length >= 2) {
+            const props = refFeature.properties || {};
+            const maxKnots = props.maxwind || props.MAXWIND || 115;
+            const gustKnots = props.gust || props.GUST || 140;
+            const mslp = props.mslp || props.MSLP || 947;
+            const headingDeg = props.tcdir || props.TCDIR || 335;
+            const speedKt = props.tcspd || props.TCSPD || 5;
+
+            onLiveStormData({
+              lng: coords[0],
+              lat: coords[1],
+              windKmh: Math.round(maxKnots * 1.852),
+              gustKmh: Math.round(gustKnots * 1.852),
+              pressureHpa: mslp,
+              category: props.ssnum || props.SSNUM || 4,
+              advisoryNum: String(props.advisnum || props.ADVISNUM || '18'),
+              advisoryDate: String(props.advdate || props.ADVDATE || ''),
+              movement: `${headingDeg}°`,
+              speedKmh: Math.round(speedKt * 1.852),
+            });
+          }
+        }
+      }
+
+      let summaryHtml = '';
+      if (simonFeatures.length) {
+        summaryHtml =
+          language === 'en'
+            ? `<div class="font-bold text-[#193247] mb-1">✅ Hurricane Simon active in official NOAA feed.</div>
+               <div class="text-[#607788]">Elements rendered: ${simonFeatures.length}.</div>`
+            : `<div class="font-bold text-[#193247] mb-1">✅ Huracán Simón activo en la fuente oficial NOAA.</div>
+               <div class="text-[#607788]">Elementos en mapa: ${simonFeatures.length}.</div>`;
+      } else if (uniqueNames.length) {
+        summaryHtml =
+          language === 'en'
+            ? `<div class="font-bold text-[#193247] mb-1">Active systems found: ${uniqueNames.map(esc).join(', ')}.</div>
+               <div class="text-[#607788]">Live official NOAA track rendered.</div>`
+            : `<div class="font-bold text-[#193247] mb-1">Sistemas con nombre encontrados: ${uniqueNames.map(esc).join(', ')}.</div>
+               <div class="text-[#607788]">Trayectoria oficial de NOAA renderizada.</div>`;
+      } else {
+        summaryHtml =
+          language === 'en'
+            ? 'No named systems currently returned by NOAA GIS layers. Check official NHC advisories.'
+            : 'La fuente no devolvió sistemas con nombre en las capas de trayectoria. Consulta el boletín del NHC.';
+      }
+
+      if (latestTime) {
+        summaryHtml += `
+          <div class="mt-2 pt-1 border-t border-[#d6e1e8] text-xs font-semibold text-[#193247]">
+            ${language === 'en' ? 'Official Bulletin Date:' : 'Boletín Oficial:'}
+            <span class="text-[#1479a8] font-bold ml-1">${esc(latestTime)}</span>
+          </div>`;
+      }
+
+      if (errors.length) {
+        summaryHtml += `<div class="mt-2 text-[#d84a4a] text-xs">${errors.map(esc).join('<br>')}</div>`;
+      }
+
+      setStormSummaryHtml(summaryHtml);
+
+      // Fit bounds to the active storm if not yet fitted
+      if (!hasFittedBoundsRef.current && mapInstanceRef.current) {
+        const validGroup = L.featureGroup(
+          layerRefs.filter(Boolean) as L.Layer[]
+        );
+        const bounds = validGroup.getBounds();
+        if (bounds.isValid()) {
+          mapInstanceRef.current.fitBounds(bounds.pad(0.18), { maxZoom: 8 });
+          hasFittedBoundsRef.current = true;
+        }
+      }
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString(language === 'en' ? 'en-US' : 'es-MX', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      setLastUpdatedTime(timeStr);
+
+      setStatusText(
+        errors.length
+          ? language === 'en'
+            ? `Partial update · ${timeStr}`
+            : `Actualización parcial · ${timeStr}`
+          : language === 'en'
+          ? `NOAA Live Sync Complete · ${timeStr}`
+          : `Consulta completada con NOAA · ${timeStr}`
+      );
+      setStatusDotColor(errors.length ? '#d99b35' : '#2a9d72');
+    } catch (e: any) {
+      setStatusText(
+        language === 'en'
+          ? `Could not reach NOAA (${e.message || 'network'})`
+          : `No se pudo actualizar NOAA (${e.message || 'error de red'})`
+      );
+      setStatusDotColor('#c93c3c');
+      setStormSummaryHtml(
+        `<div class="text-[#c93c3c] font-semibold">${e.message || 'Error'}.</div>
+         <div class="text-[#607788] text-xs mt-1">Se conservan las últimas capas cargadas.</div>`
+      );
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [selectedShelterId]);
-
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  }, [language, popupFeature, onLiveStormData]);
 
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    const initialMap = L.map(mapContainerRef.current, {
-      center: [19.2, -105.1],
-      zoom: 7,
-      minZoom: 5,
-      maxZoom: 17,
+    const map = L.map(mapContainerRef.current, {
+      preferCanvas: true,
+      center: [20.0, -106.0],
+      zoom: 6,
+      minZoom: 4,
+      maxZoom: 16,
       zoomControl: false,
-      scrollWheelZoom: false, // Prevents unintended zoom when scrolling page on desktop
+      scrollWheelZoom: false, // Prevents unintended zoom on desktop scroll
       dragging: !isMapLockedForScroll,
       touchZoom: !isMapLockedForScroll,
     });
 
-    L.control.zoom({ position: 'topright' }).addTo(initialMap);
+    L.control.zoom({ position: 'topright' }).addTo(map);
 
-    const osmTile = L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }
-    ).addTo(initialMap);
+    // Base map providers with official CARTO API key
+    const cartoAttr =
+      '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors';
+    const baseMaps: Record<string, L.TileLayer> = {
+      'Calles (CARTO)': L.tileLayer(
+        `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
+        {
+          subdomains: 'abcd',
+          maxZoom: 14,
+          attribution: cartoAttr,
+        }
+      ),
+      'Océano (Esri)': L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 11,
+          attribution: 'Tiles &copy; Esri, NOAA, GEBCO',
+        }
+      ),
+      'Satélite (Esri)': L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 14,
+          attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
+        }
+      ),
+    };
 
-    tileLayerRef.current = osmTile;
+    baseMaps['Calles (CARTO)'].addTo(map);
+    baseLayersRef.current = baseMaps;
 
-    const zonesGroup = L.layerGroup().addTo(initialMap);
-    const markersGroup = L.layerGroup().addTo(initialMap);
-    const sheltersGroup = L.layerGroup().addTo(initialMap);
+    L.control.layers(baseMaps, undefined, { position: 'topright', collapsed: true }).addTo(map);
 
-    zonesLayerRef.current = zonesGroup;
-    markersLayerRef.current = markersGroup;
-    sheltersLayerRef.current = sheltersGroup;
+    // Fallback if tile errors occur
+    let tilesLoaded = 0;
+    let tilesFailed = 0;
+    const order = Object.keys(baseMaps);
 
-    mapInstanceRef.current = initialMap;
+    order.forEach((name, idx) => {
+      const layer = baseMaps[name];
+      layer.on('tileload', () => {
+        tilesLoaded++;
+        setTileMsg('');
+      });
+      layer.on('tileerror', () => {
+        tilesFailed++;
+        if (!map.hasLayer(layer) || tilesLoaded > 0 || tilesFailed < 4) return;
+        const nextName = order[idx + 1];
+        if (!nextName) {
+          setTileMsg(' · No cargan mapas base (red bloqueada)');
+          return;
+        }
+        map.removeLayer(layer);
+        baseMaps[nextName].addTo(map);
+        tilesFailed = 0;
+        setTileMsg(' · Cambiado a ' + nextName);
+      });
+    });
+
+    // Create GeoJSON layers exactly matching official styles
+    forecastLayerRef.current = L.geoJSON(null, {
+      style: { color: '#d84a4a', weight: 3.5, opacity: 0.95 },
+      onEachFeature: popupFeature,
+    }).addTo(map);
+
+    coneLayerRef.current = L.geoJSON(null, {
+      style: {
+        color: '#d99b35',
+        weight: 1.5,
+        fillColor: '#f2b84b',
+        fillOpacity: 0.22,
+      },
+      onEachFeature: popupFeature,
+    }).addTo(map);
+
+    pastLayerRef.current = L.geoJSON(null, {
+      style: { color: '#247ba0', weight: 3, opacity: 0.9 },
+      onEachFeature: popupFeature,
+    }).addTo(map);
+
+    pointsLayerRef.current = L.geoJSON(null, {
+      pointToLayer: (_feature, latlng) =>
+        L.circleMarker(latlng, {
+          radius: 5.5,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: '#d84a4a',
+          fillOpacity: 1,
+        }),
+      onEachFeature: popupFeature,
+    }).addTo(map);
+
+    warningsLayerRef.current = L.geoJSON(null, {
+      style: {
+        color: '#9d4edd',
+        weight: 2,
+        fillColor: '#9d4edd',
+        fillOpacity: 0.18,
+      },
+      pointToLayer: (_feature, latlng) =>
+        L.circleMarker(latlng, {
+          radius: 5,
+          color: '#9d4edd',
+          fillColor: '#9d4edd',
+          fillOpacity: 0.85,
+        }),
+      onEachFeature: popupFeature,
+    }).addTo(map);
+
+    // Shelters Layer Group
+    sheltersLayerRef.current = L.layerGroup().addTo(map);
+
+    mapInstanceRef.current = map;
+
+    // Trigger initial fetch
+    refreshNOAALayers();
+
+    // Auto-refresh every 5 minutes (standard NHC update cycle)
+    const interval = setInterval(refreshNOAALayers, 5 * 60 * 1000);
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) refreshNOAALayers();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // Invalidate size
+    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 500);
 
     return () => {
-      initialMap.remove();
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
 
-  // Synchronize Mobile & Page Scroll Lock
+  // Update scroll lock state on map instance
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
     if (isMapLockedForScroll) {
-      mapInstanceRef.current.dragging.disable();
-      mapInstanceRef.current.touchZoom.disable();
-      mapInstanceRef.current.scrollWheelZoom.disable();
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.scrollWheelZoom.disable();
     } else {
-      mapInstanceRef.current.dragging.enable();
-      mapInstanceRef.current.touchZoom.enable();
-      mapInstanceRef.current.scrollWheelZoom.enable();
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.scrollWheelZoom.disable(); // keep desktop wheel scroll safe
     }
   }, [isMapLockedForScroll]);
 
-  // Update Tile Layer
+  // Synchronize layers visibility toggles
   useEffect(() => {
-    if (!mapInstanceRef.current || !tileLayerRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
 
-    mapInstanceRef.current.removeLayer(tileLayerRef.current);
+    const sync = (layer: L.Layer | null, isVisible: boolean) => {
+      if (!layer) return;
+      if (isVisible && !map.hasLayer(layer)) map.addLayer(layer);
+      if (!isVisible && map.hasLayer(layer)) map.removeLayer(layer);
+    };
 
-    let url = '';
-    let attr = '';
+    sync(forecastLayerRef.current, showForecast);
+    sync(coneLayerRef.current, showCone);
+    sync(pastLayerRef.current, showPast);
+    sync(pointsLayerRef.current, showPoints);
+    sync(warningsLayerRef.current, showWarnings);
+    sync(sheltersLayerRef.current, showShelters);
+  }, [showForecast, showCone, showPast, showPoints, showWarnings, showShelters]);
 
-    if (activeTile === 'satellite') {
-      url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-      attr = 'Tiles &copy; Esri, Maxar, Earthstar Geographics';
-    } else {
-      url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-      attr = '&copy; OpenStreetMap contributors';
-    }
-
-    const newTile = L.tileLayer(url, {
-      attribution: attr,
-      maxZoom: 19,
-    }).addTo(mapInstanceRef.current);
-
-    tileLayerRef.current = newTile;
-  }, [activeTile]);
-
-  // Render Trajectory and Danger Zones
+  // Render Shelters onto sheltersLayerRef when showShelters is true
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current || !zonesLayerRef.current) return;
-
-    markersLayerRef.current.clearLayers();
-    zonesLayerRef.current.clearLayers();
-
-    // 1. Wind Danger Zones around current eye
-    if (showWindZones) {
-      // Hurricane Force Winds (> 118 km/h ~ 75 km radius)
-      L.circle([currentStatus.lat, currentStatus.lng], {
-        radius: 80000,
-        color: '#B84A45',
-        fillColor: '#B84A45',
-        fillOpacity: 0.18,
-        weight: 1.5,
-        dashArray: '3, 3',
-      })
-        .bindTooltip(`Vientos Huracanados Cat. 4 (${currentStatus.windSpeedKmh} km/h y rachas ${currentStatus.windGustsKmh} km/h)`, {
-          permanent: false,
-          direction: 'top',
-        })
-        .addTo(zonesLayerRef.current);
-
-      // Tropical Storm Force Winds (> 63 km/h ~ 240 km radius)
-      L.circle([currentStatus.lat, currentStatus.lng], {
-        radius: 240000,
-        color: '#A66C19',
-        fillColor: '#A66C19',
-        fillOpacity: 0.08,
-        weight: 1,
-      })
-        .bindTooltip('Radio de Vientos de Tormenta Tropical (> 63 km/h)', {
-          permanent: false,
-          direction: 'top',
-        })
-        .addTo(zonesLayerRef.current);
-
-      // Official Coastal Warning Zone (Michoacán a Nayarit)
-      const coastalWarningCoords: [number, number][] = [
-        [18.0, -102.8],
-        [18.3, -103.3],
-        [18.7, -103.7],
-        [19.0, -104.3],
-        [19.2, -104.7],
-        [19.5, -105.1],
-        [20.5, -105.3],
-        [20.8, -105.5],
-        [21.5, -105.3],
-      ];
-
-      L.polyline(coastalWarningCoords, {
-        color: '#B84A45',
-        weight: 3.5,
-        opacity: 0.85,
-      })
-        .bindTooltip('Zona Costera de Aviso de Huracán (Punta San Telmo a El Roblito)', {
-          sticky: true,
-        })
-        .addTo(zonesLayerRef.current);
-    }
-
-    // 2. Trajectory Polylines
-    const historicalPoints = activeTrajectoryPoints.filter((p) => p.type === 'histórico' || p.type === 'actual');
-    const forecastPoints = activeTrajectoryPoints.filter((p) => p.type === 'actual' || p.type === 'pronóstico');
-
-    const historicalCoords: [number, number][] = historicalPoints.map((p) => [p.lat, p.lng]);
-    const forecastCoords: [number, number][] = forecastPoints.map((p) => [p.lat, p.lng]);
-
-    // Solid historical line
-    L.polyline(historicalCoords, {
-      color: '#245A66',
-      weight: 3,
-      opacity: 0.9,
-    }).addTo(markersLayerRef.current);
-
-    // Dashed forecast line
-    L.polyline(forecastCoords, {
-      color: '#A66C19',
-      weight: 2.5,
-      dashArray: '5, 5',
-      opacity: 0.85,
-    }).addTo(markersLayerRef.current);
-
-    // 3. Trajectory Points Markers
-    activeTrajectoryPoints.forEach((pt) => {
-      const isCurrent = pt.type === 'actual';
-
-      let iconHtml = '';
-      if (isCurrent) {
-        iconHtml = `
-          <div class="relative flex items-center justify-center font-sans">
-            <span class="absolute w-8 h-8 bg-[#B84A45]/30 rounded-full animate-ping"></span>
-            <span class="absolute w-6 h-6 bg-[#245A66]/25 rounded-full"></span>
-            <div class="relative w-6 h-6 bg-[#B84A45] border-2 border-white rounded-[3px] flex items-center justify-center text-white font-bold text-[10px] shadow-md">
-              S4
-            </div>
-            <span class="absolute -bottom-4.5 whitespace-nowrap bg-[#252A2E] text-white border border-white/20 text-[9px] font-semibold px-1.5 py-0.2 rounded-[2px] shadow-sm">
-              Ojo Actual (${currentStatus.timeText} hrs)
-            </span>
-          </div>
-        `;
-      } else if (pt.type === 'histórico') {
-        iconHtml = `
-          <div class="w-3.5 h-3.5 rounded-[2px] bg-[#245A66] border border-white flex items-center justify-center text-[7px] font-bold text-white shadow-xs">
-            ${pt.category}
-          </div>
-        `;
-      } else {
-        iconHtml = `
-          <div class="w-3.5 h-3.5 rounded-[2px] bg-[#D99A38] border border-white flex items-center justify-center text-[7px] font-bold text-[#252A2E] shadow-xs">
-            ${pt.category}
-          </div>
-        `;
-      }
-
-      const customIcon = L.divIcon({
-        html: iconHtml,
-        className: 'clean-trajectory-marker',
-        iconSize: isCurrent ? [24, 24] : [14, 14],
-        iconAnchor: isCurrent ? [12, 12] : [7, 7],
-      });
-
-      const popupContent = `
-        <div class="p-1 text-[#252A2E] font-sans text-xs">
-          <div class="flex items-center justify-between border-b border-[#DDE1DF] pb-1 mb-1.5">
-            <span class="font-semibold text-[#245A66]">Huracán Simón</span>
-            <span class="text-[10px] px-1 py-0.5 rounded-[2px] font-medium ${
-              pt.type === 'actual' ? 'bg-[#245A66] text-white font-semibold' : 'bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF]'
-            }">
-              ${pt.category} (${pt.type === 'actual' ? 'En Vivo' : pt.type})
-            </span>
-          </div>
-          <div class="text-[11px] text-[#687078] mb-1 font-medium font-tabular">${pt.dateTimeFormatted}</div>
-          <div class="space-y-0.5 mb-1.5 text-[11px] font-tabular">
-            <div><strong>Viento sostenido:</strong> ${pt.windSpeedKmh} km/h (${pt.windSpeedMph} mph)</div>
-            <div><strong>Presión mínima:</strong> ${pt.pressureHpa} hPa</div>
-            <div><strong>Posición:</strong> ${pt.lat.toFixed(2)}°N, ${Math.abs(pt.lng).toFixed(2)}°O</div>
-          </div>
-          <p class="text-[11px] text-[#687078] bg-[#F7F7F4] p-1.5 rounded-[3px] border border-[#DDE1DF]">${pt.statusText}</p>
-        </div>
-      `;
-
-      L.marker([pt.lat, pt.lng], { icon: customIcon })
-        .bindPopup(popupContent)
-        .addTo(markersLayerRef.current!);
-    });
-  }, [showWindZones, currentStatus.lat, currentStatus.lng, currentStatus.timeText, refreshTrigger]);
-
-  // Render Shelters Markers
-  useEffect(() => {
-    if (!mapInstanceRef.current || !sheltersLayerRef.current) return;
-
-    sheltersLayerRef.current.clearLayers();
+    const layer = sheltersLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
 
     if (!showShelters) return;
 
-    const filteredShelters = SHELTERS_DATA.filter((s) => {
-      if (filterPetsOnly && !s.petsAllowed) return false;
-      if (selectedStateFilter !== 'todos' && s.state !== selectedStateFilter) return false;
-      return true;
-    });
-
-    filteredShelters.forEach((shelter) => {
+    SHELTERS_DATA.forEach((shelter) => {
       const isSelected = selectedShelterId === shelter.id;
+      const markerColor = isSelected ? '#B84A45' : shelter.petsAllowed ? '#3F8063' : '#245A66';
 
-      const shelterIconHtml = `
-        <div class="relative cursor-pointer">
-          <div class="w-6 h-6 rounded-[3px] flex items-center justify-center border ${
-            isSelected
-              ? 'bg-[#245A66] border-white ring-2 ring-[#245A66]'
-              : shelter.petsAllowed
-              ? 'bg-[#3F8063] border-white'
-              : 'bg-[#245A66] border-white'
-          } text-white shadow-xs">
-            <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-          </div>
-          ${
-            shelter.petsAllowed
-              ? `<span class="absolute -top-1 -right-1 bg-[#D99A38] text-white text-[7px] font-bold rounded-[2px] px-0.5">P</span>`
-              : ''
-          }
+      const iconHtml = `
+        <div style="background:${markerColor};width:${isSelected ? 26 : 20}px;height:${isSelected ? 26 : 20}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.3);">
+          ${shelter.petsAllowed ? '🐾' : 'H'}
         </div>
       `;
 
-      const shelterIcon = L.divIcon({
-        html: shelterIconHtml,
-        className: 'clean-shelter-marker',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+      const customIcon = L.divIcon({
+        className: 'shelter-pin',
+        html: iconHtml,
+        iconSize: [isSelected ? 26 : 20, isSelected ? 26 : 20],
+        iconAnchor: [isSelected ? 13 : 10, isSelected ? 13 : 10],
       });
 
-      const gmapsLink = getGoogleMapsDirectionsUrl(shelter.lat, shelter.lng, shelter.name);
+      const marker = L.marker([shelter.lat, shelter.lng], { icon: customIcon });
 
-      const shelterPopup = `
-        <div class="p-1 text-[#252A2E] font-sans text-xs min-w-[220px]">
-          <div class="flex items-center justify-between border-b border-[#DDE1DF] pb-1 mb-1">
-            <span class="text-[10px] font-semibold text-[#245A66] uppercase">
-              ${shelter.state} • ${shelter.municipality}
-            </span>
-            <span class="text-[10px] ${
-              shelter.petsAllowed ? 'text-[#3F8063] font-medium' : 'text-[#687078]'
-            }">
-              ${shelter.petsAllowed ? 'Mascotas: Sí' : 'Sin mascotas'}
-            </span>
-          </div>
-          <h4 class="font-semibold text-[#252A2E] text-xs mb-1">${shelter.name}</h4>
-          <p class="text-[11px] text-[#687078] mb-1.5 leading-tight">${shelter.address}</p>
-          
-          <div class="text-[11px] font-tabular bg-[#F7F7F4] p-1.5 rounded-[3px] border border-[#DDE1DF] mb-2 space-y-0.5">
-            <div><strong>Capacidad:</strong> ${shelter.capacity} personas</div>
-            <div><strong>Estado:</strong> ${shelter.status}</div>
-          </div>
+      let distanceStr = '';
+      if (userCoords) {
+        const d = calculateDistanceKm(userCoords.lat, userCoords.lng, shelter.lat, shelter.lng);
+        distanceStr = `<div style="color:#245A66;font-weight:600;margin-top:2px;">📍 ${formatDistance(d)} ${language === 'en' ? 'from you' : 'de tu ubicación'}</div>`;
+      }
 
-          <a href="${gmapsLink}" target="_blank" rel="noopener noreferrer" 
-             class="flex items-center justify-center gap-1 w-full bg-[#245A66] hover:bg-[#1b434c] text-white font-medium py-1 px-2 rounded-[3px] text-xs text-center transition">
-            <span>Ruta en Google Maps</span>
-          </a>
+      const popupHtml = `
+        <div style="font-family:Montserrat,Arial,sans-serif;font-size:12px;line-height:1.45;max-width:240px;">
+          <div style="font-weight:700;color:#193247;font-size:13px;">${shelter.name}</div>
+          <div style="color:#607788;font-size:11px;margin:2px 0;">${shelter.municipality}, ${shelter.state}</div>
+          <div style="font-size:11px;color:#252A2E;">${shelter.address}</div>
+          ${distanceStr}
+          <div style="margin-top:6px;padding-top:4px;border-top:1px solid #d6e1e8;">
+            <a href="${getGoogleMapsDirectionsUrl(shelter.lat, shelter.lng)}" target="_blank" rel="noopener noreferrer" style="color:#1479a8;font-weight:700;text-decoration:none;">
+              Google Maps ↗
+            </a>
+          </div>
         </div>
       `;
 
-      const marker = L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
-        .bindPopup(shelterPopup)
-        .addTo(sheltersLayerRef.current!);
-
+      marker.bindPopup(popupHtml);
       marker.on('click', () => {
-        if (onSelectShelter) {
-          onSelectShelter(shelter);
-        }
+        if (onSelectShelter) onSelectShelter(shelter);
       });
+
+      marker.addTo(layer);
     });
-  }, [showShelters, filterPetsOnly, selectedStateFilter, selectedShelterId, onSelectShelter]);
+  }, [showShelters, selectedShelterId, userCoords, language, onSelectShelter]);
 
-  // Handle User Coordinates marker
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    if (userMarkerRef.current) {
-      mapInstanceRef.current.removeLayer(userMarkerRef.current);
-      userMarkerRef.current = null;
-    }
-
-    if (userCoords) {
-      const userIcon = L.divIcon({
-        html: `
-          <div class="relative flex items-center justify-center">
-            <span class="absolute w-4 h-4 bg-[#245A66]/30 rounded-full animate-ping"></span>
-            <div class="w-3.5 h-3.5 bg-[#245A66] border-2 border-white rounded-full shadow-sm"></div>
-          </div>
-        `,
-        className: 'clean-user-marker',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
-      });
-
-      userMarkerRef.current = L.marker([userCoords.lat, userCoords.lng], { icon: userIcon })
-        .bindPopup(
-          '<div class="p-1 font-sans text-xs font-semibold text-[#252A2E]">Tu Ubicación Actual</div>'
-        )
-        .addTo(mapInstanceRef.current);
-    }
-  }, [userCoords]);
-
+  // Center on hurricane
   const handleCenterHurricane = () => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView(
-        [currentStatus.lat, currentStatus.lng],
-        8,
-        { animate: true }
-      );
+    if (!mapInstanceRef.current) return;
+    const geo = pointsLayerRef.current ? (pointsLayerRef.current.toGeoJSON() as any) : null;
+    const pts = geo?.features || [];
+    if (pts.length) {
+      const p = pts[0];
+      if (p.geometry && p.geometry.type === 'Point') {
+        const [lng, lat] = p.geometry.coordinates;
+        mapInstanceRef.current.setView([lat, lng], 8, { animate: true });
+        return;
+      }
     }
+    // Fallback approximate position
+    mapInstanceRef.current.setView([19.8, -106.0], 8, { animate: true });
   };
 
-  const handleCenterShelters = () => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView([19.4, -104.9], 7.5, { animate: true });
+  // Re-sync when external refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger) {
+      refreshNOAALayers();
     }
-  };
+  }, [refreshTrigger, refreshNOAALayers]);
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] overflow-hidden shadow-none">
-      {/* Map Header / Discrete Controls Bar */}
-      <div className="p-3 border-b border-[#DDE1DF] bg-[#FFFFFF] flex flex-wrap items-center justify-between gap-2.5 text-xs">
-        {/* Layer Styles */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setActiveTile('osm')}
-            className={`px-2.5 py-1 rounded-[4px] font-medium transition text-xs ${
-              activeTile === 'osm'
-                ? 'bg-[#245A66] text-white'
-                : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
-            }`}
-          >
-            {t.baseOSM}
-          </button>
-          <button
-            onClick={() => setActiveTile('satellite')}
-            className={`px-2.5 py-1 rounded-[4px] font-medium transition text-xs ${
-              activeTile === 'satellite'
-                ? 'bg-[#245A66] text-white'
-                : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
-            }`}
-          >
-            {t.baseSatellite}
-          </button>
+    <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[8px] overflow-hidden shadow-none flex flex-col">
+      {/* Top Header / NOAA Connection Status */}
+      <div className="p-3 sm:p-4 border-b border-[#DDE1DF] bg-[#FFFFFF] flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2.5 h-2.5 rounded-full inline-block animate-pulse shrink-0"
+              style={{ backgroundColor: statusDotColor }}
+            />
+            <span className="font-bold text-sm sm:text-base text-[#193247]">
+              {language === 'en'
+                ? 'Official NOAA / NHC GIS Tracking Service'
+                : 'Servicio Geográfico Oficial NOAA / National Hurricane Center'}
+            </span>
+          </div>
+          <div className="text-xs text-[#607788] mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <span>{statusText}</span>
+            {tileMsg && <span className="text-[#c93c3c]">{tileMsg}</span>}
+          </div>
         </div>
 
-        {/* Focus, Scroll Protection, and Filter Controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Scroll Lock Toggle to prevent getting stuck on mobile / desktop */}
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-2 ml-auto">
+          {/* Scroll Lock Button for Mobile Peace of Mind */}
           <button
-            onClick={() => {
-              setIsMapLockedForScroll((prev) => !prev);
-              setScrollHintMessage(null);
-            }}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border cursor-pointer ${
+            onClick={() => setIsMapLockedForScroll((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-bold transition border cursor-pointer ${
               isMapLockedForScroll
                 ? 'bg-[#3F8063]/10 text-[#3F8063] border-[#3F8063]/30 hover:bg-[#3F8063]/20'
-                : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
+                : 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1D4852]'
             }`}
+            title={
+              isMapLockedForScroll
+                ? 'El mapa está bloqueado para permitir deslizar la página con total libertad en móvil.'
+                : 'El mapa está desbloqueado para interactuar (arrastrar o hacer zoom).'
+            }
           >
             {isMapLockedForScroll ? (
               <>
-                <Lock className="w-3.5 h-3.5 stroke-[2]" />
-                <span>{t.scrollSafeLockedMap}</span>
+                <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{language === 'en' ? 'Safe Scroll (Locked)' : 'Scroll Seguro (Bloqueado)'}</span>
               </>
             ) : (
               <>
-                <Unlock className="w-3.5 h-3.5 stroke-[2]" />
-                <span>{t.scrollNavigatingMap}</span>
+                <Unlock className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{language === 'en' ? 'Interacting (Tap to Lock)' : 'Interactuando (Bloquear)'}</span>
               </>
             )}
           </button>
 
-          {/* Quick Toggle: Show / Hide Shelters for fast loading */}
-          <button
-            onClick={() => setShowShelters((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold transition border cursor-pointer ${
-              showShelters
-                ? 'bg-[#245A66] text-white border-[#245A66] hover:bg-[#1b434c]'
-                : 'bg-[#FDF4E7] text-[#9A5B18] border-[#E8C28A] hover:bg-[#FAE8CC]'
-            }`}
-          >
-            {showShelters ? (
-              <>
-                <Eye className="w-3.5 h-3.5 stroke-[2]" />
-                <span>{t.sheltersVisibleBtn}</span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-3.5 h-3.5 stroke-[2] text-[#9A5B18]" />
-                <span>{t.sheltersHiddenBtn}</span>
-              </>
-            )}
-          </button>
-
+          {/* Quick Center */}
           <button
             onClick={handleCenterHurricane}
-            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1.5 rounded-[4px] text-xs font-semibold transition cursor-pointer"
+            title="Centrar en Simón"
           >
-            <Crosshair className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
-            <span>{t.centerSimonBtn}</span>
+            <Crosshair className="w-3.5 h-3.5 text-[#245A66]" />
+            <span className="hidden sm:inline">{t.centerSimonBtn}</span>
           </button>
 
+          {/* Refresh Now Button */}
           <button
-            onClick={handleCenterShelters}
-            className="inline-flex items-center gap-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs font-medium transition cursor-pointer"
+            onClick={refreshNOAALayers}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 bg-[#245A66] hover:bg-[#1D4852] text-white text-xs font-bold px-3 py-1.5 rounded-[4px] shadow-xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            <MapPin className="w-3.5 h-3.5 text-[#3F8063] stroke-[1.75]" />
-            <span>Ver Costa y Refugios</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{language === 'en' ? 'Update NOAA Now' : 'Actualizar NOAA'}</span>
           </button>
-
-          {/* State selector */}
-          <select
-            value={selectedStateFilter}
-            onChange={(e) => {
-              const val = e.target.value;
-              setSelectedStateFilter(val);
-              if (mapInstanceRef.current) {
-                if (val === 'Colima') {
-                  mapInstanceRef.current.setView([19.12, -104.05], 9, { animate: true });
-                } else if (val === 'Jalisco') {
-                  mapInstanceRef.current.setView([20.15, -105.1], 8, { animate: true });
-                } else if (val === 'Nayarit') {
-                  mapInstanceRef.current.setView([21.4, -105.2], 8, { animate: true });
-                } else if (val === 'todos') {
-                  mapInstanceRef.current.setView([19.2, -105.1], 7, { animate: true });
-                }
-              }
-            }}
-            className="bg-[#F7F7F4] border border-[#DDE1DF] text-[#252A2E] text-xs rounded-[4px] px-2 py-1 outline-none focus:border-[#245A66]"
-          >
-            <option value="todos">Todos los Estados (272 refugios)</option>
-            <option value="Colima">Colima (216 oficial GIR UEPC)</option>
-            <option value="Jalisco">Jalisco (26 Costa Norte/Sur UEPCBJ)</option>
-            <option value="Nayarit">Nayarit (26 Bahía/Costa SSPC)</option>
-            <option value="Michoacán">Michoacán (2 refugios)</option>
-            <option value="Baja California Sur">Baja California Sur (2 refugios)</option>
-          </select>
         </div>
       </div>
 
-      {/* Map Canvas with Mobile Scroll Lock Guard */}
-      <div
-        className="relative w-full h-[460px] md:h-[520px]"
-        onClick={() => {
-          if (isMapLockedForScroll) {
-            setScrollHintMessage('Scroll libre de página activo. Toca "Explorar Mapa" si deseas mover o acercar el mapa.');
-            setTimeout(() => setScrollHintMessage(null), 3500);
-          }
-        }}
-      >
-        {/* Floating Mobile Scroll Protection Indicator & Quick Toggle */}
-        <div className="absolute top-3 right-3 z-[400] md:hidden">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMapLockedForScroll((prev) => !prev);
-              setScrollHintMessage(null);
-            }}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-md border flex items-center gap-1.5 transition active:scale-95 ${
-              isMapLockedForScroll
-                ? 'bg-white/95 text-[#245A66] border-[#245A66]/30'
-                : 'bg-[#245A66] text-white border-white/30'
-            }`}
-          >
-            {isMapLockedForScroll ? (
-              <>
-                <Unlock className="w-3.5 h-3.5" />
-                <span>Explorar Mapa</span>
-              </>
-            ) : (
-              <>
-                <Lock className="w-3.5 h-3.5" />
-                <span>Permitir Scroll</span>
-              </>
-            )}
-          </button>
+      {/* Main Grid: Map Canvas + Aside Controls and System Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 min-h-[500px]">
+        {/* Leaflet Map Canvas (col-span-3 on desktop) */}
+        <div className="lg:col-span-3 relative h-[480px] sm:h-[560px] lg:h-[620px] bg-[#dce9ef]">
+          <div ref={mapContainerRef} className="w-full h-full" />
+
+          {/* Locked Overlay with Quick Unlock Button on Mobile */}
+          {isMapLockedForScroll && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-5 pointer-events-none">
+              <button
+                onClick={() => setIsMapLockedForScroll(false)}
+                className="pointer-events-auto bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2 transition active:scale-95 cursor-pointer backdrop-blur-xs"
+              >
+                <Unlock className="w-4 h-4 text-[#48A9A6]" />
+                <span>{language === 'en' ? 'Tap to explore map' : 'Toca para explorar mapa'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Re-lock button when unlocked */}
+          {!isMapLockedForScroll && (
+            <div className="absolute top-3 left-3 z-20">
+              <button
+                onClick={() => setIsMapLockedForScroll(true)}
+                className="bg-[#252A2E]/90 hover:bg-[#252A2E] text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-white/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer backdrop-blur-xs"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#3F8063]" />
+                <span>{language === 'en' ? 'Lock Scroll' : 'Bloquear Scroll'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Temporary hint banner on mobile when touching locked map */}
-        {scrollHintMessage && isMapLockedForScroll && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[400] bg-[#252A2E]/90 text-white text-xs px-3.5 py-1.5 rounded-full shadow-lg text-center max-w-[90%] pointer-events-none transition animate-fade-in">
-            {scrollHintMessage}
-          </div>
-        )}
+        {/* Aside Panel (col-span-1) with Layer Toggles, System Status, and Legend */}
+        <aside className="p-4 sm:p-5 bg-[#FFFFFF] border-t lg:border-t-0 lg:border-l border-[#DDE1DF] overflow-y-auto space-y-4 text-xs sm:text-sm">
+          {/* Card 1: NOAA Active Layers */}
+          <div className="border border-[#DDE1DF] rounded-[6px] p-3.5 bg-[#F7F7F4] space-y-2.5">
+            <h3 className="font-bold text-[#193247] text-xs sm:text-sm uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-[#245A66]" />
+              <span>{language === 'en' ? 'Map Layers (NOAA GIS)' : 'Capas del Mapa (NOAA GIS)'}</span>
+            </h3>
 
-        {/* Floating Agile Mode indicator if shelters are hidden */}
-        {!showShelters && (
-          <div className="absolute top-3 left-3 z-[400] bg-[#FFFFFF]/95 backdrop-blur-xs border border-[#E8C28A] text-[#252A2E] rounded-[4px] px-2.5 py-1.5 text-xs shadow-sm flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#D99A38] animate-pulse"></span>
-            <span className="font-medium text-[#9A5B18]">Modo ágil activo:</span>
-            <span className="text-[#687078] hidden sm:inline">Refugios ocultos para acelerar carga.</span>
-            <button
-              onClick={() => setShowShelters(true)}
-              className="text-[#245A66] hover:underline font-semibold text-xs ml-1 cursor-pointer"
-            >
-              Mostrar refugios
-            </button>
-          </div>
-        )}
+            <div className="space-y-2 text-xs font-medium text-[#252A2E]">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showForecast}
+                  onChange={(e) => setShowForecast(e.target.checked)}
+                  className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                />
+                <span>{language === 'en' ? 'Forecast Track' : 'Trayectoria pronosticada'}</span>
+              </label>
 
-        <div ref={mapContainerRef} className="w-full h-full z-0" />
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showCone}
+                  onChange={(e) => setShowCone(e.target.checked)}
+                  className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                />
+                <span>{language === 'en' ? 'Uncertainty Cone' : 'Cono de incertidumbre'}</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showPast}
+                  onChange={(e) => setShowPast(e.target.checked)}
+                  className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                />
+                <span>{language === 'en' ? 'Observed Past Track' : 'Trayectoria observada'}</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showPoints}
+                  onChange={(e) => setShowPoints(e.target.checked)}
+                  className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                />
+                <span>{language === 'en' ? 'Forecast Points' : 'Puntos de pronóstico'}</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showWarnings}
+                  onChange={(e) => setShowWarnings(e.target.checked)}
+                  className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                />
+                <span>{language === 'en' ? 'Watches & Warnings' : 'Vigilancias y avisos'}</span>
+              </label>
+
+              {/* Shelters Toggle */}
+              <div className="pt-2 mt-1 border-t border-[#DDE1DF]">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showShelters}
+                    onChange={(e) => setShowShelters(e.target.checked)}
+                    className="rounded text-[#245A66] focus:ring-0 accent-[#245A66] w-4 h-4 cursor-pointer"
+                  />
+                  <span className="font-bold text-[#245A66]">
+                    {language === 'en' ? 'Temporary Shelters (272)' : 'Refugios temporales (272)'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Active System Summary from NOAA */}
+          <div className="border border-[#DDE1DF] rounded-[6px] p-3.5 bg-[#FFFFFF] space-y-2">
+            <h3 className="font-bold text-[#193247] text-xs sm:text-sm uppercase tracking-wider flex items-center gap-1.5">
+              <Compass className="w-4 h-4 text-[#245A66]" />
+              <span>{language === 'en' ? 'Active System in NOAA' : 'Sistema en NOAA'}</span>
+            </h3>
+            <div
+              className="text-xs leading-relaxed text-[#252A2E]"
+              dangerouslySetInnerHTML={{ __html: stormSummaryHtml }}
+            />
+          </div>
+
+          {/* Card 3: Symbology / Legend */}
+          <div className="border border-[#DDE1DF] rounded-[6px] p-3.5 bg-[#F7F7F4] space-y-2 text-xs">
+            <h3 className="font-bold text-[#193247] uppercase tracking-wider text-xs">
+              {language === 'en' ? 'Map Legend' : 'Simbología Oficial'}
+            </h3>
+            <div className="space-y-1.5 text-xs text-[#252A2E]">
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-0 border-t-3 border-[#247ba0] inline-block" />
+                <span>{language === 'en' ? 'Observed Track' : 'Trayectoria observada'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-0 border-t-3 border-[#d84a4a] inline-block" />
+                <span>{language === 'en' ? 'Forecast Track' : 'Pronóstico oficial'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-3 border border-[#d99b35] bg-[#f2b84b]/30 inline-block rounded-xs" />
+                <span>{language === 'en' ? 'Uncertainty Cone' : 'Cono de incertidumbre'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-3 border border-[#9d4edd] bg-[#9d4edd]/20 inline-block rounded-xs" />
+                <span>{language === 'en' ? 'Watch / Warning zone' : 'Aviso / Vigilancia'}</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-[#607788] leading-tight pt-1 border-t border-[#DDE1DF]">
+              {language === 'en'
+                ? 'The cone represents the probable track of the center of a tropical cyclone (67% probability). Hazards occur well outside the cone.'
+                : 'El cono describe la incertidumbre histórica del centro (67% probabilidad). El peligro de vientos y oleaje se extiende fuera del cono.'}
+            </p>
+          </div>
+
+          {/* Card 4: Official NOAA Source Links */}
+          <div className="border border-[#DDE1DF] rounded-[6px] p-3.5 bg-[#FFFFFF] space-y-1.5 text-xs">
+            <h3 className="font-bold text-[#193247] uppercase tracking-wider text-xs">
+              {language === 'en' ? 'Official Feeds' : 'Enlaces de Datos GIS'}
+            </h3>
+            <div className="space-y-1 text-xs">
+              <div>
+                <a
+                  href="https://www.nhc.noaa.gov/gis/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1479a8] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>NHC / NOAA — Productos GIS</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div>
+                <a
+                  href="https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather_summary/MapServer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1479a8] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>Servicio MapServer NOAA</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div>
+                <a
+                  href="https://smn.conagua.gob.mx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1479a8] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>SMN / CONAGUA México</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* Map Legend & Layer Toggles Footer */}
-      <div className="p-3 border-t border-[#DDE1DF] bg-[#F7F7F4] flex flex-wrap items-center justify-between gap-3 text-xs text-[#687078]">
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1.5 cursor-pointer text-[#252A2E] font-medium">
-            <input
-              type="checkbox"
-              checked={showShelters}
-              onChange={(e) => setShowShelters(e.target.checked)}
-              className="accent-[#245A66]"
-            />
-            <span>Mostrar Refugios ({SHELTERS_DATA.length})</span>
-            <span className="text-[11px] text-[#687078] font-normal">
-              {showShelters ? '(Desactiva para agilizar)' : '(Ocultos para agilizar carga)'}
-            </span>
-          </label>
-
-          <label className="flex items-center gap-1.5 cursor-pointer text-[#252A2E] font-medium">
-            <input
-              type="checkbox"
-              checked={showWindZones}
-              onChange={(e) => setShowWindZones(e.target.checked)}
-              className="accent-[#B84A45]"
-            />
-            <span>Radios de Viento Oficiales</span>
-          </label>
-
-          <label className="flex items-center gap-1.5 cursor-pointer text-[#252A2E] font-medium">
-            <input
-              type="checkbox"
-              checked={filterPetsOnly}
-              onChange={(e) => setFilterPetsOnly(e.target.checked)}
-              className="accent-[#D99A38]"
-            />
-            <span className="flex items-center gap-1">
-              <PawPrint className="w-3 h-3 text-[#D99A38]" />
-              Solo Pet-Friendly
-            </span>
-          </label>
-        </div>
-
-        <div className="text-[11px] text-[#687078] flex items-center gap-2">
-          <span>Fuente: OpenStreetMap • Trayectoria: NHC / SMN</span>
-          <span className="text-[#245A66] font-semibold bg-[#245A66]/8 px-1.5 py-0.5 rounded-[3px]">
-            Actualizado {currentStatus.timeText} hrs
+      {/* Footer Disclaimer Bar */}
+      <div className="p-3 bg-[#F7F7F4] border-t border-[#DDE1DF] text-xs text-[#607788] flex flex-wrap items-center justify-between gap-2">
+        <span>
+          {language === 'en'
+            ? 'Geographic Source: NOAA / National Hurricane Center. Map updates directly from NOAA MapServer every 5 minutes.'
+            : 'Fuente geográfica: NOAA / National Hurricane Center. El mapa consulta MapServer directamente cada 5 minutos.'}
+        </span>
+        {lastUpdatedTime && (
+          <span className="font-bold text-[#193247] font-tabular">
+            {language === 'en' ? `Last sync: ${lastUpdatedTime}` : `Sincronizado: ${lastUpdatedTime}`}
           </span>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -48,6 +48,20 @@ function AppContent() {
   // UX Requirement: Ocultar los refugios por defecto, mostrarlos solo a petición del usuario
   const [showSheltersSection, setShowSheltersSection] = useState(false);
 
+  // Live NOAA MapServer real-time data received from GIS service
+  const [liveNOAAData, setLiveNOAAData] = useState<{
+    lat: number;
+    lng: number;
+    windKmh: number;
+    gustKmh: number;
+    pressureHpa: number;
+    category: number;
+    advisoryNum: string;
+    advisoryDate: string;
+    movement: string;
+    speedKmh: number;
+  } | null>(null);
+
   // Auto-refresh states (< 5 minutes rapid cycle, default 2 minutes)
   const [refreshIntervalSeconds, setRefreshIntervalSeconds] = useState<number>(DEFAULT_REFRESH_SECONDS);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -59,6 +73,24 @@ function AppContent() {
   const { status: liveStatus, trajectoryPoints: liveTrajectoryPoints } = useMemo(() => {
     return getLiveHurricaneStatus(lastUpdated);
   }, [lastUpdated]);
+
+  // Merge live NOAA MapServer coordinates & intensity when available
+  const effectiveStatus = useMemo(() => {
+    if (!liveNOAAData) return liveStatus;
+    return {
+      ...liveStatus,
+      lat: liveNOAAData.lat,
+      lng: liveNOAAData.lng,
+      windSpeedKmh: liveNOAAData.windKmh,
+      windGustsKmh: liveNOAAData.gustKmh,
+      pressureHpa: liveNOAAData.pressureHpa,
+      category: liveNOAAData.category,
+      movement: liveNOAAData.movement,
+      movementSpeedKmh: liveNOAAData.speedKmh,
+      coordinatesText: `${liveNOAAData.lat.toFixed(1)}°N, ${Math.abs(liveNOAAData.lng).toFixed(1)}°${language === 'en' ? 'W' : 'O'}`,
+      lastUpdate: liveNOAAData.advisoryDate || liveStatus.lastUpdate,
+    };
+  }, [liveStatus, liveNOAAData, language]);
 
   const handleRefreshAll = () => {
     setIsRefreshing(true);
@@ -215,9 +247,10 @@ function AppContent() {
             selectedShelterId={selectedShelter?.id}
             onSelectShelter={handleSelectShelterOnMap}
             userCoords={userCoords}
-            dynamicStatus={liveStatus}
+            dynamicStatus={effectiveStatus}
             dynamicTrajectoryPoints={liveTrajectoryPoints}
             refreshTrigger={refreshTrigger}
+            onLiveStormData={setLiveNOAAData}
           />
         </section>
 
