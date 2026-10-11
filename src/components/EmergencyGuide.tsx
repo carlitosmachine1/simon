@@ -1,157 +1,154 @@
 import React, { useState } from 'react';
 import {
   ShieldAlert,
-  AlertOctagon,
   Home,
   CheckCircle,
-  HelpCircle,
   Waves,
   ZapOff,
-  Flame,
-  PhoneCall,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const EmergencyGuide: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'antes' | 'durante' | 'despues'>('antes');
 
   return (
-    <section id="que-hacer" className="space-y-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
-        <div className="border-b border-slate-800 pb-4 mb-4">
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-            <ShieldAlert className="w-4 h-4" />
+    <section id="guia" className="space-y-4">
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
+        {/* Header */}
+        <div className="border-b border-[#DDE1DF] pb-3">
+          <div className="flex items-center gap-2 text-[#245A66] font-semibold text-xs uppercase tracking-wider">
+            <ShieldAlert className="w-3.5 h-3.5 stroke-[1.75]" />
             Protocolos de Protección Civil
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">
-            ¿Qué Hacer ante el Huracán Simón?
+          <h2 className="text-lg sm:text-xl font-semibold text-[#252A2E] mt-0.5">
+            Protocolo de Actuación por Fases
           </h2>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
-            Siga estas instrucciones paso a paso para proteger la vida de su familia y mascotas
-            en las fases previa, de impacto y posterior al huracán categoría 4.
+          <p className="text-xs text-[#687078] mt-0.5 max-w-2xl">
+            Instrucciones oficiales para salvaguardar la vida y el patrimonio antes, durante y después del impacto ciclónico.
           </p>
         </div>
 
         {/* Phase Tabs */}
-        <div className="flex gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+        <div className="flex gap-1.5 p-1 bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px]">
           <button
             onClick={() => setActiveTab('antes')}
-            className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 px-3 rounded-[3px] text-xs font-medium transition flex items-center justify-center gap-1.5 ${
               activeTab === 'antes'
-                ? 'bg-amber-500 text-slate-950 shadow'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#245A66] text-white shadow-xs'
+                : 'text-[#687078] hover:text-[#252A2E]'
             }`}
           >
-            <span>1. ANTES del Impacto</span>
+            <span>1. Antes del Impacto</span>
           </button>
 
           <button
             onClick={() => setActiveTab('durante')}
-            className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 px-3 rounded-[3px] text-xs font-medium transition flex items-center justify-center gap-1.5 ${
               activeTab === 'durante'
-                ? 'bg-red-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#B84A45] text-white shadow-xs'
+                : 'text-[#687078] hover:text-[#252A2E]'
             }`}
           >
-            <span>2. DURANTE el Huracán</span>
+            <span>2. Durante el Huracán</span>
           </button>
 
           <button
             onClick={() => setActiveTab('despues')}
-            className={`flex-1 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 px-3 rounded-[3px] text-xs font-medium transition flex items-center justify-center gap-1.5 ${
               activeTab === 'despues'
-                ? 'bg-blue-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#7D9B8A] text-white shadow-xs'
+                : 'text-[#687078] hover:text-[#252A2E]'
             }`}
           >
-            <span>3. DESPUÉS de la Tormenta</span>
+            <span>3. Después del Paso</span>
           </button>
         </div>
 
-        {/* Tab Content */}
-        <div className="mt-4">
+        {/* Tab Content Panels */}
+        <div className="pt-1">
           {activeTab === 'antes' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm">
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-amber-300 flex items-center gap-2">
-                  <Home className="w-4 h-4 text-amber-400" />
-                  Protección de la Vivienda
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#252A2E] flex items-center gap-1.5">
+                  <Home className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
+                  Aseguramiento del Hogar
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li>Coloque cinta adhesiva en forma de "X" o madera en ventanas de cristal contra proyectiles de viento.</li>
-                  <li>Asegure o guarde tinacos, tanques de gas ligeros, macetas y láminas en azoteas.</li>
-                  <li>Limpie coladeras, canales pluviales y desagües para facilitar la salida del agua.</li>
-                  <li>Cierre llaves de gas y baje el interruptor eléctrico general si el agua empieza a entrar.</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li>Proteja ventanas de vidrio con cinta o paneles de madera para prevenir roturas por viento.</li>
+                  <li>Fije o guarde objetos sueltos en azoteas y patios (tinacos ligeros, tanques de gas, macetas).</li>
+                  <li>Limpie coladeras y desagües para facilitar el flujo pluvial y reducir anegamientos.</li>
+                  <li>Cierre el suministro de gas y desconecte la energía si el agua comienza a ingresar.</li>
                 </ul>
               </div>
 
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-amber-300 flex items-center gap-2">
-                  <AlertOctagon className="w-4 h-4 text-amber-400" />
-                  Plan Familiar y Evacuación
+              <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#252A2E] flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#A66C19] stroke-[1.75]" />
+                  Plan Familiar y Evacuación Preventiva
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li>Identifique con anticipación el refugio temporal más cercano habilitado en su colonia.</li>
-                  <li>Tenga lista la mochila de emergencia con documentos en bolsas impermeables selladas.</li>
-                  <li>Si las autoridades emiten orden de evacuación en su zona, desaloje de inmediato y sin dudar.</li>
-                  <li>Asegure el resguardo seguro y alimento de sus animales domésticos.</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li>Ubique el refugio temporal más cercano a su domicilio en el directorio.</li>
+                  <li>Empaque documentos oficiales en bolsas herméticas de plástico.</li>
+                  <li>Si vive en zona baja, estero o margen de río, acate la orden de evacuación oportuna.</li>
+                  <li>Prevea alimento, correa y transportadora para animales domésticos.</li>
                 </ul>
               </div>
             </div>
           )}
 
           {activeTab === 'durante' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm">
-              <div className="bg-slate-950/70 border border-red-900/40 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-red-400 flex items-center gap-2">
-                  <AlertOctagon className="w-4 h-4 text-red-400" />
-                  Resguardo Total en Interiores
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="bg-[#F7F7F4] border border-[#B84A45]/30 rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#B84A45] flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#B84A45] stroke-[1.75]" />
+                  Resguardo Obligatorio en Interiores
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li>Permanezca en el cuarto más seguro de la casa (sin ventanas o con muros de concreto reforzados).</li>
-                  <li>Aléjese por completo de puertas de vidrio, ventanas y canceles.</li>
-                  <li>No salga a la intemperie bajo ninguna circunstancia, las rachas de 295 km/h proyectan ramas y escombros mortales.</li>
-                  <li>Mantenga apagadas las luces y use únicamente linternas de pilas (evite velas por fugas de gas).</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li>Permanezca en la habitación más resistente de la vivienda, lejos de ventanales y canceles.</li>
+                  <li>No salga a la vía pública; las ráfagas proyectan láminas, ramas y escombros peligrosos.</li>
+                  <li>Utilice linternas de baterías en lugar de velas para evitar incendios accidentales.</li>
+                  <li>Conserve la calma y mantenga a niños y personas mayores en el área más segura.</li>
                 </ul>
               </div>
 
-              <div className="bg-slate-950/70 border border-red-900/40 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-red-400 flex items-center gap-2">
-                  <Waves className="w-4 h-4 text-cyan-400" />
-                  Cuidado con el Ojo del Huracán
+              <div className="bg-[#F7F7F4] border border-[#B84A45]/30 rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#B84A45] flex items-center gap-1.5">
+                  <Waves className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
+                  Precaución con el Ojo del Ciclón
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li><strong>¡Alerta con la calma engañosa!:</strong> Si de pronto cesa el viento y sale el sol, está pasando el ojo del huracán.</li>
-                  <li>NO salga; en cuestión de minutos los vientos reanudarán con la misma furia en sentido opuesto.</li>
-                  <li>Monitoree la radio de pilas para confirmar cuando el vórtice se haya alejado totalmente.</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li><strong>Calma aparente:</strong> Si el viento cesa bruscamente, el ojo del huracán está cruzando la zona.</li>
+                  <li>NO abandone el refugio; en pocos minutos los vientos se reanudarán en sentido opuesto.</li>
+                  <li>Espere el aviso formal de las autoridades antes de dar por concluida la contingencia.</li>
                 </ul>
               </div>
             </div>
           )}
 
           {activeTab === 'despues' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm">
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-blue-300 flex items-center gap-2">
-                  <ZapOff className="w-4 h-4 text-blue-400" />
-                  Precaución con Riesgos Ocultos
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#252A2E] flex items-center gap-1.5">
+                  <ZapOff className="w-3.5 h-3.5 text-[#A66C19] stroke-[1.75]" />
+                  Riesgos Secundarios
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li>No toque ni se acerque a cables eléctricos caídos en charcos o vías públicas. Reporte al 071 de CFE.</li>
-                  <li>No cruce ríos crecidos, arroyos ni calles inundadas a pie o en auto; la corriente arrastra vehículos pesados.</li>
-                  <li>Inspeccione fugas de gas con agua y jabón antes de encender estufas o fósforos.</li>
-                  <li>Beba solo agua embotellada o previamente hervida para evitar brotes de cólera o infecciones gastrointestinales.</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li>Evite acercarse a postes o cables caídos; repórtelos de inmediato al 071 de CFE.</li>
+                  <li>No cruce vados, ríos o calles anegadas a pie o en vehículo; la corriente puede arrastrarlos.</li>
+                  <li>Revise que no haya fugas de gas antes de encender interruptores o fósforos.</li>
+                  <li>Consuma exclusivamente agua embotellada o debidamente hervida.</li>
                 </ul>
               </div>
 
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2">
-                <div className="font-bold text-blue-300 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
-                  Regreso Seguro a Casa
+              <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 space-y-2">
+                <div className="font-semibold text-[#252A2E] flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-[#3F8063] stroke-[1.75]" />
+                  Retorno y Evaluación
                 </div>
-                <ul className="text-slate-300 space-y-1.5 list-disc list-inside">
-                  <li>Espere el aviso formal de Protección Civil antes de abandonar el refugio temporal.</li>
-                  <li>Tome fotografías de los daños materiales para los reportes de seguros o apoyos gubernamentales.</li>
-                  <li>Participe en brigadas de limpieza comunitaria para retirar lodo y cacharros que acumulen mosquitos del dengue.</li>
+                <ul className="text-[#687078] space-y-1.5 list-disc list-inside leading-relaxed">
+                  <li>Regrese a su domicilio únicamente cuando Protección Civil declare la zona segura.</li>
+                  <li>Documente fotográficamente daños materiales para gestiones de seguro o apoyos.</li>
+                  <li>Colabore en la eliminación de encharcamientos para prevenir la proliferación de mosquitos.</li>
                 </ul>
               </div>
             </div>

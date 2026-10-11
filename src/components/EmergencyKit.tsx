@@ -5,8 +5,6 @@ import {
   CheckSquare,
   Square,
   RotateCcw,
-  Sparkles,
-  ShieldCheck,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'simon_emergency_kit_checks_v1';
@@ -36,7 +34,7 @@ export const EmergencyKit: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm('¿Deseas reiniciar la lista de tu mochila de emergencia?')) {
+    if (window.confirm('¿Desea reiniciar la lista de la mochila de emergencia?')) {
       setCheckedIds([]);
     }
   };
@@ -47,51 +45,53 @@ export const EmergencyKit: React.FC = () => {
 
   return (
     <section id="mochila" className="space-y-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DDE1DF] pb-3">
           <div>
-            <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
-              <Briefcase className="w-4 h-4" />
-              Preparación Inmediata
+            <div className="flex items-center gap-2 text-[#245A66] font-semibold text-xs uppercase tracking-wider">
+              <Briefcase className="w-3.5 h-3.5 stroke-[1.75]" />
+              Preparación Familiar Preventiva
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">
+            <h2 className="text-lg sm:text-xl font-semibold text-[#252A2E] mt-0.5">
               Mochila de Emergencia de 72 Horas
             </h2>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Marca los artículos que ya tengas empacados. Esta lista se guarda automáticamente en tu navegador.
-              Cada integrante de la familia debe conocer la ubicación de la mochila.
+            <p className="text-xs text-[#687078] mt-0.5 max-w-2xl">
+              Artículos prioritarios para autosuficiencia durante las primeras 72 horas. La selección se guarda en su navegador.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <div className="text-xs text-slate-400 font-medium">Progreso del Kit</div>
-              <div className="text-lg font-black text-emerald-400">
+            <div className="text-right text-xs">
+              <span className="text-[#687078]">Completado: </span>
+              <span className="font-semibold text-[#252A2E] font-tabular">
                 {completedCount} de {totalCount} ({progressPercent}%)
-              </div>
+              </span>
             </div>
             {completedCount > 0 && (
               <button
                 onClick={handleReset}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs p-2 rounded-lg border border-slate-700 transition"
+                className="bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#687078] hover:text-[#252A2E] text-xs p-1.5 rounded-[4px] border border-[#DDE1DF] transition"
                 title="Reiniciar lista"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5 stroke-[1.75]" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-950 rounded-full h-2 mb-5 overflow-hidden border border-slate-800">
-          <div
-            className="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
+        {/* Fine Horizontal Progress Bar */}
+        <div className="space-y-1">
+          <div className="w-full bg-[#DDE1DF] h-1.5 rounded-[1px] overflow-hidden">
+            <div
+              className="bg-[#3F8063] h-1.5 transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
         </div>
 
         {/* Items Checklist Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
           {EMERGENCY_KIT_ITEMS.map((item) => {
             const isChecked = checkedIds.includes(item.id);
 
@@ -99,38 +99,36 @@ export const EmergencyKit: React.FC = () => {
               <div
                 key={item.id}
                 onClick={() => toggleItem(item.id)}
-                className={`cursor-pointer rounded-xl p-3.5 border transition select-none flex items-start gap-3 ${
+                className={`cursor-pointer rounded-[4px] p-3 border transition select-none flex items-start gap-2.5 ${
                   isChecked
-                    ? 'bg-emerald-950/40 border-emerald-500/50 text-white'
-                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                    ? 'bg-[#3F8063]/5 border-[#3F8063]/30'
+                    : 'bg-[#F7F7F4] border-[#DDE1DF] hover:border-[#687078]/40'
                 }`}
               >
                 <button
                   type="button"
-                  className="mt-0.5 shrink-0 text-emerald-400 focus:outline-none"
+                  className="mt-0.5 shrink-0 text-[#245A66] focus:outline-none"
                   aria-label={isChecked ? 'Desmarcar' : 'Marcar'}
                 >
                   {isChecked ? (
-                    <CheckSquare className="w-5 h-5 fill-emerald-500 text-slate-950" />
+                    <CheckSquare className="w-4 h-4 text-[#3F8063] stroke-[2]" />
                   ) : (
-                    <Square className="w-5 h-5 text-slate-500" />
+                    <Square className="w-4 h-4 text-[#687078] stroke-[1.5]" />
                   )}
                 </button>
 
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
-                      {item.category}
-                    </span>
-                  </div>
+                <div className="space-y-0.5 min-w-0">
+                  <span className="text-[10px] font-medium text-[#687078] bg-white border border-[#DDE1DF] px-1 py-0.2 rounded-[2px]">
+                    {item.category}
+                  </span>
                   <h4
-                    className={`text-xs sm:text-sm font-bold ${
-                      isChecked ? 'line-through text-slate-400' : 'text-white'
+                    className={`text-xs font-semibold leading-tight ${
+                      isChecked ? 'line-through text-[#687078]' : 'text-[#252A2E]'
                     }`}
                   >
                     {item.title}
                   </h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">{item.desc}</p>
+                  <p className="text-[11px] text-[#687078] leading-tight">{item.desc}</p>
                 </div>
               </div>
             );

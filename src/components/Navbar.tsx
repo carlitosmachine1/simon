@@ -1,50 +1,59 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  ShieldAlert,
+  Compass,
+  Phone,
+  ShieldCheck,
+  Menu,
+  X,
   MapPin,
   Satellite,
   BookOpen,
   Briefcase,
-  Phone,
-  Menu,
-  X,
-  ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface NavbarProps {
   onOpenContacts: () => void;
+  activeSection?: string;
+  onNavigateSection?: (sectionId: string) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenContacts }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenContacts,
+  activeSection,
+  onNavigateSection,
+}) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navLinks = [
-    { label: 'Mapa y Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
-    { label: 'Refugios Temporales', href: '#refugios', icon: ShieldAlert },
-    { label: 'Satélite NOAA', href: '#satelite', icon: Satellite },
-    { label: 'Fuentes Oficiales', href: '#fuentes', icon: BookOpen },
-    { label: 'Mochila 72h', href: '#mochila', icon: Briefcase },
+    { id: 'resumen', label: 'Resumen', href: '#resumen', icon: Compass },
+    { id: 'mapa-trayectoria', label: 'Trayectoria', href: '#mapa-trayectoria', icon: MapPin },
+    { id: 'refugios', label: 'Refugios', href: '#refugios', icon: ShieldCheck },
+    { id: 'satelite', label: 'Satélite NOAA', href: '#satelite', icon: Satellite },
+    { id: 'infraestructura', label: 'Infraestructura', href: '#infraestructura', icon: AlertTriangle },
+    { id: 'guia', label: 'Guía y Mochila', href: '#guia', icon: Briefcase },
+    { id: 'fuentes', label: 'Fuentes', href: '#fuentes', icon: BookOpen },
   ];
 
   return (
-    <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-[37px] z-30 transition">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand */}
+    <header className="bg-[#FFFFFF] border-b border-[#DDE1DF] sticky top-0 z-40 transition">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        {/* Brand & Editorial Title */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center shadow-lg shadow-red-900/50">
-            <span className="text-xl">🌀</span>
+          <div className="w-8 h-8 rounded-[4px] bg-[#245A66] text-white flex items-center justify-center font-bold text-sm tracking-wider">
+            S4
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-black text-white text-base sm:text-lg tracking-tight">
+              <span className="font-semibold text-[#252A2E] text-sm tracking-tight">
                 HURACÁN SIMÓN
               </span>
-              <span className="bg-red-600/30 text-red-400 border border-red-500/40 text-[10px] font-black px-1.5 py-0.5 rounded uppercase">
+              <span className="text-[11px] font-medium text-[#245A66] bg-[#245A66]/10 px-1.5 py-0.5 rounded-[3px]">
                 Pacífico
               </span>
             </div>
-            <div className="text-[11px] text-slate-400 font-medium">
-              Centro Oficial de Información de Emergencia
+            <div className="text-[11px] text-[#687078] truncate leading-tight">
+              Centro No oficial pero si fuentes oficiales
             </div>
           </div>
         </div>
@@ -53,60 +62,61 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenContacts }) => {
         <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((link) => {
             const Icon = link.icon;
+            const isActive = activeSection === link.id;
             return (
               <a
-                key={link.href}
+                key={link.id}
                 href={link.href}
-                className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 px-3 py-2 rounded-xl flex items-center gap-1.5 transition"
+                className={`text-xs font-medium px-2.5 py-1.5 rounded-[4px] flex items-center gap-1.5 transition ${
+                  isActive
+                    ? 'text-[#245A66] bg-[#245A66]/8 font-semibold'
+                    : 'text-[#687078] hover:text-[#252A2E] hover:bg-[#F7F7F4]'
+                }`}
               >
-                <Icon className="w-3.5 h-3.5 text-slate-400" />
+                <Icon className="w-3.5 h-3.5 stroke-[1.75]" />
                 <span>{link.label}</span>
               </a>
             );
           })}
         </nav>
 
-        {/* Action Button & Mobile Menu trigger */}
+        {/* Emergency Action & Mobile Trigger */}
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenContacts}
-            className="bg-red-600 hover:bg-red-500 text-white font-black text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-red-950/60 transition active:scale-95"
+            className="bg-[#B84A45] hover:bg-[#a63f3a] text-white font-medium text-xs px-3 py-1.5 rounded-[4px] flex items-center gap-1.5 transition active:scale-98"
           >
-            <Phone className="w-3.5 h-3.5" />
+            <Phone className="w-3.5 h-3.5 stroke-[2]" />
             <span>Directorio 911</span>
           </button>
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
-            aria-label="Abrir menú"
+            className="lg:hidden p-1.5 rounded-[4px] text-[#687078] hover:text-[#252A2E] hover:bg-[#F7F7F4] border border-[#DDE1DF]"
+            aria-label="Menú de navegación"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-4 space-y-1">
+        <div className="lg:hidden bg-[#FFFFFF] border-b border-[#DDE1DF] px-4 py-2 space-y-1">
           {navLinks.map((link) => {
             const Icon = link.icon;
             return (
               <a
-                key={link.href}
+                key={link.id}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-semibold text-slate-200 hover:bg-slate-800/80 px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition"
+                className="text-xs font-medium text-[#252A2E] hover:bg-[#F7F7F4] px-3 py-2 rounded-[4px] flex items-center gap-2 transition"
               >
-                <Icon className="w-4 h-4 text-slate-400" />
+                <Icon className="w-4 h-4 text-[#245A66]" />
                 <span>{link.label}</span>
               </a>
             );
           })}
-          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 px-3">
-            <span>Hora Oficial México Centro (UTC-6)</span>
-            <span className="font-mono text-emerald-400">EN VIVO</span>
-          </div>
         </div>
       )}
     </header>

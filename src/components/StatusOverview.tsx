@@ -15,10 +15,8 @@ import {
   Building2,
   GraduationCap,
   Anchor,
-  Navigation,
-  Info,
   ShieldCheck,
-  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const StatusOverview: React.FC = () => {
@@ -30,209 +28,198 @@ export const StatusOverview: React.FC = () => {
   });
 
   return (
-    <section className="space-y-4">
-      {/* Informative Meteorological Overview Header (Calm, authoritative, professional) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/80 p-5 sm:p-6 shadow-xl">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-          <div className="space-y-2.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-950 text-sky-200 border border-sky-500/40">
-                <span className="w-2 h-2 rounded-full bg-sky-400" />
-                Monitoreo Ciclónico Activo
+    <section id="resumen" className="space-y-4">
+      {/* Nivel 1 — Panel Principal: Datos Meteorológicos Clave */}
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 sm:p-6 shadow-none">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-[#DDE1DF]">
+          {/* Main Meteorological Identity */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-[#245A66] uppercase tracking-wider">
+                Ciclón Tropical Activo • Pacífico Nororiental
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300">
-                <Radio className="w-3.5 h-3.5 text-slate-400" />
-                Cuenca Pacífico Nororiental
-              </span>
-              <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[#DDE1DF]">|</span>
+              <span className="text-[11px] text-[#687078] font-tabular">
                 {HURRICANE_CURRENT_STATUS.lastUpdate}
               </span>
             </div>
 
             <div className="flex flex-wrap items-baseline gap-3">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-semibold text-[#252A2E] tracking-tight">
                 Huracán Simón
               </h1>
-              <span className="px-3 py-1 rounded-lg bg-slate-800 border border-slate-600 text-amber-300 font-bold text-sm">
-                Categoría 4 (Escala Saffir-Simpson)
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-[3px] bg-[#B84A45]/10 text-[#B84A45] border border-[#B84A45]/20">
+                Categoría 4 (Saffir-Simpson)
               </span>
             </div>
 
-            <p className="text-slate-300 text-sm max-w-3xl leading-relaxed">
-              El sistema se desplaza lentamente con rumbo norte de forma paralela a las costas de Colima y Jalisco.
-              Presenta vientos sostenidos de <strong className="text-white font-semibold">240 km/h</strong> y rachas de{' '}
-              <strong className="text-white font-semibold">295 km/h</strong>. Se pronostican precipitaciones significativas y
-              oleaje elevado de 6 a 8 metros en el litoral centro del Pacífico.
+            <p className="text-xs sm:text-sm text-[#687078] max-w-2xl leading-relaxed">
+              Ojo ciclónico estructurado a 197 km al SSO de Manzanillo, desplazándose lentamente al norte (4 km/h).
+              Se pronostican vientos sostenidos de 240 km/h y oleaje de 6 a 8 metros en el litoral de Colima, Jalisco y Nayarit.
             </p>
           </div>
 
-          {/* Calm Position Reference Box */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left sm:text-right shrink-0 w-full lg:w-auto">
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-              Ubicación Referencial
+          {/* Featured Primary Number: Viento Máximo Sostenido */}
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 lg:text-right shrink-0 min-w-[240px]">
+            <div className="text-[11px] font-medium text-[#687078] uppercase tracking-wide">
+              Viento Máximo Sostenido
             </div>
-            <div className="text-xl font-bold text-white mt-0.5">197 km al SSO de Manzanillo</div>
-            <div className="text-xs text-slate-300">320 km al Sur de Puerto Vallarta</div>
-            <div className="text-[11px] text-slate-400 font-mono mt-1">
-              Coordenadas: {HURRICANE_CURRENT_STATUS.coordinatesText} • Avance 4 km/h al Norte
+            <div className="text-3xl sm:text-4xl font-semibold text-[#245A66] font-tabular mt-0.5">
+              240 <span className="text-sm font-normal text-[#687078]">km/h</span>
+            </div>
+            <div className="text-xs text-[#252A2E] font-tabular mt-0.5">
+              Rachas de <strong className="font-semibold text-[#B84A45]">295 km/h</strong> (150 mph)
+            </div>
+            <div className="text-[11px] text-[#687078] font-tabular mt-1 pt-1.5 border-t border-[#DDE1DF]">
+              Posición: {HURRICANE_CURRENT_STATUS.coordinatesText}
             </div>
           </div>
         </div>
 
-        {/* Civil Protection Advisories Strip */}
-        <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-          <div className="flex items-start gap-2.5 bg-slate-950/60 rounded-xl p-3 border border-slate-800">
-            <GraduationCap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-slate-200">Suspensión Preventiva de Clases:</strong> Decretada en 22 municipios costeros y serranos de Jalisco, y en todos los niveles educativos en Colima y Nayarit.
+        {/* Nivel 2 — Indicadores Meteorológicos Específicos */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-5">
+          {/* Indicador 1: Presión Barométrica */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-[#687078]">
+              <span className="font-medium">Presión Central</span>
+              <Gauge className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             </div>
+            <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
+              {HURRICANE_CURRENT_STATUS.pressureHpa} <span className="text-xs font-normal text-[#687078]">hPa</span>
+            </div>
+            {/* Fine scale indicator */}
+            <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
+              <div className="bg-[#245A66] h-1" style={{ width: '92%' }} />
+            </div>
+            <div className="text-[11px] text-[#687078]">27.82 inHg (gradiente extremo)</div>
           </div>
-          <div className="flex items-start gap-2.5 bg-slate-950/60 rounded-xl p-3 border border-slate-800">
-            <Building2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-slate-200">Medidas en Zona Costera:</strong> Restricción de actividades turísticas y marítimas en playas. Evacuación preventiva hacia albergues en zonas bajas.
+
+          {/* Indicador 2: Desplazamiento */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-[#687078]">
+              <span className="font-medium">Rumbo y Velocidad</span>
+              <Compass className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             </div>
+            <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
+              {HURRICANE_CURRENT_STATUS.movementSpeedKmh} <span className="text-xs font-normal text-[#687078]">km/h</span>
+            </div>
+            <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
+              <div className="bg-[#7D9B8A] h-1" style={{ width: '20%' }} />
+            </div>
+            <div className="text-[11px] text-[#687078]">Norte (360°) • Avance lento</div>
+          </div>
+
+          {/* Indicador 3: Oleaje */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-[#687078]">
+              <span className="font-medium">Oleaje Costero</span>
+              <Waves className="w-3.5 h-3.5 text-[#A66C19] stroke-[1.75]" />
+            </div>
+            <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
+              6.0 – 8.0 <span className="text-xs font-normal text-[#687078]">m</span>
+            </div>
+            <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
+              <div className="bg-[#A66C19] h-1" style={{ width: '85%' }} />
+            </div>
+            <div className="text-[11px] text-[#687078]">Marea de tormenta costera</div>
+          </div>
+
+          {/* Indicador 4: Precipitación acumulada */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-[#687078]">
+              <span className="font-medium">Lluvia Acumulada</span>
+              <CloudRain className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
+            </div>
+            <div className="text-xl sm:text-2xl font-semibold text-[#252A2E] font-tabular">
+              250 – 450 <span className="text-xs font-normal text-[#687078]">mm</span>
+            </div>
+            <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
+              <div className="bg-[#245A66] h-1" style={{ width: '75%' }} />
+            </div>
+            <div className="text-[11px] text-[#687078]">Puntuales hasta 650 mm</div>
           </div>
         </div>
       </div>
 
-      {/* Meteorological Parameters Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* Metric 1: Vientos */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Vientos Máx.</span>
-            <Wind className="w-4 h-4 text-sky-400" />
+      {/* Nivel 3 — Panel de Niveles de Alerta Oficial SIAT-CT */}
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-3">
+        <div className="flex items-center justify-between border-b border-[#DDE1DF] pb-2.5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#245A66] stroke-[1.75]" />
+            <h2 className="text-sm font-semibold text-[#252A2E]">
+              Sistema de Alerta Temprana para Ciclones Tropicales (SIAT-CT)
+            </h2>
           </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-white">{HURRICANE_CURRENT_STATUS.windSpeedKmh} <span className="text-xs font-normal text-slate-400">km/h</span></div>
-            <div className="text-[11px] text-amber-300 font-medium">Rachas: {HURRICANE_CURRENT_STATUS.windGustsKmh} km/h</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">150 mph sostenidos</div>
-        </div>
-
-        {/* Metric 2: Presión Central */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Presión Min.</span>
-            <Gauge className="w-4 h-4 text-indigo-400" />
-          </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-white">{HURRICANE_CURRENT_STATUS.pressureHpa} <span className="text-xs font-normal text-slate-400">hPa</span></div>
-            <div className="text-[11px] text-slate-300">27.82 inHg</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">Ojo bien estructurado</div>
-        </div>
-
-        {/* Metric 3: Desplazamiento */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Desplazamiento</span>
-            <Compass className="w-4 h-4 text-teal-400" />
-          </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-white">{HURRICANE_CURRENT_STATUS.movementSpeedKmh} <span className="text-xs font-normal text-slate-400">km/h</span></div>
-            <div className="text-[11px] text-teal-300">Rumbo Norte (360°)</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">Avance lento hacia la costa</div>
-        </div>
-
-        {/* Metric 4: Oleaje */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Oleaje Previsto</span>
-            <Waves className="w-4 h-4 text-cyan-400" />
-          </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-white">6.0 a 8.0 <span className="text-xs font-normal text-slate-400">m</span></div>
-            <div className="text-[11px] text-cyan-300 font-medium">Marea de tormenta</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">Puertos en restricción</div>
-        </div>
-
-        {/* Metric 5: Lluvias */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Lluvia Acum.</span>
-            <CloudRain className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-white">250 - 450 <span className="text-xs font-normal text-slate-400">mm</span></div>
-            <div className="text-[11px] text-blue-300">Puntuales 650 mm</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">Monitoreo de cuencas</div>
-        </div>
-
-        {/* Metric 6: Distancia */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Sector Costero</span>
-            <MapPin className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="mt-2">
-            <div className="text-xl font-bold text-white">Colima / Jalisco</div>
-            <div className="text-[11px] text-emerald-300">Borde costero</div>
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">Vigilancia SMN/NOAA</div>
-        </div>
-      </div>
-
-      {/* Institutional SIAT-CT Alert System */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-sky-400" />
-            Sistema de Alerta Temprana para Ciclones Tropicales (SIAT-CT)
-          </h2>
-          <span className="text-[11px] text-slate-400">Coordinación Nacional de Protección Civil</span>
+          <span className="text-[11px] text-[#687078] hidden sm:inline">
+            Coordinación Nacional de Protección Civil
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {HURRICANE_CURRENT_STATUS.siatCtAlerts.map((alert, idx) => (
-            <div
-              key={idx}
-              className={`rounded-xl p-3.5 border ${alert.badgeBg} transition`}
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold uppercase tracking-wide">
-                  {alert.level}
-                </span>
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: alert.color }}
-                />
+          {HURRICANE_CURRENT_STATUS.siatCtAlerts.map((alert, idx) => {
+            const isRed = alert.color === '#b91c1c';
+            const isOrange = alert.color === '#c2410c';
+            const isYellow = alert.color === '#b45309';
+
+            return (
+              <div
+                key={idx}
+                className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-3 space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-xs font-semibold ${
+                      isRed
+                        ? 'text-[#B84A45]'
+                        : isOrange
+                        ? 'text-[#A66C19]'
+                        : isYellow
+                        ? 'text-[#D99A38]'
+                        : 'text-[#3F8063]'
+                    }`}
+                  >
+                    {alert.level}
+                  </span>
+                  <span
+                    className="w-2 h-2 rounded-[2px]"
+                    style={{ backgroundColor: alert.color }}
+                  />
+                </div>
+                <p className="text-xs text-[#252A2E] font-medium leading-snug">
+                  {alert.zones}
+                </p>
+                <p className="text-[11px] text-[#687078] leading-relaxed">
+                  {alert.action}
+                </p>
               </div>
-              <p className="text-xs text-white font-semibold mb-1 leading-snug">{alert.zones}</p>
-              <p className="text-[11px] text-slate-300 leading-relaxed">{alert.action}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* REAL INFRASTRUCTURE STATUS (Ports, Roads, Rivers, Airports) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      {/* Nivel 3 — Panel de Monitoreo de Infraestructura Operativa */}
+      <div id="infraestructura" className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1DF] pb-3">
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
-              <Anchor className="w-4 h-4 text-sky-400" />
-              Estado de Puertos, Carreteras, Ríos y Aeropuertos
+            <h3 className="text-sm font-semibold text-[#252A2E] flex items-center gap-2">
+              <Anchor className="w-4 h-4 text-[#245A66] stroke-[1.75]" />
+              Monitoreo Operativo de Puertos, Carreteras, Ríos y Aeropuertos
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Información oficial reportada por Capitanías de Puerto, SEMAR, Guardia Nacional y CONAGUA.
+            <p className="text-xs text-[#687078] mt-0.5">
+              Reportes verificados de Capitanías de Puerto, SEMAR, Guardia Nacional y CONAGUA.
             </p>
           </div>
 
           {/* Type filters */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <div className="flex flex-wrap items-center gap-1 text-xs">
             {(['todos', 'puerto', 'carretera', 'rio', 'aeropuerto'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveInfraFilter(t)}
-                className={`px-2.5 py-1 rounded-lg capitalize font-medium transition ${
+                className={`px-2.5 py-1 rounded-[4px] capitalize text-xs font-medium transition ${
                   activeInfraFilter === t
-                    ? 'bg-sky-600 text-white font-bold'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-[#245A66] text-white'
+                    : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
                 }`}
               >
                 {t === 'todos' ? 'Todos' : t + 's'}
@@ -245,29 +232,31 @@ export const StatusOverview: React.FC = () => {
           {filteredInfra.map((item) => (
             <div
               key={item.id}
-              className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 flex flex-col justify-between text-xs space-y-2"
+              className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-3.5 flex flex-col justify-between text-xs space-y-2"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="font-bold text-white text-sm">{item.name}</span>
+                  <span className="font-semibold text-[#252A2E] text-xs sm:text-sm">
+                    {item.name}
+                  </span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-[3px] border ${
                       item.status === 'Cerrado / Restringido'
-                        ? 'bg-amber-950 text-amber-200 border border-amber-500/40'
+                        ? 'bg-[#B84A45]/10 text-[#B84A45] border-[#B84A45]/20'
                         : item.status === 'Precaución'
-                        ? 'bg-orange-950 text-orange-200 border border-orange-500/40'
-                        : 'bg-sky-950 text-sky-200 border border-sky-500/40'
+                        ? 'bg-[#A66C19]/10 text-[#A66C19] border-[#A66C19]/20'
+                        : 'bg-[#245A66]/10 text-[#245A66] border-[#245A66]/20'
                     }`}
                   >
                     {item.status}
                   </span>
                 </div>
-                <p className="text-slate-300 text-xs leading-relaxed">{item.details}</p>
+                <p className="text-[#687078] text-xs leading-relaxed">{item.details}</p>
               </div>
 
-              <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="pt-2 border-t border-[#DDE1DF] flex items-center justify-between text-[11px] text-[#687078]">
                 <span>{item.state}</span>
-                <span className="font-medium text-slate-400">{item.authority}</span>
+                <span className="font-medium text-[#252A2E]">{item.authority}</span>
               </div>
             </div>
           ))}

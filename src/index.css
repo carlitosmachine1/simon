@@ -1,1 +1,54 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg-main: #F7F7F4;
+  --bg-surface: #FFFFFF;
+  --text-main: #252A2E;
+  --text-secondary: #687078;
+  --border-light: #DDE1DF;
+  --color-primary: #245A66;
+  --color-secondary: #7D9B8A;
+  --color-accent: #D99A38;
+  --color-positive: #3F8063;
+  --color-caution: #A66C19;
+  --color-critical: #B84A45;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Montserrat', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom tabular figures for data precision */
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Leaflet container adjustments for clean scientific cartography */
+.leaflet-container {
+  font-family: 'Montserrat', sans-serif !important;
+  background: #EAEAE4 !important;
+}
+
+/* Leaflet clean popup styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 4px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #DDE1DF !important;
+  background: #FFFFFF !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: #FFFFFF !important;
+}

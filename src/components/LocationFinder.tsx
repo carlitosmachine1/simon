@@ -4,14 +4,11 @@ import {
   Navigation,
   MapPin,
   PawPrint,
-  Clock,
   Car,
   Footprints,
-  CheckCircle2,
   Phone,
-  RotateCcw,
-  Sparkles,
   ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { SHELTERS_DATA, Shelter, COASTAL_LOCATIONS, PredefinedLocation } from '../data/hurricaneData';
 import {
@@ -42,7 +39,6 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<PredefinedLocation[]>([]);
 
-  // Find the closest shelter if userCoords are available
   const closestShelter = React.useMemo(() => {
     if (!userCoords) return null;
 
@@ -61,7 +57,6 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
     return nearest;
   }, [userCoords]);
 
-  // Handle live suggestions as user types
   useEffect(() => {
     if (inputText.trim().length >= 2) {
       const matches = searchLocalLocations(inputText);
@@ -71,7 +66,6 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
     }
   }, [inputText]);
 
-  // Handle Search submit
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputText.trim()) return;
@@ -91,12 +85,11 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
       });
     } else {
       setErrorMessage(
-        'No encontramos esa ubicación específica. Elige una de las sugerencias o selecciona tu municipio más cercano.'
+        'No se encontró la ubicación específica. Por favor seleccione una de las opciones sugeridas o el municipio más cercano.'
       );
     }
   };
 
-  // Handle Select Preset or Suggestion
   const handleSelectPreset = (loc: PredefinedLocation) => {
     setInputText(loc.name);
     setSuggestions([]);
@@ -108,10 +101,9 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
     });
   };
 
-  // Handle Device GPS
   const handleUseGps = () => {
     if (!navigator.geolocation) {
-      setErrorMessage('Tu navegador no admite geolocalización GPS.');
+      setErrorMessage('Su navegador no admite geolocalización GPS.');
       return;
     }
 
@@ -124,13 +116,13 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
         onLocationResolved({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-          label: 'Ubicación GPS actual del dispositivo',
+          label: 'Ubicación GPS del dispositivo',
         });
       },
       (err) => {
         setIsGpsLoading(false);
         setErrorMessage(
-          'No se pudo obtener la señal GPS (permiso denegado). Puedes escribir tu colonia o municipio en el campo de texto.'
+          'No se pudo obtener la señal GPS. Puede ingresar su colonia o municipio manualmente.'
         );
       },
       { enableHighAccuracy: true, timeout: 9000, maximumAge: 30000 }
@@ -142,68 +134,68 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
     : null;
 
   return (
-    <div className="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
-      {/* Title & Informative Description */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+    <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1DF] pb-3">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-sky-400" />
+          <div className="text-[11px] font-semibold text-[#245A66] uppercase tracking-wider flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#245A66] stroke-[1.75]" />
             Localizador Preventivo de Albergues
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-white">
-            Encuentra tu refugio más cercano
+          <h3 className="text-base sm:text-lg font-semibold text-[#252A2E] mt-0.5">
+            Identificación de Refugio por Ubicación
           </h3>
-          <p className="text-xs text-slate-300 mt-0.5">
-            Ingresa tu ubicación o activa el GPS para ordenar los refugios por proximidad y calcular tiempos de traslado.
+          <p className="text-xs text-[#687078] mt-0.5">
+            Ingrese su municipio, colonia o active el GPS para ordenar los refugios por proximidad física.
           </p>
         </div>
 
         {activeLocationLabel && (
-          <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-slate-300 shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="truncate max-w-[200px]">{activeLocationLabel}</span>
+          <div className="flex items-center gap-2 bg-[#F7F7F4] border border-[#DDE1DF] px-2.5 py-1 rounded-[4px] text-xs text-[#252A2E] shrink-0 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3F8063]" />
+            <span className="truncate max-w-[220px]">{activeLocationLabel}</span>
           </div>
         )}
       </div>
 
-      {/* Input Form & GPS Button */}
+      {/* Input & GPS Controls */}
       <form onSubmit={handleSearch} className="space-y-3">
-        <div className="flex flex-col md:flex-row gap-2.5">
-          {/* Text Input with Autocomplete */}
+        <div className="flex flex-col md:flex-row gap-2">
+          {/* Autocomplete Input */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#687078] absolute left-3 top-1/2 -translate-y-1/2 stroke-[1.75]" />
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Escribe tu colonia, municipio o código postal (ej. El Pitillal, Manzanillo, Bucerías)..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-24 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition"
+              placeholder="Escriba colonia o municipio (ej. El Pitillal, Manzanillo, Bucerías, Cihuatlán)..."
+              className="w-full bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] pl-9 pr-20 py-2 text-xs sm:text-sm text-[#252A2E] placeholder-[#687078] focus:outline-none focus:border-[#245A66] focus:bg-white transition"
             />
             <button
               type="submit"
               disabled={isSearching || !inputText.trim()}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition"
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-[#245A66] hover:bg-[#1b434c] disabled:opacity-40 text-white font-medium text-xs px-2.5 py-1.5 rounded-[3px] transition"
             >
               {isSearching ? 'Buscando...' : 'Buscar'}
             </button>
 
-            {/* Suggestions Dropdown */}
+            {/* Suggestions */}
             {suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl z-20 overflow-hidden divide-y divide-slate-800">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] shadow-sm z-20 overflow-hidden divide-y divide-[#DDE1DF]">
                 {suggestions.map((sug, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSelectPreset(sug)}
-                    className="w-full text-left px-3.5 py-2 text-xs text-slate-200 hover:bg-slate-850 hover:text-white flex items-center justify-between transition"
+                    className="w-full text-left px-3 py-2 text-xs text-[#252A2E] hover:bg-[#F7F7F4] flex items-center justify-between transition"
                   >
                     <div>
-                      <span className="font-semibold text-white">{sug.name}</span>
-                      <span className="text-slate-400 text-[11px] ml-1.5">
+                      <span className="font-semibold">{sug.name}</span>
+                      <span className="text-[#687078] text-[11px] ml-1.5">
                         ({sug.municipality}, {sug.state})
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] text-[#687078] bg-[#F7F7F4] px-1.5 py-0.5 rounded-[2px] border border-[#DDE1DF]">
                       {sug.category}
                     </span>
                   </button>
@@ -217,16 +209,16 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
             type="button"
             onClick={handleUseGps}
             disabled={isGpsLoading}
-            className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95 shrink-0"
+            className="bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-medium px-3.5 py-2 rounded-[4px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shrink-0"
           >
-            <Navigation className={`w-4 h-4 text-sky-400 ${isGpsLoading ? 'animate-spin' : ''}`} />
-            <span>{isGpsLoading ? 'Obteniendo GPS...' : 'Usar GPS de mi dispositivo'}</span>
+            <Navigation className={`w-3.5 h-3.5 text-[#245A66] stroke-[1.75] ${isGpsLoading ? 'animate-spin' : ''}`} />
+            <span>{isGpsLoading ? 'Consultando GPS...' : 'Usar GPS del dispositivo'}</span>
           </button>
         </div>
 
-        {/* Quick Location Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
-          <span className="text-[11px]">Zonas rápidas:</span>
+        {/* Quick Presets */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#687078]">
+          <span className="text-[11px]">Zonas frecuentes:</span>
           {[
             'Puerto Vallarta (Centro)',
             'El Pitillal',
@@ -244,7 +236,7 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
                 key={presetName}
                 type="button"
                 onClick={() => handleSelectPreset(loc)}
-                className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[11px] px-2.5 py-1 rounded-lg transition"
+                className="bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] text-[11px] px-2 py-0.5 rounded-[3px] transition"
               >
                 {loc.name.replace(/\s*\(.*\)/, '')}
               </button>
@@ -253,73 +245,68 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
         </div>
       </form>
 
-      {/* Error Message if any */}
       {errorMessage && (
-        <div className="bg-amber-950/40 border border-amber-600/40 rounded-xl p-3 text-xs text-amber-200">
+        <div className="bg-[#A66C19]/10 border border-[#A66C19]/20 rounded-[4px] p-2.5 text-xs text-[#A66C19]">
           {errorMessage}
         </div>
       )}
 
-      {/* RESULT CARD: Closest Shelter Found */}
+      {/* RESULT PANEL: Closest Shelter */}
       {closestShelter && (
-        <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-2 border-sky-600/60 rounded-xl p-4 sm:p-5 shadow-lg space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+        <div className="bg-[#F7F7F4] border border-[#245A66]/30 rounded-[4px] p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1DF] pb-2">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
-                Refugio más próximo a tu ubicación
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3F8063]" />
+              <span className="text-xs font-semibold text-[#245A66] uppercase tracking-wide">
+                Refugio Más Próximo a su Posición
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <span className="font-bold text-white bg-sky-950 border border-sky-500/40 px-2.5 py-0.5 rounded-full">
-                A {formatDistance(closestShelter.distanceKm)} de distancia
-              </span>
+            <div className="text-xs font-semibold text-[#245A66] font-tabular bg-white border border-[#DDE1DF] px-2 py-0.5 rounded-[3px]">
+              A {formatDistance(closestShelter.distanceKm)} de distancia
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-            {/* Shelter Details */}
             <div className="lg:col-span-2 space-y-1.5">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+                <span className="text-[11px] font-semibold text-[#245A66] bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[3px]">
                   {closestShelter.shelter.state} • {closestShelter.shelter.municipality}
                 </span>
-                <span className="text-[11px] text-slate-300 bg-slate-800 px-2 py-0.5 rounded">
+                <span className="text-[11px] text-[#687078] bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[3px] font-tabular">
                   Capacidad: {closestShelter.shelter.capacity} pers.
                 </span>
                 {closestShelter.shelter.petsAllowed && (
-                  <span className="text-[11px] text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1 font-semibold">
-                    <PawPrint className="w-3 h-3 text-amber-400" />
+                  <span className="text-[11px] font-medium text-[#3F8063] bg-[#3F8063]/10 border border-[#3F8063]/20 px-1.5 py-0.5 rounded-[3px] flex items-center gap-1">
+                    <PawPrint className="w-3 h-3" />
                     Acepta Mascotas
                   </span>
                 )}
               </div>
 
-              <h4 className="text-base sm:text-lg font-bold text-white">
+              <h4 className="text-sm sm:text-base font-semibold text-[#252A2E]">
                 {closestShelter.shelter.name}
               </h4>
 
-              <p className="text-xs text-slate-300 flex items-start gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-[#687078] flex items-start gap-1">
+                <MapPin className="w-3.5 h-3.5 text-[#687078] shrink-0 mt-0.5 stroke-[1.75]" />
                 <span>{closestShelter.shelter.address}</span>
               </p>
 
               {travelTimes && (
-                <div className="flex items-center gap-4 text-xs text-slate-300 pt-1">
+                <div className="flex items-center gap-4 text-xs text-[#687078] pt-1 font-tabular">
                   <span className="flex items-center gap-1">
-                    <Footprints className="w-3.5 h-3.5 text-slate-400" />
+                    <Footprints className="w-3.5 h-3.5 stroke-[1.75]" />
                     A pie: ~{travelTimes.walking}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Car className="w-3.5 h-3.5 text-slate-400" />
-                    En auto: ~{travelTimes.driving}
+                    <Car className="w-3.5 h-3.5 stroke-[1.75]" />
+                    En vehículo: ~{travelTimes.driving}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Direct Navigation & Actions */}
             <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full">
               <a
                 href={getGoogleMapsDirectionsUrl(
@@ -329,19 +316,19 @@ export const LocationFinder: React.FC<LocationFinderProps> = ({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow transition active:scale-95"
+                className="flex-1 bg-[#245A66] hover:bg-[#1b434c] text-white font-medium py-2 px-3 rounded-[4px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
               >
-                <Navigation className="w-4 h-4" />
-                <span>Cómo Llegar (Google Maps)</span>
+                <Navigation className="w-3.5 h-3.5 stroke-[1.75]" />
+                <span>Ruta en Google Maps</span>
               </a>
 
               {closestShelter.shelter.phone && (
                 <a
                   href={`tel:${closestShelter.shelter.phone.replace(/\s+/g, '')}`}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition"
+                  className="bg-white hover:bg-[#F7F7F4] text-[#252A2E] font-medium py-2 px-3 rounded-[4px] text-xs flex items-center justify-center gap-1 border border-[#DDE1DF] transition"
                 >
-                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Llamar: {closestShelter.shelter.phone}</span>
+                  <Phone className="w-3.5 h-3.5 text-[#3F8063] stroke-[1.75]" />
+                  <span>Teléfono: {closestShelter.shelter.phone}</span>
                 </a>
               )}
             </div>

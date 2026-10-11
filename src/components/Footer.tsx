@@ -1,33 +1,35 @@
 import React from 'react';
-import { ShieldCheck, Heart, Radio, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ExternalLink } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-slate-950 border-t border-slate-800/80 pt-10 pb-16 text-xs text-slate-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <footer className="bg-[#FFFFFF] border-t border-[#DDE1DF] pt-8 pb-14 text-xs text-[#687078]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-2 space-y-2">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <span className="text-xl">🌀</span>
-              <span>Portal Informativo Huracán Simón (Pacífico Mexicano)</span>
+            <div className="flex items-center gap-2 text-[#252A2E] font-semibold text-sm">
+              <span className="w-6 h-6 rounded-[3px] bg-[#245A66] text-white flex items-center justify-center text-xs font-bold">
+                S4
+              </span>
+              <span>Portal Meteorológico • Huracán Simón</span>
             </div>
-            <p className="text-slate-400 leading-relaxed max-w-md">
-              Plataforma 100% de utilidad pública orientada a salvar vidas, orientar a habitantes de
-              zonas de riesgo hidrometeorológico y conectar con refugios temporales y canales de auxilio de Protección Civil.
+            <p className="text-[#687078] leading-relaxed max-w-md text-xs">
+              Herramienta informativa diseñada bajo estándares de análisis y datos meteorológicos abiertos. 
+              Orientada a la consulta técnica, localización de albergues y prevención ciudadana en costas del Pacífico mexicano.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <div className="font-bold text-slate-200">Organismos Fuentes</div>
-            <ul className="space-y-1 text-slate-400">
+            <div className="font-semibold text-[#252A2E] text-xs">Organismos Fuentes</div>
+            <ul className="space-y-1 text-xs text-[#687078]">
               <li>
                 <a
                   href="https://smn.conagua.gob.mx"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-400 flex items-center gap-1"
+                  className="hover:text-[#245A66] flex items-center gap-1"
                 >
-                  SMN / Conagua (México) <ExternalLink className="w-3 h-3" />
+                  SMN / Conagua <ExternalLink className="w-3 h-3 stroke-[1.75]" />
                 </a>
               </li>
               <li>
@@ -35,9 +37,9 @@ export const Footer: React.FC = () => {
                   href="https://www.nhc.noaa.gov"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-400 flex items-center gap-1"
+                  className="hover:text-[#245A66] flex items-center gap-1"
                 >
-                  NOAA National Hurricane Center <ExternalLink className="w-3 h-3" />
+                  NOAA National Hurricane Center <ExternalLink className="w-3 h-3 stroke-[1.75]" />
                 </a>
               </li>
               <li>
@@ -45,9 +47,9 @@ export const Footer: React.FC = () => {
                   href="https://refugios-proteccioncivil.col.gob.mx"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-400 flex items-center gap-1"
+                  className="hover:text-[#245A66] flex items-center gap-1"
                 >
-                  Protección Civil Colima <ExternalLink className="w-3 h-3" />
+                  Protección Civil Colima <ExternalLink className="w-3 h-3 stroke-[1.75]" />
                 </a>
               </li>
               <li>
@@ -55,33 +57,33 @@ export const Footer: React.FC = () => {
                   href="https://proteccioncivil.jalisco.gob.mx"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-400 flex items-center gap-1"
+                  className="hover:text-[#245A66] flex items-center gap-1"
                 >
-                  Protección Civil Jalisco <ExternalLink className="w-3 h-3" />
+                  Protección Civil Jalisco <ExternalLink className="w-3 h-3 stroke-[1.75]" />
                 </a>
               </li>
             </ul>
           </div>
 
           <div className="space-y-1.5">
-            <div className="font-bold text-slate-200">Líneas de Vida</div>
-            <div className="space-y-1">
-              <div>Emergencias: <strong className="text-white">911</strong></div>
-              <div>Cables y CFE: <strong className="text-white">071</strong></div>
-              <div>Guardia Nacional: <strong className="text-white">088</strong></div>
-              <div className="text-[11px] text-slate-500 pt-1">
-                Disponible las 24 horas sin costo.
+            <div className="font-semibold text-[#252A2E] text-xs">Líneas de Atención</div>
+            <div className="space-y-0.5 text-xs">
+              <div>Emergencias: <strong className="text-[#252A2E] font-tabular">911</strong></div>
+              <div>CFE Fallas: <strong className="text-[#252A2E] font-tabular">071</strong></div>
+              <div>Guardia Nacional: <strong className="text-[#252A2E] font-tabular">088</strong></div>
+              <div className="text-[11px] text-[#687078] pt-1">
+                Servicios gratuitos disponibles las 24 horas.
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-slate-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-[11px]">
+        <div className="border-t border-[#DDE1DF] pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#687078]">
           <div>
-            Datos meteorológicos generados a partir de los modelos de predicción numérica y boletines de NOAA y Conagua.
+            Procesamiento y representación de datos públicos de NOAA STAR NESDIS, SMN y Unidades Estatales de Protección Civil.
           </div>
-          <div className="flex items-center gap-1">
-            <span>Diseñado para acceso prioritario y alta velocidad en situaciones de emergencia</span>
+          <div>
+            Centro No oficial pero si fuentes oficiales
           </div>
         </div>
       </div>

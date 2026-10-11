@@ -1,89 +1,74 @@
 import React from 'react';
 import { OFFICIAL_SOURCES } from '../data/hurricaneData';
 import {
-  ShieldAlert,
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
-  Building,
-  Globe,
-  Radio,
-  FileText,
+  BookOpen,
 } from 'lucide-react';
 
 export const OfficialSources: React.FC = () => {
   return (
     <section id="fuentes" className="space-y-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
         {/* Header */}
-        <div className="border-b border-slate-800 pb-4 mb-4">
-          <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            Fuentes de Veracidad y Boletines Oficiales
+        <div className="border-b border-[#DDE1DF] pb-3">
+          <div className="flex items-center gap-2 text-[#245A66] font-semibold text-xs uppercase tracking-wider">
+            <BookOpen className="w-3.5 h-3.5 stroke-[1.75]" />
+            Verificación y Fuentes de Información
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">
-            Canales Verificados de Información
+          <h2 className="text-lg sm:text-xl font-semibold text-[#252A2E] mt-0.5">
+            Canales Oficiales y Organismos Técnicos
           </h2>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
-            En emergencias hidrometeorológicas mayores, evite compartir rumores o cadenas no verificadas en redes sociales.
-            Consulte directamente los comunicados oficiales de las autoridades mexicanas e internacionales.
+          <p className="text-xs text-[#687078] mt-0.5 max-w-2xl">
+            Directorio de organismos gubernamentales y científicos que emiten boletines hidrometeorológicos y avisos de protección civil.
           </p>
         </div>
 
-        {/* Anti-misinformation Callout */}
-        <div className="bg-amber-950/30 border border-amber-500/40 rounded-xl p-4 flex items-start gap-3 mb-5">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-          <div className="text-xs sm:text-sm text-amber-200">
-            <strong className="text-amber-300 font-bold">Aviso contra la Desinformación:</strong>{' '}
-            Las órdenes de evacuación, apertura de refugios y suspensión de clases solo son válidas cuando son emitidas por{' '}
-            <strong>Protección Civil del Estado, los Gobiernos Estatales/Municipales o el SMN / Conagua</strong>.
+        {/* Notice */}
+        <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-3 flex items-start gap-2.5 text-xs text-[#252A2E]">
+          <AlertTriangle className="w-4 h-4 text-[#A66C19] shrink-0 mt-0.5 stroke-[1.75]" />
+          <div>
+            <strong>Criterio de Veracidad:</strong> Evite compartir mensajes en cadena no respaldados por boletines formales de la Coordinación Nacional de Protección Civil, el Servicio Meteorológico Nacional o las Unidades Estatales de Protección Civil.
           </div>
         </div>
 
         {/* Sources Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {OFFICIAL_SOURCES.map((source) => (
             <a
               key={source.id}
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-slate-950/70 border border-slate-800 hover:border-blue-500/60 rounded-xl p-4 flex flex-col justify-between transition shadow-sm hover:shadow-lg"
+              className="bg-[#F7F7F4] border border-[#DDE1DF] hover:border-[#245A66]/40 rounded-[4px] p-3.5 flex flex-col justify-between transition group"
             >
               <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                      source.badge === 'Oficial'
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
-                        : source.badge === 'Científico'
-                        ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/30'
-                        : 'bg-red-950 text-red-300 border border-red-500/30'
-                    }`}
-                  >
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-[2px] bg-white border border-[#DDE1DF] text-[#245A66]">
                     {source.badge} • {source.country}
                   </span>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 transition" />
+                  <ExternalLink className="w-3 h-3 text-[#687078] group-hover:text-[#245A66] transition" />
                 </div>
 
-                <h3 className="text-sm font-bold text-white group-hover:text-blue-400 transition mb-1 leading-snug">
+                <h3 className="text-xs font-semibold text-[#252A2E] group-hover:text-[#245A66] transition mb-0.5 leading-snug">
                   {source.name}
                 </h3>
 
-                <div className="text-[11px] text-slate-400 font-medium mb-2">
+                <div className="text-[11px] text-[#687078] mb-1.5">
                   {source.agency}
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-[#687078] leading-relaxed">
                   {source.description}
                 </p>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <div className="pt-2.5 mt-2 border-t border-[#DDE1DF] flex items-center justify-between text-[11px] text-[#687078]">
                 {source.handle && (
-                  <span className="text-slate-400 font-mono">{source.handle}</span>
+                  <span className="font-mono text-[#252A2E]">{source.handle}</span>
                 )}
-                <span className="text-emerald-400 font-semibold ml-auto">
+                <span className="text-[#245A66] font-medium ml-auto">
                   {source.updatedInterval}
                 </span>
               </div>

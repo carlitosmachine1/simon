@@ -8,14 +8,12 @@ import {
   Navigation,
   Phone,
   Search,
-  ExternalLink,
   Copy,
   Check,
   CheckCircle2,
   Users,
   ShieldCheck,
   AlertCircle,
-  Filter,
   Info,
 } from 'lucide-react';
 
@@ -38,7 +36,6 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
   const [onlyActive, setOnlyActive] = useState<boolean>(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Calculate distances if user coordinates are known
   const sheltersWithDistance = useMemo(() => {
     return SHELTERS_DATA.map((shelter) => {
       let distanceKm: number | null = null;
@@ -57,7 +54,6 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
     });
   }, [userCoords]);
 
-  // Filtered and sorted shelters
   const filteredShelters = useMemo(() => {
     return sheltersWithDistance
       .filter((s) => {
@@ -98,94 +94,87 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
   }, []);
 
   return (
-    <section id="refugios" className="space-y-6">
-      {/* 1. Dedicated Location & Nearest Shelter Finder */}
-      <div id="localizador-refugios">
-        <LocationFinder
-          onLocationResolved={onLocationResolved}
-          activeLocationLabel={activeLocationLabel}
-          userCoords={userCoords}
-          onSelectShelter={onSelectShelterOnMap}
-        />
-      </div>
+    <section id="refugios" className="space-y-4">
+      {/* 1. Location Finder Panel */}
+      <LocationFinder
+        onLocationResolved={onLocationResolved}
+        activeLocationLabel={activeLocationLabel}
+        userCoords={userCoords}
+        onSelectShelter={onSelectShelterOnMap}
+      />
 
-      {/* 2. Shelter Directory Container */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      {/* 2. Shelter Directory Panel */}
+      <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-5 shadow-none space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#DDE1DF] pb-3">
           <div>
-            <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider mb-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Directorio de Protección Civil
+            <div className="flex items-center gap-2 text-[#245A66] font-semibold text-xs uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5 stroke-[1.75]" />
+              Red de Albergues de Protección Civil
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">
-              Directorio de Refugios Temporales
+            <h2 className="text-lg sm:text-xl font-semibold text-[#252A2E] mt-0.5">
+              Directorio de Refugios Temporales Habilitados
             </h2>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Consulte la red oficial de inmuebles listos para recepción de familias y mascotas en los municipios costeros de Jalisco, Colima, Nayarit y Michoacán.
+            <p className="text-xs text-[#687078] mt-0.5 max-w-2xl">
+              Inmuebles listos para recepción de personas y animales de compañía en Colima, Jalisco, Nayarit, Michoacán y BCS.
             </p>
           </div>
 
-          {/* Quick API Key / Architecture clarity pill */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-300 flex items-start gap-2 max-w-sm">
-            <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-            <div>
-              <strong>Acceso Abierto:</strong> No requiere API Keys comerciales ni pagos. Funciona con GPS estándar y bases oficiales de Protección Civil.
-            </div>
+          <div className="text-[11px] text-[#687078] bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] px-2.5 py-1.5 flex items-center gap-1.5 shrink-0">
+            <Info className="w-3.5 h-3.5 text-[#245A66] shrink-0 stroke-[1.75]" />
+            <span>Datos provistos por las Unidades Estatales de Protección Civil</span>
           </div>
         </div>
 
-        {/* Shelter Summary Badges */}
+        {/* Aggregate Metadata Metrics */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-            <div className="text-slate-400 font-medium">Refugios Registrados</div>
-            <div className="text-xl font-bold text-white mt-0.5">{SHELTERS_DATA.length} sedes</div>
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5">
+            <div className="text-[#687078] text-[11px]">Sedes Registradas</div>
+            <div className="text-lg font-semibold text-[#252A2E] font-tabular mt-0.5">{SHELTERS_DATA.length}</div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-            <div className="text-slate-400 font-medium">Capacidad Total Estimada</div>
-            <div className="text-xl font-bold text-sky-400 mt-0.5">
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5">
+            <div className="text-[#687078] text-[11px]">Capacidad Total Estimada</div>
+            <div className="text-lg font-semibold text-[#245A66] font-tabular mt-0.5">
               {totalCapacity.toLocaleString()} personas
             </div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-            <div className="text-slate-400 font-medium">Refugios Pet-Friendly</div>
-            <div className="text-xl font-bold text-amber-400 mt-0.5">
-              {petFriendlyCount} con mascotas
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5">
+            <div className="text-[#687078] text-[11px]">Sedes Pet-Friendly</div>
+            <div className="text-lg font-semibold text-[#A66C19] font-tabular mt-0.5">
+              {petFriendlyCount}
             </div>
           </div>
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-            <div className="text-slate-400 font-medium">Estados con Cobertura</div>
-            <div className="text-xl font-bold text-teal-400 mt-0.5">5 Estados</div>
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5">
+            <div className="text-[#687078] text-[11px]">Estados con Cobertura</div>
+            <div className="text-lg font-semibold text-[#7D9B8A] font-tabular mt-0.5">5 Estados</div>
           </div>
         </div>
 
         {/* Filters and Search Bar */}
-        <div className="space-y-3 pt-2">
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            {/* Search Input */}
+        <div className="space-y-2 pt-1">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-[#687078] absolute left-3 top-1/2 -translate-y-1/2 stroke-[1.75]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filtrar por municipio, colonia, escuela o calle..."
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                placeholder="Filtrar por municipio, colonia o nombre de escuela..."
+                className="w-full bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] pl-8 pr-4 py-1.5 text-xs text-[#252A2E] placeholder-[#687078] focus:outline-none focus:border-[#245A66] focus:bg-white"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#687078] hover:text-[#252A2E]"
                 >
-                  Limpiar
+                  ✕
                 </button>
               )}
             </div>
 
-            {/* State Select */}
             <select
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-slate-200 text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-sky-500"
+              className="bg-[#F7F7F4] border border-[#DDE1DF] text-[#252A2E] text-xs rounded-[4px] px-2.5 py-1.5 focus:outline-none focus:border-[#245A66]"
             >
               <option value="todos">Todos los Estados</option>
               <option value="Jalisco">Jalisco (Puerto Vallarta / Costalegre)</option>
@@ -196,29 +185,29 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
             </select>
           </div>
 
-          {/* Quick toggle chips */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Toggle Filter Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
             <button
               onClick={() => setOnlyPets(!onlyPets)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-medium flex items-center gap-1 transition ${
                 onlyPets
-                  ? 'bg-amber-500 text-slate-950 font-bold'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-[#245A66] text-white'
+                  : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
               }`}
             >
-              <PawPrint className="w-3.5 h-3.5" />
+              <PawPrint className="w-3 h-3" />
               <span>Acepta Mascotas ({petFriendlyCount})</span>
             </button>
 
             <button
               onClick={() => setOnlyActive(!onlyActive)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-medium flex items-center gap-1 transition ${
                 onlyActive
-                  ? 'bg-sky-500 text-slate-950 font-bold'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-[#245A66] text-white'
+                  : 'bg-[#F7F7F4] text-[#687078] hover:text-[#252A2E] border border-[#DDE1DF]'
               }`}
             >
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <CheckCircle2 className="w-3 h-3" />
               <span>Solo Abiertos / Habilitados</span>
             </button>
 
@@ -230,30 +219,28 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
                   setOnlyPets(false);
                   setOnlyActive(false);
                 }}
-                className="text-xs text-sky-400 hover:underline px-2 py-1"
+                className="text-xs text-[#245A66] hover:underline px-2 py-0.5 font-medium"
               >
                 Restablecer filtros
               </button>
             )}
 
-            <span className="text-xs text-slate-400 ml-auto font-medium">
-              Mostrando {filteredShelters.length} de {SHELTERS_DATA.length} albergues
-              {userCoords && ' (ordenados por cercanía)'}
+            <span className="text-xs text-[#687078] ml-auto font-tabular">
+              Mostrando {filteredShelters.length} de {SHELTERS_DATA.length} sedes
+              {userCoords && ' (ordenados por distancia)'}
             </span>
           </div>
         </div>
 
         {/* Shelter Cards Grid */}
         {filteredShelters.length === 0 ? (
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-8 text-center">
-            <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-            <h3 className="text-white font-bold text-base">No hay refugios con los filtros seleccionados</h3>
-            <p className="text-slate-400 text-xs mt-1">
-              Prueba a restablecer los filtros para ver todos los albergues de la región.
-            </p>
+          <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-6 text-center text-xs text-[#687078]">
+            <AlertCircle className="w-6 h-6 text-[#A66C19] mx-auto mb-1.5 stroke-[1.75]" />
+            <div className="text-sm font-semibold text-[#252A2E]">No se encontraron albergues</div>
+            <p className="mt-0.5">Pruebe restableciendo los filtros de estado o término de búsqueda.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredShelters.map((shelter) => {
               const gmapsLink = getGoogleMapsDirectionsUrl(
                 shelter.lat,
@@ -264,84 +251,65 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
               return (
                 <div
                   key={shelter.id}
-                  className="bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-xl p-4 sm:p-5 shadow-md flex flex-col justify-between transition group"
+                  className="bg-[#F7F7F4] border border-[#DDE1DF] hover:border-[#245A66]/40 rounded-[4px] p-3.5 flex flex-col justify-between transition"
                 >
-                  <div>
-                    {/* Top Badges */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-sky-300 bg-sky-950/80 border border-sky-500/30 px-2 py-0.5 rounded-md">
+                  <div className="space-y-1.5">
+                    {/* Header Badges */}
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[10px] font-semibold text-[#245A66] bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[2px]">
                           {shelter.state}
                         </span>
-                        <span className="text-[11px] font-medium text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[2px]">
                           {shelter.municipality}
                         </span>
                       </div>
 
                       {shelter.distanceKm !== null && (
-                        <span className="text-[11px] font-bold text-emerald-300 bg-emerald-950/90 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">
-                          <Navigation className="w-3 h-3 text-emerald-400" />
-                          A {formatDistance(shelter.distanceKm)}
+                        <span className="text-[10px] font-semibold text-[#245A66] font-tabular bg-white border border-[#DDE1DF] px-1.5 py-0.5 rounded-[2px] flex items-center gap-0.5 shrink-0">
+                          <Navigation className="w-2.5 h-2.5 stroke-[2]" />
+                          {formatDistance(shelter.distanceKm)}
                         </span>
                       )}
                     </div>
 
-                    {/* Shelter Name */}
-                    <h3 className="font-bold text-white text-base leading-snug group-hover:text-sky-300 transition">
+                    <h3 className="font-semibold text-[#252A2E] text-xs leading-snug">
                       {shelter.name}
                     </h3>
 
-                    {/* Address */}
-                    <p className="text-slate-400 text-xs mt-1.5 flex items-start gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5" />
+                    <p className="text-[#687078] text-[11px] flex items-start gap-1 leading-tight">
+                      <MapPin className="w-3 h-3 text-[#687078] shrink-0 mt-0.5 stroke-[1.75]" />
                       <span>{shelter.address}</span>
                     </p>
 
-                    {/* Status & Pet Badges */}
-                    <div className="flex flex-wrap items-center gap-1.5 my-3">
-                      <span
-                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                          shelter.status === 'Activo / Abierto'
-                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-slate-800 text-slate-300'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            shelter.status === 'Activo / Abierto'
-                              ? 'bg-emerald-400'
-                              : 'bg-slate-400'
-                          }`}
-                        />
+                    {/* Status & Pet Policy */}
+                    <div className="flex flex-wrap items-center gap-1 pt-1">
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[2px] bg-white border border-[#DDE1DF] text-[#252A2E]">
                         {shelter.status}
                       </span>
-
                       {shelter.petsAllowed ? (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-200 border border-amber-500/30 flex items-center gap-1">
-                          <PawPrint className="w-3 h-3 text-amber-400" />
-                          Acepta Mascotas
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[2px] bg-[#3F8063]/10 text-[#3F8063] border border-[#3F8063]/25 flex items-center gap-1">
+                          <PawPrint className="w-2.5 h-2.5" />
+                          Acepta mascotas
                         </span>
                       ) : (
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                        <span className="text-[10px] text-[#687078] px-1.5 py-0.5 rounded-[2px] bg-white border border-[#DDE1DF]">
                           Sin mascotas
                         </span>
                       )}
                     </div>
 
-                    {/* Capacity Bar */}
-                    <div className="bg-slate-900 rounded-lg p-2.5 border border-slate-800 mb-3 text-xs">
-                      <div className="flex justify-between items-center text-slate-400 mb-1">
-                        <span className="flex items-center gap-1 text-[11px]">
-                          <Users className="w-3 h-3 text-slate-400" />
-                          Ocupación registrada
-                        </span>
-                        <span className="text-white font-semibold">
+                    {/* Capacity Line */}
+                    <div className="bg-white border border-[#DDE1DF] rounded-[3px] p-2 text-[11px] font-tabular space-y-1">
+                      <div className="flex justify-between text-[#687078]">
+                        <span>Ocupación registrada:</span>
+                        <span className="font-medium text-[#252A2E]">
                           {shelter.currentOccupancy || 0} / {shelter.capacity} personas
                         </span>
                       </div>
-                      <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-[#DDE1DF] h-1 rounded-[1px] overflow-hidden">
                         <div
-                          className="bg-sky-500 h-1.5 rounded-full transition-all"
+                          className="bg-[#245A66] h-1 transition-all"
                           style={{
                             width: `${Math.min(
                               100,
@@ -352,90 +320,61 @@ export const SheltersSection: React.FC<SheltersSectionProps> = ({
                       </div>
                     </div>
 
-                    {/* Facilities list */}
-                    {shelter.facilities && shelter.facilities.length > 0 && (
-                      <div className="mb-3">
-                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1">
-                          Servicios disponibles:
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {shelter.facilities.map((fac, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] bg-slate-850 text-slate-300 px-2 py-0.5 rounded border border-slate-800"
-                            >
-                              ✓ {fac}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notes */}
                     {shelter.notes && (
-                      <p className="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-800 mb-3 leading-relaxed">
-                        ℹ️ {shelter.notes}
+                      <p className="text-[10px] text-[#687078] bg-white border border-[#DDE1DF] p-1.5 rounded-[2px] leading-tight">
+                        {shelter.notes}
                       </p>
                     )}
                   </div>
 
-                  {/* Card Actions */}
-                  <div className="pt-3 border-t border-slate-800 space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {/* Google Maps Directions */}
+                  {/* Actions */}
+                  <div className="pt-2.5 mt-2 border-t border-[#DDE1DF] space-y-1.5">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <a
                         href={gmapsLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95"
+                        className="bg-[#245A66] hover:bg-[#1b434c] text-white font-medium py-1.5 px-2 rounded-[3px] text-[11px] flex items-center justify-center gap-1 transition"
                       >
-                        <Navigation className="w-3.5 h-3.5" />
-                        <span>Cómo Llegar</span>
+                        <Navigation className="w-3 h-3 stroke-[1.75]" />
+                        <span>Cómo llegar</span>
                       </a>
 
-                      {/* Ver en Mapa */}
                       <button
                         onClick={() => {
-                          if (onSelectShelterOnMap) {
-                            onSelectShelterOnMap(shelter);
-                          }
-                          const mapElem = document.getElementById('mapa-trayectoria');
-                          if (mapElem) {
-                            mapElem.scrollIntoView({ behavior: 'smooth' });
-                          }
+                          if (onSelectShelterOnMap) onSelectShelterOnMap(shelter);
+                          const mapEl = document.getElementById('mapa-trayectoria');
+                          if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="bg-slate-850 hover:bg-slate-800 text-slate-200 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 border border-slate-700"
+                        className="bg-white hover:bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF] font-medium py-1.5 px-2 rounded-[3px] text-[11px] flex items-center justify-center gap-1 transition"
                       >
-                        <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                        <span>Ver en Mapa</span>
+                        <MapPin className="w-3 h-3 text-[#245A66] stroke-[1.75]" />
+                        <span>Ver en mapa</span>
                       </button>
                     </div>
 
-                    {/* Copy Address & Phone */}
-                    <div className="flex items-center justify-between text-xs pt-1">
+                    <div className="flex items-center justify-between text-[11px] pt-0.5">
                       <button
                         onClick={() => handleCopyAddress(shelter.id, shelter.address)}
-                        className="text-slate-400 hover:text-white flex items-center gap-1 text-[11px] transition"
+                        className="text-[#687078] hover:text-[#252A2E] flex items-center gap-1 transition"
                       >
                         {copiedId === shelter.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-emerald-400 font-bold">Dirección copiada</span>
-                          </>
+                          <span className="text-[#3F8063] font-medium flex items-center gap-0.5">
+                            <Check className="w-3 h-3" /> Copiado
+                          </span>
                         ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copiar dirección</span>
-                          </>
+                          <span className="flex items-center gap-0.5">
+                            <Copy className="w-3 h-3 stroke-[1.75]" /> Copiar dirección
+                          </span>
                         )}
                       </button>
 
                       {shelter.phone && (
                         <a
                           href={`tel:${shelter.phone.replace(/\s+/g, '')}`}
-                          className="text-sky-400 hover:underline font-bold flex items-center gap-1 text-[11px]"
+                          className="text-[#245A66] hover:underline font-medium font-tabular flex items-center gap-0.5"
                         >
-                          <Phone className="w-3 h-3" />
+                          <Phone className="w-3 h-3 stroke-[1.75]" />
                           <span>{shelter.phone}</span>
                         </a>
                       )}

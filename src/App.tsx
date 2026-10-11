@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
+import { AutoRefreshBar } from './components/AutoRefreshBar';
 import { StatusOverview } from './components/StatusOverview';
 import { TrajectoryMap } from './components/TrajectoryMap';
 import { SheltersSection } from './components/SheltersSection';
@@ -19,13 +20,12 @@ import { Shelter, HURRICANE_CURRENT_STATUS } from './data/hurricaneData';
 import { calculateDistanceKm, formatDistance } from './utils/geo';
 import {
   MapPin,
-  Navigation,
   Phone,
   Compass,
-  Radio,
-  ShieldCheck,
   CheckCircle2,
 } from 'lucide-react';
+
+const REFRESH_INTERVAL_SECONDS = 300; // 5 minutos
 
 export default function App() {
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
@@ -34,7 +34,39 @@ export default function App() {
   const [activeLocationLabel, setActiveLocationLabel] = useState<string | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
-  // Handle location resolved either from manual search or GPS
+  // Auto-refresh states (5 minutes cycle)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(REFRESH_INTERVAL_SECONDS);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(Date.now());
+
+  const handleRefreshAll = () => {
+    setIsRefreshing(true);
+    const now = new Date();
+    setLastUpdated(now);
+    setRefreshTrigger(now.getTime());
+    setSecondsRemaining(REFRESH_INTERVAL_SECONDS);
+
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 700);
+  };
+
+  // 5-minute auto-refresh interval
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          handleRefreshAll();
+          return REFRESH_INTERVAL_SECONDS;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleLocationResolved = (resolved: {
     lat: number;
     lng: number;
@@ -51,9 +83,9 @@ export default function App() {
     );
 
     setLocationMessage(
-      `Ubicación establecida (${resolved.label}): Te encuentras a aprox. ${formatDistance(
+      `Ubicación seleccionada (${resolved.label}): Distancia al centro de Simón: ${formatDistance(
         distToEye
-      )} del centro de Simón. Albergues ordenados por cercanía.`
+      )}. Albergues ordenados por cercanía.`
     );
   };
 
@@ -62,24 +94,32 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* 1. Critical Top Alert Strip (Calm and informative) */}
+    <div className="min-h-screen bg-[#F7F7F4] text-[#252A2E] flex flex-col font-['Montserrat',sans-serif]">
+      {/* 1. Aviso de Situación Meteorológica (Alerta Sobria) */}
       <AlertBanner onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* 2. Main Navigation Header */}
+      {/* 2. Barra Superior de Plataforma */}
       <Navbar onOpenContacts={() => setIsContactsModalOpen(true)} />
 
-      {/* Location notification banner if active */}
+      {/* 3. Barra de Sincronización Automática (5 minutos) */}
+      <AutoRefreshBar
+        lastUpdated={lastUpdated}
+        secondsRemaining={secondsRemaining}
+        isRefreshing={isRefreshing}
+        onRefreshNow={handleRefreshAll}
+      />
+
+      {/* Notificación de Selección Geográfica */}
       {locationMessage && (
-        <div className="bg-sky-950/90 border-b border-sky-500/40 text-sky-200 text-xs px-4 py-2.5 flex items-center justify-between">
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="bg-[#FFFFFF] border-b border-[#DDE1DF] text-[#245A66] text-xs px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#3F8063] shrink-0 stroke-[2]" />
               <span>{locationMessage}</span>
             </span>
             <button
               onClick={() => setLocationMessage(null)}
-              className="text-sky-300 hover:text-white font-bold ml-2 px-1"
+              className="text-[#687078] hover:text-[#252A2E] text-xs px-1 font-semibold"
             >
               ✕
             </button>
@@ -87,26 +127,25 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. Main Content Portal */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-8">
-        {/* Metric and Alert Level Overview (with Ports, Roads, Rivers, Airports status) */}
+      {/* 4. Área Principal del Dashboard Meteorológico */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Resumen Principal y Variables Meteorológicas */}
         <StatusOverview />
 
-        {/* Interactive Trajectory and Forecast Map */}
-        <section id="mapa-trayectoria" className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        {/* Cartografía de Trayectoria y Radios de Viento */}
+        <section id="mapa-trayectoria" className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-[#DDE1DF] pb-2">
             <div>
-              <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
-                <Compass className="w-4 h-4" />
-                Vigilancia Hidrometeorológica y Costera
+              <div className="flex items-center gap-1.5 text-[#245A66] text-xs font-semibold uppercase tracking-wider">
+                <Compass className="w-3.5 h-3.5 stroke-[1.75]" />
+                Cartografía Meteorológica y Cono de Incertidumbre
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
-                Ruta Pronosticada, Radio de Vientos y Red de Albergues
+              <h2 className="text-base sm:text-lg font-semibold text-[#252A2E] mt-0.5">
+                Trayectoria Oficial Pronosticada y Red de Refugios
               </h2>
             </div>
-            <div className="text-xs text-slate-400 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-              <span>Monitoreo Oficial (Actualizado con boletín NHC / SMN)</span>
+            <div className="text-xs text-[#687078] font-tabular">
+              Datos verificados: NHC Advisory / SMN Conagua
             </div>
           </div>
 
@@ -117,7 +156,7 @@ export default function App() {
           />
         </section>
 
-        {/* Shelters Directory & Dedicated Location Finder ("Pon tu ubicación o usa tu GPS") */}
+        {/* Localizador y Directorio de Refugios Temporales */}
         <SheltersSection
           onSelectShelterOnMap={handleSelectShelterOnMap}
           userCoords={userCoords}
@@ -125,44 +164,44 @@ export default function App() {
           onLocationResolved={handleLocationResolved}
         />
 
-        {/* NOAA Satellite Viewer */}
-        <SatelliteViewer />
+        {/* Visor Satelital NOAA GOES-18 */}
+        <SatelliteViewer externalRefreshTrigger={refreshTrigger} />
 
-        {/* What to do Emergency Action Guide */}
+        {/* Protocolo de Actuación y Medidas Preventivas */}
         <EmergencyGuide />
 
-        {/* 72h Emergency Kit Checklist */}
+        {/* Mochila de Emergencia de 72 Horas */}
         <EmergencyKit />
 
-        {/* Verified Official Sources */}
+        {/* Directorio de Fuentes Oficiales */}
         <OfficialSources />
       </main>
 
-      {/* 4. Footer */}
+      {/* 5. Pie de Página Editorial */}
       <Footer />
 
-      {/* 5. Emergency Contacts Modal */}
+      {/* 6. Directorio Telefónico de Auxilio */}
       <EmergencyContactsModal
         isOpen={isContactsModalOpen}
         onClose={() => setIsContactsModalOpen(false)}
       />
 
-      {/* Mobile Floating Action Bar */}
+      {/* Barra de Acceso Rápido Móvil */}
       <div className="md:hidden fixed bottom-3 left-3 right-3 z-30">
-        <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl p-2 shadow-2xl flex items-center gap-2">
+        <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[4px] p-1.5 shadow-md flex items-center gap-2">
           <a
-            href="#localizador-refugios"
-            className="flex-1 bg-sky-600 active:bg-sky-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow"
+            href="#refugios"
+            className="flex-1 bg-[#245A66] text-white font-medium py-2 px-2.5 rounded-[3px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-3.5 h-3.5 stroke-[1.75]" />
             <span>Refugio Cercano</span>
           </a>
           <button
             onClick={() => setIsContactsModalOpen(true)}
-            className="flex-1 bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-slate-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow"
+            className="flex-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-medium py-2 px-2.5 rounded-[3px] text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
           >
-            <Phone className="w-4 h-4 text-emerald-400" />
-            <span>Directorio 911</span>
+            <Phone className="w-3.5 h-3.5 text-[#B84A45] stroke-[2]" />
+            <span>Auxilio 911</span>
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { EMERGENCY_CONTACTS } from '../data/hurricaneData';
-import { Phone, X, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { Phone, X, AlertTriangle } from 'lucide-react';
 
 interface EmergencyContactsModalProps {
   isOpen: boolean;
@@ -15,75 +15,70 @@ export const EmergencyContactsModal: React.FC<EmergencyContactsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-[#252A2E]/50 flex items-center justify-center p-4 transition"
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-700 max-w-lg w-full rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+        className="bg-[#FFFFFF] border border-[#DDE1DF] max-w-lg w-full rounded-[6px] p-5 shadow-lg space-y-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-[#DDE1DF] pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center">
-              <Phone className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-[3px] bg-[#B84A45] text-white flex items-center justify-center">
+              <Phone className="w-3.5 h-3.5 stroke-[2]" />
             </div>
             <div>
-              <h3 className="font-black text-white text-base">Directorio de Emergencia</h3>
-              <div className="text-xs text-slate-400">Líneas de auxilio y reporte 24/7</div>
+              <h3 className="font-semibold text-[#252A2E] text-sm">Directorio Telefónico de Auxilio</h3>
+              <div className="text-[11px] text-[#687078]">Líneas de reporte y atención continua 24 horas</div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1 rounded-[3px] text-[#687078] hover:text-[#252A2E] hover:bg-[#F7F7F4] transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-3 flex items-start gap-2.5 text-xs text-red-200">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div>
-            <strong>En riesgo inminente a la vida o atrapamiento:</strong> Llame de inmediato al{' '}
-            <strong className="text-white underline">911</strong>. En caso de cables caídos o chispas, marque al{' '}
-            <strong className="text-white underline">071 (CFE)</strong>.
-          </div>
+        <div className="bg-[#B84A45]/8 border border-[#B84A45]/20 rounded-[4px] p-2.5 text-xs text-[#252A2E]">
+          <strong>Riesgo inmediato a la vida:</strong> Comuníquese al <span className="font-semibold text-[#B84A45]">911</span>. Para cables eléctricos derribados, marque al <span className="font-semibold text-[#245A66]">071 (CFE)</span>.
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {EMERGENCY_CONTACTS.map((contact, idx) => (
             <div
               key={idx}
-              className="bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl p-3 flex items-center justify-between gap-3 transition"
+              className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-2.5 flex items-center justify-between gap-3"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-white text-xs sm:text-sm truncate">
+                  <span className="font-semibold text-[#252A2E] text-xs truncate">
                     {contact.name}
                   </span>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded shrink-0">
+                  <span className="text-[9px] uppercase font-medium text-[#687078] bg-white border border-[#DDE1DF] px-1 rounded-[2px] shrink-0">
                     {contact.type}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">{contact.description}</p>
+                <p className="text-[11px] text-[#687078] truncate">{contact.description}</p>
               </div>
 
               <a
                 href={`tel:${contact.number}`}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 shadow transition active:scale-95"
+                className="bg-[#245A66] hover:bg-[#1b434c] text-white font-medium text-xs px-2.5 py-1.5 rounded-[3px] flex items-center gap-1 shrink-0 transition"
               >
-                <Phone className="w-3.5 h-3.5" />
-                <span>{contact.formatted || contact.number}</span>
+                <Phone className="w-3 h-3 stroke-[2]" />
+                <span className="font-tabular">{contact.formatted || contact.number}</span>
               </a>
             </div>
           ))}
         </div>
 
-        <div className="pt-3 border-t border-slate-800 text-center">
+        <div className="pt-2 border-t border-[#DDE1DF] text-center">
           <button
             onClick={onClose}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-xl transition"
+            className="w-full bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] text-xs font-medium py-1.5 rounded-[4px] transition"
           >
-            Cerrar Ventana
+            Cerrar Directorio
           </button>
         </div>
       </div>
