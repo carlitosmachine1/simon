@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand & Editorial Title */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-[4px] bg-[#245A66] text-white flex items-center justify-center font-bold text-sm tracking-wider shrink-0">
-            S4
+            S3
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">

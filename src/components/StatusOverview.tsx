@@ -59,7 +59,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
                 Huracán Simón
               </h1>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-[3px] bg-[#B84A45]/10 text-[#B84A45] border border-[#B84A45]/20">
-                Categoría 4 (Saffir-Simpson)
+                Categoría {status.category} (Saffir-Simpson)
               </span>
             </div>
 

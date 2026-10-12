@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-2 space-y-2">
             <div className="flex items-center gap-2 text-[#252A2E] font-bold text-sm sm:text-base">
               <span className="w-6 h-6 rounded-[3px] bg-[#245A66] text-white flex items-center justify-center text-xs font-bold">
-                S4
+                S3
               </span>
               <span>{t.footerCopyright}</span>
             </div>

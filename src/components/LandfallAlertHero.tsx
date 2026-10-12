@@ -37,13 +37,14 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
 }) => {
   const { t, language } = useLanguage();
 
-  const eyeLat = dynamicStatus ? dynamicStatus.lat : 18.9;
-  const eyeLng = dynamicStatus ? dynamicStatus.lng : -105.2;
-  const speedKmh = dynamicStatus ? dynamicStatus.movementSpeedKmh : 9;
+  const eyeLat = dynamicStatus ? dynamicStatus.lat : 19.4;
+  const eyeLng = dynamicStatus ? dynamicStatus.lng : -105.4;
+  const speedKmh = dynamicStatus ? dynamicStatus.movementSpeedKmh : 11;
   const heading = dynamicStatus ? dynamicStatus.movement : 'Nor-Noroeste (335°)';
-  const windKmh = dynamicStatus ? dynamicStatus.windSpeedKmh : 240;
-  const gustsKmh = dynamicStatus ? dynamicStatus.windGustsKmh : 290;
-  const pressure = dynamicStatus ? dynamicStatus.pressureHpa : 933;
+  const windKmh = dynamicStatus ? dynamicStatus.windSpeedKmh : 205;
+  const gustsKmh = dynamicStatus ? dynamicStatus.windGustsKmh : 250;
+  const pressure = dynamicStatus ? dynamicStatus.pressureHpa : 952;
+  const category = dynamicStatus ? dynamicStatus.category : 3;
 
   // Distancia del usuario al ojo
   const userDistanceToEyeKm = useMemo(() => {
@@ -89,7 +90,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
                 {t.cycloneMajor}
               </span>
               <span className="bg-[#B84A45] text-white font-bold text-xs px-2 py-0.5 rounded-[3px]">
-                {t.category4}
+                {category === 3 ? t.category3 : (category === 4 ? t.category4 : `${t.categoryWord} ${category}`)}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#252A2E] tracking-tight">
