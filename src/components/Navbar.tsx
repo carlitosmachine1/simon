@@ -11,8 +11,10 @@ import {
   Video,
   Share2,
   Globe,
+  BarChart3,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { SiteLogo } from './SiteLogo';
 
 interface NavbarProps {
   onOpenContacts: () => void;
@@ -33,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'fotos-satelitales', label: t.navSatellite, href: '#fotos-satelitales', icon: Camera },
     { id: 'webcams', label: t.navWebcams, href: '#webcams', icon: Video },
     { id: 'mapa-trayectoria', label: t.navTrajectory, href: '#mapa-trayectoria', icon: MapPin },
+    { id: 'estadisticas', label: t.navStats, href: '#estadisticas', icon: BarChart3 },
     { id: 'refugios', label: t.navShelters, href: '#refugios', icon: ShieldCheck },
     { id: 'fuentes', label: t.navSources, href: '#fuentes', icon: BookOpen },
   ];
@@ -42,9 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
         {/* Brand & Editorial Title */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[4px] bg-[#245A66] text-white flex items-center justify-center font-bold text-sm tracking-wider shrink-0">
-            S3
-          </div>
+          <SiteLogo size="md" />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-bold text-[#252A2E] text-sm tracking-tight truncate">

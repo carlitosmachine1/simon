@@ -229,19 +229,19 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
         return p.advdate || p.ADVDATE || p.idp_filedate || p.idp_ingestdate || '';
       };
 
-      const simonFeatures = allFeatures.filter((f) => findName(f).includes('simon'));
+      const targetSystemFeatures = allFeatures.filter((f) => findName(f));
       const activeSystems = allFeatures.filter((f) => findName(f));
       const uniqueNames = [...new Set(activeSystems.map(findName))];
       const latestTime = allFeatures.map(featureTime).filter(Boolean).sort().slice(-1)[0];
 
       // Extract latest live coordinates and intensity from point tau 0 or point features
-      if (simonFeatures.length && onLiveStormData) {
+      if (targetSystemFeatures.length && onLiveStormData) {
         const tau0 = pointsFeatures.find(
           (f: any) =>
-            findName(f).includes('simon') &&
+            findName(f) &&
             (f.properties?.tau === 0 || f.properties?.TAU === 0)
         );
-        const refFeature = tau0 || simonFeatures[0];
+        const refFeature = tau0 || targetSystemFeatures[0];
         if (refFeature && refFeature.geometry) {
           const coords =
             refFeature.geometry.type === 'Point'
@@ -250,11 +250,11 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
 
           if (coords && coords.length >= 2) {
             const props = refFeature.properties || {};
-            const maxKnots = props.maxwind || props.MAXWIND || 115;
-            const gustKnots = props.gust || props.GUST || 140;
-            const mslp = props.mslp || props.MSLP || 947;
-            const headingDeg = props.tcdir || props.TCDIR || 335;
-            const speedKt = props.tcspd || props.TCSPD || 5;
+            const maxKnots = props.maxwind || props.MAXWIND || 80;
+            const gustKnots = props.gust || props.GUST || 100;
+            const mslp = props.mslp || props.MSLP || 977;
+            const headingDeg = props.tcdir || props.TCDIR || 300;
+            const speedKt = props.tcspd || props.TCSPD || 4;
 
             onLiveStormData({
               lng: coords[0],
@@ -262,8 +262,8 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
               windKmh: Math.round(maxKnots * 1.852),
               gustKmh: Math.round(gustKnots * 1.852),
               pressureHpa: mslp,
-              category: props.ssnum ?? props.SSNUM ?? 3,
-              advisoryNum: String(props.advisnum || props.ADVISNUM || '19'),
+              category: props.ssnum ?? props.SSNUM ?? 2,
+              advisoryNum: String(props.advisnum || props.ADVISNUM || '24A'),
               advisoryDate: String(props.advdate || props.ADVDATE || ''),
               movement: `${headingDeg}°`,
               speedKmh: Math.round(speedKt * 1.852),
@@ -273,25 +273,18 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
       }
 
       let summaryHtml = '';
-      if (simonFeatures.length) {
+      if (uniqueNames.length) {
         summaryHtml =
           language === 'en'
-            ? `<div class="font-bold text-[#193247] mb-1">✅ Hurricane Simon active in official NOAA feed.</div>
-               <div class="text-[#607788]">Elements rendered: ${simonFeatures.length}.</div>`
-            : `<div class="font-bold text-[#193247] mb-1">✅ Huracán Simón activo en la fuente oficial NOAA.</div>
-               <div class="text-[#607788]">Elementos en mapa: ${simonFeatures.length}.</div>`;
-      } else if (uniqueNames.length) {
-        summaryHtml =
-          language === 'en'
-            ? `<div class="font-bold text-[#193247] mb-1">Active systems found: ${uniqueNames.map(esc).join(', ')}.</div>
-               <div class="text-[#607788]">Live official NOAA track rendered.</div>`
-            : `<div class="font-bold text-[#193247] mb-1">Sistemas con nombre encontrados: ${uniqueNames.map(esc).join(', ')}.</div>
-               <div class="text-[#607788]">Trayectoria oficial de NOAA renderizada.</div>`;
+            ? `<div class="font-bold text-[#193247] mb-1">✅ Active tropical cyclone detected: ${uniqueNames.map((n) => n.toUpperCase()).join(', ')}</div>
+               <div class="text-[#607788]">Official NOAA GIS track elements rendered: ${targetSystemFeatures.length}.</div>`
+            : `<div class="font-bold text-[#193247] mb-1">✅ Ciclón tropical activo detectado: ${uniqueNames.map((n) => n.toUpperCase()).join(', ')}</div>
+               <div class="text-[#607788]">Elementos geográficos oficiales NOAA en mapa: ${targetSystemFeatures.length}.</div>`;
       } else {
         summaryHtml =
           language === 'en'
-            ? 'No named systems currently returned by NOAA GIS layers. Check official NHC advisories.'
-            : 'La fuente no devolvió sistemas con nombre en las capas de trayectoria. Consulta el boletín del NHC.';
+            ? '<div class="font-bold text-[#2A9D72] mb-1">🟢 Pacific in Calm — Green Alert</div><div class="text-[#607788]">No active named tropical cyclones currently reported in the Pacific basin. Surveillance active.</div>'
+            : '<div class="font-bold text-[#2A9D72] mb-1">🟢 Pacífico en Calma — Alerta Verde</div><div class="text-[#607788]">Sin ciclones tropicales activos en el resumen oficial de NOAA. Vigilancia permanente activa.</div>';
       }
 
       if (latestTime) {
@@ -678,7 +671,7 @@ export const TrajectoryMap: React.FC<TrajectoryMapProps> = ({
           <button
             onClick={handleCenterHurricane}
             className="flex items-center gap-1.5 bg-[#F7F7F4] hover:bg-[#EAEAE4] text-[#252A2E] border border-[#DDE1DF] px-2.5 py-1.5 rounded-[4px] text-xs font-semibold transition cursor-pointer"
-            title="Centrar en Simón"
+            title={t.centerSimonBtn}
           >
             <Crosshair className="w-3.5 h-3.5 text-[#245A66]" />
             <span className="hidden sm:inline">{t.centerSimonBtn}</span>

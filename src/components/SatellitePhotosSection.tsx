@@ -28,52 +28,52 @@ interface SatellitePhotoItem {
 
 const SATELLITE_PHOTOS: SatellitePhotoItem[] = [
   {
-    id: 'goes19-geocolor',
-    titleEs: 'GOES-19 GeoColor • Sector México',
-    titleEn: 'GOES-19 GeoColor • Mexico Sector',
-    shortTitleEs: 'GeoColor Multiespectral',
-    shortTitleEn: 'Multispectral GeoColor',
-    sensorEs: 'Sensor ABI (Canales Multiespectrales)',
-    sensorEn: 'ABI Sensor (Multispectral Channels)',
-    agency: 'NOAA STAR NESDIS',
+    id: 'nhc-2day-outlook',
+    titleEs: 'Perspectiva Tropical a 48 Horas (2 Días) • NOAA NHC',
+    titleEn: '2-Day Tropical Weather Outlook (48 Hours) • NOAA NHC',
+    shortTitleEs: 'Perspectiva Gráfica a 2 Días',
+    shortTitleEn: '2-Day Graphical Outlook',
+    sensorEs: 'Centro Nacional de Huracanes (Pacífico Este • 1920 px)',
+    sensorEn: 'National Hurricane Center (East Pacific • 1920 px)',
+    agency: 'National Hurricane Center (NOAA)',
     badgeColor: 'bg-[#245A66]',
-    url: 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/mex/GEOCOLOR/GOES19-MEX-GEOCOLOR-1000x1000.gif',
-    formatEs: 'GIF Animado',
-    formatEn: 'Animated GIF',
-    frequencyEs: 'Transmisión continua (cada 10 min)',
-    frequencyEn: 'Continuous stream (every 10 min)',
+    url: 'https://www.nhc.noaa.gov/xgtwo/resize/xgtwo_pac_2d0_w1920.png',
+    formatEs: 'PNG Alta Definición',
+    formatEn: 'HD PNG Graphic',
+    frequencyEs: 'Actualización oficial 4 veces al día',
+    frequencyEn: 'Official update 4x daily',
   },
   {
-    id: 'goes19-band13',
-    titleEs: 'GOES-19 Infrarrojo Térmico (Banda 13) • Sector México',
-    titleEn: 'GOES-19 Clean Thermal IR (Band 13) • Mexico Sector',
-    shortTitleEs: 'Infrarrojo Térmico 10.3 µm',
-    shortTitleEn: 'Clean Thermal IR 10.3 µm',
-    sensorEs: 'Sensor ABI (Banda 13 - Infrarrojo Limpio)',
-    sensorEn: 'ABI Sensor (Band 13 - Clean Thermal IR)',
+    id: 'goes19-eep-geocolor',
+    titleEs: 'GOES-19 GeoColor • Sector Pacífico Oriental (EEP)',
+    titleEn: 'GOES-19 GeoColor • Eastern East Pacific (EEP)',
+    shortTitleEs: 'GeoColor Multiespectral (EEP)',
+    shortTitleEn: 'Multispectral GeoColor (EEP)',
+    sensorEs: 'Sensor ABI (Canales Visibles y Nocturnos 900x540)',
+    sensorEn: 'ABI Sensor (Day/Night & Visible 900x540)',
+    agency: 'NOAA STAR NESDIS',
+    badgeColor: 'bg-[#1D4852]',
+    url: 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/eep/GEOCOLOR/GOES19-EEP-GEOCOLOR-900x540.gif',
+    formatEs: 'GIF Animado',
+    formatEn: 'Animated GIF',
+    frequencyEs: 'Transmisión continua cada 10-15 min',
+    frequencyEn: 'Continuous stream every 10-15 min',
+  },
+  {
+    id: 'goes19-eep-band13',
+    titleEs: 'GOES-19 Infrarrojo Térmico (Banda 13) • Sector Pacífico Oriental',
+    titleEn: 'GOES-19 Clean Thermal IR (Band 13) • Eastern East Pacific',
+    shortTitleEs: 'Infrarrojo Térmico 10.3 µm (EEP)',
+    shortTitleEn: 'Clean Thermal IR 10.3 µm (EEP)',
+    sensorEs: 'Sensor ABI (Banda 13 - Topes Nubosos y Convección)',
+    sensorEn: 'ABI Sensor (Band 13 - Cloud Tops & Convection)',
     agency: 'NOAA STAR NESDIS',
     badgeColor: 'bg-[#7A3632]',
-    url: 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/mex/13/GOES19-MEX-13-1000x1000.gif',
+    url: 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/eep/13/GOES19-EEP-13-900x540.gif',
     formatEs: 'GIF Animado',
     formatEn: 'Animated GIF',
     frequencyEs: 'Transmisión continua 24 hrs',
     frequencyEn: '24/7 continuous stream',
-  },
-  {
-    id: 'nhc-5day-cone',
-    titleEs: 'Cono Oficial de Pronóstico a 5 Días • NHC EP20',
-    titleEn: 'Official 5-Day Forecast Cone • NHC EP20',
-    shortTitleEs: 'Cono de Trayectoria Oficial',
-    shortTitleEn: 'Official Forecast Track Cone',
-    sensorEs: 'Modelo de Pronóstico Oficial (Boletín)',
-    sensorEn: 'Official Forecast Advisory Track',
-    agency: 'National Hurricane Center (NOAA)',
-    badgeColor: 'bg-[#2E6B4F]',
-    url: 'https://www.nhc.noaa.gov/storm_graphics/EP20/refresh/EP202026_5day_cone+png/072039_5day_cone.png',
-    formatEs: 'PNG Gráfica',
-    formatEn: 'PNG Graphic',
-    frequencyEs: 'Actualizado con cada boletín oficial',
-    frequencyEn: 'Updated with each official advisory',
   },
 ];
 
@@ -87,9 +87,9 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
   const { t, language } = useLanguage();
   const [cacheBuster, setCacheBuster] = useState<number>(Date.now());
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({
-    'goes19-geocolor': true,
-    'goes19-band13': true,
-    'nhc-5day-cone': true,
+    'nhc-2day-outlook': true,
+    'goes19-eep-geocolor': true,
+    'goes19-eep-band13': true,
   });
   const [errorMap, setErrorMap] = useState<Record<string, boolean>>({});
   const [selectedModalPhoto, setSelectedModalPhoto] = useState<SatellitePhotoItem | null>(null);
@@ -99,9 +99,9 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
     if (externalRefreshTrigger) {
       setCacheBuster(externalRefreshTrigger);
       setLoadingMap({
-        'goes19-geocolor': true,
-        'goes19-band13': true,
-        'nhc-5day-cone': true,
+        'nhc-2day-outlook': true,
+        'goes19-eep-geocolor': true,
+        'goes19-eep-band13': true,
       });
       setErrorMap({});
     }
@@ -112,9 +112,9 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
     const newTs = Date.now();
     setCacheBuster(newTs);
     setLoadingMap({
-      'goes19-geocolor': true,
-      'goes19-band13': true,
-      'nhc-5day-cone': true,
+      'nhc-2day-outlook': true,
+      'goes19-eep-geocolor': true,
+      'goes19-eep-band13': true,
     });
     setErrorMap({});
     setTimeout(() => {
@@ -272,6 +272,7 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
                       <img
                         src={photoUrl}
                         alt={fullTitle}
+                        referrerPolicy="no-referrer"
                         onLoad={() => handleImageLoaded(photo.id)}
                         onError={() => handleImageError(photo.id)}
                         className={`w-full h-[320px] sm:h-[360px] object-contain transition-opacity duration-300 ${
@@ -358,6 +359,7 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
             <img
               src={`${selectedModalPhoto.url}?t=${cacheBuster}`}
               alt={language === 'en' ? selectedModalPhoto.titleEn : selectedModalPhoto.titleEs}
+              referrerPolicy="no-referrer"
               className="max-h-[82vh] max-w-full object-contain rounded-[4px] shadow-2xl"
             />
           </div>

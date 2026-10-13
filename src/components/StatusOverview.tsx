@@ -22,9 +22,13 @@ import {
 
 interface StatusOverviewProps {
   dynamicStatus?: DynamicHurricaneStatus;
+  hasActiveCyclone?: boolean;
 }
 
-export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus }) => {
+export const StatusOverview: React.FC<StatusOverviewProps> = ({
+  dynamicStatus,
+  hasActiveCyclone = true,
+}) => {
   const [activeInfraFilter, setActiveInfraFilter] = useState<'todos' | 'puerto' | 'carretera' | 'rio' | 'aeropuerto'>('todos');
 
   const status = dynamicStatus || {
@@ -46,7 +50,9 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold text-[#245A66] uppercase tracking-wider">
-                Ciclón Tropical Activo • Pacífico Nororiental
+                {hasActiveCyclone
+                  ? 'Ciclón Tropical Activo • Pacífico Nororiental'
+                  : 'Vigilancia Continua • Océano Pacífico Mexicano'}
               </span>
               <span className="text-[#DDE1DF]">|</span>
               <span className="text-[11px] text-[#245A66] font-semibold bg-[#245A66]/8 px-2 py-0.5 rounded-[3px] font-tabular">
@@ -56,32 +62,50 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
 
             <div className="flex flex-wrap items-baseline gap-3">
               <h1 className="text-2xl sm:text-3xl font-semibold text-[#252A2E] tracking-tight">
-                Huracán Simón
+                {hasActiveCyclone ? (status.name || 'Ciclón Tropical') : 'Monitor Pacífico'}
               </h1>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-[3px] bg-amber-500/10 text-amber-800 border border-amber-500/30">
-                Categoría {status.category} (Saffir-Simpson)
-              </span>
+              {hasActiveCyclone ? (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-[3px] bg-amber-500/10 text-amber-800 border border-amber-500/30">
+                  Categoría {status.category} (Saffir-Simpson)
+                </span>
+              ) : (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-[3px] bg-emerald-500/10 text-emerald-800 border border-emerald-500/30">
+                  Alerta Verde (Sin Ciclón Activo)
+                </span>
+              )}
             </div>
 
             <p className="text-xs sm:text-sm text-[#687078] max-w-2xl leading-relaxed">
-              Ojo ciclónico estructurado {status.distanceReference.toLowerCase()}, desplazándose {status.movement.toLowerCase()} a {status.movementSpeedKmh} km/h.
-              Se registran vientos sostenidos de {status.windSpeedKmh} km/h (rachas de {status.windGustsKmh} km/h) y oleaje de {status.waveHeightMeters} en el litoral de Colima, Jalisco y Nayarit.
+              {hasActiveCyclone
+                ? `Ojo ciclónico estructurado ${status.distanceReference.toLowerCase()}, desplazándose ${status.movement.toLowerCase()} a ${status.movementSpeedKmh} km/h. Se registran vientos de ${status.windSpeedKmh} km/h (rachas de ${status.windGustsKmh} km/h) y oleaje de ${status.waveHeightMeters}.`
+                : 'Sin ciclones tropicales activos ni perturbaciones con amenaza directa en el litoral de Colima, Jalisco, Nayarit, Michoacán ni Baja California Sur. Viento de brisa costera y condiciones marítimas bajo vigilancia continua 24/7.'}
             </p>
           </div>
 
           {/* Featured Primary Number: Viento Máximo Sostenido */}
           <div className="bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-4 lg:text-right shrink-0 min-w-[240px]">
             <div className="text-[11px] font-medium text-[#687078] uppercase tracking-wide">
-              Viento Máximo Sostenido
+              {hasActiveCyclone ? 'Viento Máximo Sostenido' : 'Viento Costero Promedio'}
             </div>
             <div className="text-3xl sm:text-4xl font-semibold text-[#245A66] font-tabular mt-0.5">
-              {status.windSpeedKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
+              {hasActiveCyclone ? status.windSpeedKmh : 25}{' '}
+              <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs text-[#252A2E] font-tabular mt-0.5">
-              Rachas de <strong className="font-semibold text-amber-800">{status.windGustsKmh} km/h</strong> ({status.windSpeedMph} mph)
+              Rachas de{' '}
+              <strong className={`font-semibold ${hasActiveCyclone ? 'text-amber-800' : 'text-[#245A66]'}`}>
+                {hasActiveCyclone ? status.windGustsKmh : 35} km/h
+              </strong>{' '}
+              ({hasActiveCyclone ? status.windSpeedMph : 22} mph)
             </div>
             <div className="text-[11px] text-[#687078] font-tabular mt-1 pt-1.5 border-t border-[#DDE1DF]">
-              Posición actual: <strong className="text-[#245A66]">{status.coordinatesText}</strong>
+              {hasActiveCyclone ? (
+                <>
+                  Posición actual: <strong className="text-[#245A66]">{status.coordinatesText}</strong>
+                </>
+              ) : (
+                'Zona: Aguas Nacionales y Costeras del Pacífico'
+              )}
             </div>
           </div>
         </div>

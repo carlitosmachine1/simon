@@ -7,7 +7,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'simon_emergency_kit_checks_v1';
+const STORAGE_KEY = 'pacific_emergency_kit_checks_v1';
 
 export const EmergencyKit: React.FC = () => {
   const [checkedIds, setCheckedIds] = useState<string[]>(() => {

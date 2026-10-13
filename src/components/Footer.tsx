@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { SiteLogo } from './SiteLogo';
 
 export const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -11,9 +12,7 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-2 space-y-2">
             <div className="flex items-center gap-2 text-[#252A2E] font-bold text-sm sm:text-base">
-              <span className="w-6 h-6 rounded-[3px] bg-[#245A66] text-white flex items-center justify-center text-xs font-bold">
-                S3
-              </span>
+              <SiteLogo size="sm" />
               <span>{t.footerCopyright}</span>
             </div>
             <p className="text-[#687078] leading-relaxed max-w-md text-xs sm:text-sm">
@@ -80,7 +79,7 @@ export const Footer: React.FC = () => {
         <div className="pt-4 border-t border-[#DDE1DF] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#687078]">
           <div>{t.footerSyncNotice}</div>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[11px] font-tabular">© 2026 • Hurricane Simon Public Advisory</span>
+            <span className="text-[11px] font-tabular">© 2026 • Monitor Pacífico</span>
             <span className="text-[#DDE1DF] hidden sm:inline">•</span>
             <div className="text-xs text-[#252A2E]">
               {t.footerDevelopedBy}{' '}

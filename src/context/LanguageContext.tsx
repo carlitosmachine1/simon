@@ -14,6 +14,8 @@ export interface Translations {
   alertSituation: string;
   alertRed: string;
   alertBannerText: string;
+  alertGreenTitle: string;
+  alertGreenBannerText: string;
 
   // Navbar
   brandTitle: string;
@@ -23,6 +25,7 @@ export interface Translations {
   navSatellite: string;
   navWebcams: string;
   navTrajectory: string;
+  navStats: string;
   navShelters: string;
   navSources: string;
   directory911: string;
@@ -70,6 +73,22 @@ export interface Translations {
   fromEye: string;
   viewNearbyShelters: string;
 
+  // Calm State (Alerta Verde)
+  heroGreenBadge: string;
+  heroGreenTitle: string;
+  heroGreenSubtitle: string;
+  calmMetricCyclone: string;
+  calmMetricCycloneVal: string;
+  calmMetricWind: string;
+  calmMetricWindVal: string;
+  calmMetricPorts: string;
+  calmMetricPortsVal: string;
+  calmMetricRadar: string;
+  calmMetricRadarVal: string;
+  simulationLive: string;
+  simulationCalm: string;
+  simulationActive: string;
+
   // Windy Section
   windyBadge: string;
   windyTitle: string;
@@ -116,6 +135,29 @@ export interface Translations {
   centerSimonBtn: string;
   baseOSM: string;
   baseSatellite: string;
+
+  // Historical Stats Section
+  statsBadge: string;
+  statsTitle: string;
+  statsSubtitle: string;
+  statsMetricWind: string;
+  statsMetricPressure: string;
+  statsScopeSeason: string;
+  statsScopeLifecycle: string;
+  statsTotalNamed: string;
+  statsMajorHurricanes: string;
+  statsPeakWind: string;
+  statsMinPressure: string;
+  statsChartWindLabel: string;
+  statsChartPressureLabel: string;
+  statsCategoryThresholds: string;
+  statsTableTitle: string;
+  statsTableSystem: string;
+  statsTableCategory: string;
+  statsTablePeakWind: string;
+  statsTableMinPressure: string;
+  statsTableDates: string;
+  statsTableStatus: string;
 
   // Shelters Section
   sheltersBadge: string;
@@ -186,26 +228,30 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Alert Banner
     alertSituation: 'Aviso Meteorológico de Precaución',
-    alertRed: 'Aviso de Precaución • Huracán Simón (Cat. 2)',
+    alertRed: 'Aviso de Precaución • Ciclón Tropical Detectado',
     alertBannerText:
-      'Huracán Simón se degrada a Categoría 2 (vientos sostenidos de 160 km/h, rachas de 195 km/h). Ubicado mar adentro a 20.0°N, 107.0°O al oeste de Cabo Corrientes. Se mantiene monitoreo preventivo.',
+      'Monitoreo preventivo activo frente a costas del Pacífico. Consulta avisos de navegación y refugios habilitados.',
+    alertGreenTitle: 'Alerta Verde • Pacífico en Calma',
+    alertGreenBannerText:
+      'Sin ciclones tropicales activos en aguas del Pacífico Mexicano. Vigilancia meteorológica, marítima y satelital 24/7.',
 
     // Navbar
-    brandTitle: 'HURACÁN SIMÓN',
+    brandTitle: 'MONITOR PACÍFICO',
     basin: 'Pacífico',
-    brandSubtitle: 'Centro No oficial pero sí fuentes oficiales',
+    brandSubtitle: 'Vigilancia Tropical y Costera • Fuentes Oficiales',
     navWind: 'Viento en Vivo',
     navSatellite: 'Fotos Satelitales',
     navWebcams: 'Webcams en Vivo',
     navTrajectory: 'Trayectoria',
+    navStats: 'Estadísticas',
     navShelters: 'Refugios',
     navSources: 'Fuentes Oficiales',
     directory911: 'Directorio 911',
     shareBtn: 'Compartir',
 
     // Share Modal
-    shareTitle: 'Compartir Información de Emergencia',
-    shareSubtitle: 'Difunde el seguimiento del Huracán Simón en tiempo real.',
+    shareTitle: 'Compartir Monitor Pacífico',
+    shareSubtitle: 'Difunde el monitoreo meteorológico y costero en tiempo real.',
     shareCopyUrl: 'Copiar enlace',
     shareCopiedSuccess: '¡Enlace copiado al portapapeles!',
     shareWhatsapp: 'Compartir por WhatsApp',
@@ -213,7 +259,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     shareFacebook: 'Compartir en Facebook',
     shareNative: 'Compartir mediante otra aplicación',
     shareTextMsg:
-      '⚠️ Monitoreo preventivo del Huracán Simón (Cat. 2): Viento, fotos satelitales, webcams en directo y red de refugios temporales:',
+      '🌊 Monitor Pacífico: Monitoreo meteorológico en tiempo real, viento, satélite GOES-19, webcams costeras y red de refugios:',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Actualización continua de fuentes oficiales',
@@ -223,7 +269,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     emergencyCycle: 'Ciclo rápido de 2 min',
 
     // Landfall Alert Hero
-    officialLiveAdvisory: 'AVISO OFICIAL DE PRECAUCIÓN • NHC ADVISORY #23 & SMN CONAGUA',
+    officialLiveAdvisory: 'AVISO OFICIAL EN VIVO • NOAA NHC & SMN CONAGUA',
     activeMonitoring: 'Monitoreo Activo',
     cycloneMajor: 'Huracán Mayor',
     cycloneCategory: 'Huracán',
@@ -231,11 +277,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     category3: 'Categoría 3 (Saffir-Simpson)',
     category4: 'Categoría 4 (Saffir-Simpson)',
     categoryWord: 'Categoría',
-    hurricaneName: 'Huracán Simón',
+    hurricaneName: 'Huracán en Seguimiento',
     heroLocationSummary:
-      'Huracán Categoría 2 con vientos sostenidos de 160 km/h y rachas de 195 km/h localizado en 20.0°N, 107.0°O mar adentro al oeste de Cabo Corrientes, desplazándose al Oeste-Noroeste a 6 km/h.',
-    airportsClosedBadge: 'Aeropuertos PVR y ZLO: Inspección y Normalización',
-    portsClosedBadge: 'Puertos Manzanillo y Vallarta: Precaución por Marejada',
+      'Ciclón tropical bajo seguimiento en aguas del Pacífico Mexicano, desplazándose mar adentro.',
+    airportsClosedBadge: 'Aeropuertos Costeros: Operando / Precaución',
+    portsClosedBadge: 'Puertos Marítimos: Precaución por Oleaje',
     maxWinds: 'Vientos Máximos',
     gusts: 'Rachas:',
     centralPressure: 'Presión Central',
@@ -244,8 +290,25 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     cycloneCenter: 'Centro del Ciclón',
     pacificCoast: 'Pacífico Mexicano',
     yourLocation: 'Tu ubicación',
-    fromEye: 'del ojo del huracán.',
+    fromEye: 'del centro del sistema.',
     viewNearbyShelters: 'Ver refugios cercanos',
+
+    // Calm State (Alerta Verde)
+    heroGreenBadge: 'ALERTA VERDE • PACÍFICO MEXICANO EN CALMA',
+    heroGreenTitle: 'Monitor Pacífico — Vigilancia Costera y Marítima Continua',
+    heroGreenSubtitle:
+      'El Servicio Meteorológico Nacional (SMN) y el Centro Nacional de Huracanes (NOAA/NHC) no reportan ciclones tropicales activos ni perturbaciones con amenaza directa en el litoral del Pacífico Mexicano.',
+    calmMetricCyclone: 'Estatus Ciclónico',
+    calmMetricCycloneVal: 'Sin Ciclón Activo (Fase Verde)',
+    calmMetricWind: 'Viento Costero Promedio',
+    calmMetricWindVal: '15 – 30 km/h (Brisa normal)',
+    calmMetricPorts: 'Puertos y Aeropuertos',
+    calmMetricPortsVal: '100% Operativos',
+    calmMetricRadar: 'Vigilancia Satelital',
+    calmMetricRadarVal: 'GOES-19 Activo 24/7',
+    simulationLive: 'En Vivo (Automático)',
+    simulationCalm: 'Ver Estado Calma (Alerta Verde)',
+    simulationActive: 'Ver Fenómeno Detectado',
 
     // Windy Section
     windyBadge: 'MAPA EN VIVO DE RÁFAGAS DE VIENTO • WINDY (MODELO ICON)',
@@ -292,9 +355,33 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     scrollNavigatingMap: 'Navegando Mapa (Toca para Bloquear)',
     sheltersVisibleBtn: 'Refugios: Visibles',
     sheltersHiddenBtn: 'Refugios: Ocultos (Activar)',
-    centerSimonBtn: 'Centrar en Simón',
+    centerSimonBtn: 'Centrar en Sistema',
     baseOSM: 'Mapa Base OSM',
     baseSatellite: 'Satélite Esri',
+
+    // Historical Stats Section
+    statsBadge: 'ESTADÍSTICAS HISTÓRICAS DE LA TEMPORADA • PACÍFICO NORORIENTAL 2026',
+    statsTitle: 'Tendencia Histórica y Comportamiento Ciclónico',
+    statsSubtitle:
+      'Análisis comparativo de los sistemas tropicales registrados en la temporada: intensidad del viento sostenido y profundidad de presión atmosférica.',
+    statsMetricWind: 'Vientos Máximos (km/h)',
+    statsMetricPressure: 'Presión Atmosférica (hPa)',
+    statsScopeSeason: 'Ciclones de la Temporada',
+    statsScopeLifecycle: 'Evolución del Ciclón (Simón)',
+    statsTotalNamed: 'Sistemas Nombrados',
+    statsMajorHurricanes: 'Huracanes Mayores (Cat 3+)',
+    statsPeakWind: 'Viento Pico Registrado',
+    statsMinPressure: 'Presión Mínima Récord',
+    statsChartWindLabel: 'Viento Máximo Sostenido (km/h)',
+    statsChartPressureLabel: 'Presión Atmosférica Mínima (hPa)',
+    statsCategoryThresholds: 'Umbrales de Categoría Saffir-Simpson',
+    statsTableTitle: 'Registro Oficial de Sistemas Tropicales 2026',
+    statsTableSystem: 'Sistema',
+    statsTableCategory: 'Categoría Pico',
+    statsTablePeakWind: 'Viento Máx.',
+    statsTableMinPressure: 'Presión Mín.',
+    statsTableDates: 'Período Activo',
+    statsTableStatus: 'Estatus',
 
     // Shelters Section
     sheltersBadge: 'REFUGIOS Y ALBERGUES TEMPORALES',
@@ -346,11 +433,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     // Contacts Modal
     contactsTitle: 'Directorio Telefónico de Auxilio Inmediato',
     contactsSubtitle:
-      'Líneas de emergencia gratuitas disponibles las 24 horas durante el impacto del Huracán Simón.',
+      'Líneas de emergencia gratuitas disponibles las 24 horas ante alertas y fenómenos meteorológicos en el Pacífico.',
     callFree: 'Llamada Gratuita 24/7',
 
     // Footer
-    footerCopyright: 'Plataforma Ciudadana de Monitoreo Meteorológico • Huracán Simón 2026',
+    footerCopyright: 'Monitor Pacífico • Vigilancia Meteorológica y Costera',
     footerSyncNotice:
       'Datos sincronizados con boletines del National Hurricane Center (NHC/NOAA) y SMN CONAGUA.',
     footerDisclaimer:
@@ -370,26 +457,30 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Alert Banner
     alertSituation: 'Weather Precaution Advisory',
-    alertRed: 'Precaution Advisory • Hurricane Simon (Cat. 2)',
+    alertRed: 'Precaution Advisory • Tropical Cyclone Detected',
     alertBannerText:
-      'Hurricane Simon downgraded to Category 2 (winds 160 km/h / 100 mph, gusts 195 km/h). Positioned at 20.0°N, 107.0°W offshore west of Cabo Corrientes. Precautionary monitoring active.',
+      'Precautionary tracking active off the Mexican Pacific coastline. Check marine navigation bulletins and shelters.',
+    alertGreenTitle: 'Green Alert • Pacific Calm',
+    alertGreenBannerText:
+      'No active tropical cyclones in the Mexican Pacific basin. 24/7 continuous meteorological, marine, and satellite surveillance.',
 
     // Navbar
-    brandTitle: 'HURRICANE SIMON',
+    brandTitle: 'PACIFIC MONITOR',
     basin: 'Pacific',
-    brandSubtitle: 'Unofficial tracker powered by official sources',
+    brandSubtitle: 'Tropical & Coastal Surveillance • Official Sources',
     navWind: 'Live Wind',
     navSatellite: 'Satellite Images',
     navWebcams: 'Live Webcams',
     navTrajectory: 'Trajectory',
+    navStats: 'Statistics',
     navShelters: 'Shelters',
     navSources: 'Official Sources',
     directory911: '911 Directory',
     shareBtn: 'Share',
 
     // Share Modal
-    shareTitle: 'Share Emergency Information',
-    shareSubtitle: 'Broadcast real-time Hurricane Simon updates.',
+    shareTitle: 'Share Pacific Monitor',
+    shareSubtitle: 'Broadcast real-time Pacific weather & coastal monitoring.',
     shareCopyUrl: 'Copy Link',
     shareCopiedSuccess: 'Link copied to clipboard!',
     shareWhatsapp: 'Share via WhatsApp',
@@ -397,7 +488,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     shareFacebook: 'Share on Facebook',
     shareNative: 'Share with device apps',
     shareTextMsg:
-      '⚠️ Live Hurricane Simon (Cat. 2) Tracker: Wind gusts, satellite imagery, live webcams, and designated storm shelters:',
+      '🌊 Pacific Monitor: Real-time tropical weather tracking, wind gusts, GOES-19 satellite, coastal webcams, and shelters:',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Continuous sync from official agencies',
@@ -407,7 +498,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     emergencyCycle: '2-min emergency cycle',
 
     // Landfall Alert Hero
-    officialLiveAdvisory: 'OFFICIAL PRECAUTION ADVISORY • NHC ADVISORY #23 & SMN CONAGUA',
+    officialLiveAdvisory: 'OFFICIAL LIVE ADVISORY • NOAA NHC & SMN CONAGUA',
     activeMonitoring: 'Active Monitoring',
     cycloneMajor: 'Major Hurricane',
     cycloneCategory: 'Hurricane',
@@ -415,11 +506,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     category3: 'Category 3 (Saffir-Simpson)',
     category4: 'Category 4 (Saffir-Simpson)',
     categoryWord: 'Category',
-    hurricaneName: 'Hurricane Simon',
+    hurricaneName: 'Active Cyclone',
     heroLocationSummary:
-      'Category 2 Hurricane with sustained winds of 160 km/h (100 mph) and gusts to 195 km/h located at 20.0°N, 107.0°W offshore west of Cabo Corrientes, moving West-Northwest at 6 km/h.',
-    airportsClosedBadge: 'Airports PVR and ZLO: Inspection & Reopening',
-    portsClosedBadge: 'Ports of Manzanillo & Vallarta: High Surf Precaution',
+      'Active tropical system monitored in Mexican Pacific waters, moving offshore.',
+    airportsClosedBadge: 'Coastal Airports: Operational / Precaution',
+    portsClosedBadge: 'Maritime Ports: Marine Surf Precaution',
     maxWinds: 'Max Sustained Winds',
     gusts: 'Gusts:',
     centralPressure: 'Central Pressure',
@@ -428,8 +519,25 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     cycloneCenter: 'Cyclone Center',
     pacificCoast: 'Mexican Pacific',
     yourLocation: 'Your location',
-    fromEye: 'from hurricane eye.',
+    fromEye: 'from system center.',
     viewNearbyShelters: 'View nearby shelters',
+
+    // Calm State (Green Alert)
+    heroGreenBadge: 'GREEN ALERT • MEXICAN PACIFIC CALM',
+    heroGreenTitle: 'Pacific Monitor — Continuous Coastal & Marine Surveillance',
+    heroGreenSubtitle:
+      'The National Hurricane Center (NOAA/NHC) and SMN report no active tropical cyclones or disturbances posing a threat to Mexican Pacific coastlines.',
+    calmMetricCyclone: 'Cyclone Status',
+    calmMetricCycloneVal: 'No Active Cyclone (Green Phase)',
+    calmMetricWind: 'Avg. Coastal Wind',
+    calmMetricWindVal: '15 – 30 km/h (Normal breeze)',
+    calmMetricPorts: 'Ports & Airports',
+    calmMetricPortsVal: '100% Operational',
+    calmMetricRadar: 'Satellite Surveillance',
+    calmMetricRadarVal: 'GOES-19 Active 24/7',
+    simulationLive: 'Live Mode (Auto)',
+    simulationCalm: 'View Calm State (Green Alert)',
+    simulationActive: 'View Detected Phenomenon',
 
     // Windy Section
     windyBadge: 'LIVE WIND GUSTS MAP • WINDY (ICON MODEL)',
@@ -476,9 +584,33 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     scrollNavigatingMap: 'Navigating Map (Tap to Lock)',
     sheltersVisibleBtn: 'Shelters: Visible',
     sheltersHiddenBtn: 'Shelters: Hidden (Enable)',
-    centerSimonBtn: 'Center on Simon',
+    centerSimonBtn: 'Center on System',
     baseOSM: 'OSM Base Map',
     baseSatellite: 'Esri Satellite',
+
+    // Historical Stats Section
+    statsBadge: 'HISTORICAL SEASON STATISTICS • EAST PACIFIC 2026',
+    statsTitle: 'Historical Trends & Cyclone Behavior',
+    statsSubtitle:
+      'Comparative analysis of tropical systems recorded this season: sustained wind intensity and atmospheric pressure depth.',
+    statsMetricWind: 'Peak Winds (km/h)',
+    statsMetricPressure: 'Atmospheric Pressure (hPa)',
+    statsScopeSeason: 'Season Cyclones',
+    statsScopeLifecycle: 'Cyclone Lifecycle (Simon)',
+    statsTotalNamed: 'Named Systems',
+    statsMajorHurricanes: 'Major Hurricanes (Cat 3+)',
+    statsPeakWind: 'Peak Recorded Wind',
+    statsMinPressure: 'Record Low Pressure',
+    statsChartWindLabel: 'Peak Sustained Wind (km/h)',
+    statsChartPressureLabel: 'Minimum Atmospheric Pressure (hPa)',
+    statsCategoryThresholds: 'Saffir-Simpson Category Thresholds',
+    statsTableTitle: 'Official 2026 Tropical Systems Record',
+    statsTableSystem: 'System',
+    statsTableCategory: 'Peak Category',
+    statsTablePeakWind: 'Peak Wind',
+    statsTableMinPressure: 'Min Pressure',
+    statsTableDates: 'Active Dates',
+    statsTableStatus: 'Current Status',
 
     // Shelters Section
     sheltersBadge: 'TEMPORARY SHELTERS & REFUGES',
@@ -530,11 +662,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     // Contacts Modal
     contactsTitle: 'Immediate Emergency Phone Directory',
     contactsSubtitle:
-      'Free toll-free emergency hotlines available 24/7 during Hurricane Simon.',
+      'Free toll-free emergency hotlines available 24/7 during severe Pacific weather events.',
     callFree: 'Free Call 24/7',
 
     // Footer
-    footerCopyright: 'Citizen Weather Monitoring Platform • Hurricane Simon 2026',
+    footerCopyright: 'Pacific Monitor • Meteorological & Coastal Surveillance Platform',
     footerSyncNotice:
       'Data synchronized with National Hurricane Center (NHC/NOAA) and SMN CONAGUA bulletins.',
     footerDisclaimer:

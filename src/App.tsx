@@ -10,10 +10,12 @@ import { AlertBanner } from './components/AlertBanner';
 import { Navbar } from './components/Navbar';
 import { AutoRefreshBar } from './components/AutoRefreshBar';
 import { LandfallAlertHero } from './components/LandfallAlertHero';
+import { TropicalOutlookSection } from './components/TropicalOutlookSection';
 import { ZoomEarthSection } from './components/ZoomEarthSection';
 import { SatellitePhotosSection } from './components/SatellitePhotosSection';
 import { WebcamsSection } from './components/WebcamsSection';
 import { TrajectoryMap } from './components/TrajectoryMap';
+import { HistoricalStats } from './components/HistoricalStats';
 import { SheltersSection } from './components/SheltersSection';
 import { EmergencyGuide } from './components/EmergencyGuide';
 import { OfficialSources } from './components/OfficialSources';
@@ -22,6 +24,7 @@ import { EmergencyContactsModal } from './components/EmergencyContactsModal';
 import { ShareModal } from './components/ShareModal';
 import { Shelter } from './data/hurricaneData';
 import { getLiveHurricaneStatus } from './utils/hurricaneTracking';
+import { fetchLiveNOAACyclone, LiveCycloneReport } from './utils/noaaFeed';
 import { calculateDistanceKm, formatDistance } from './utils/geo';
 import {
   MapPin,
@@ -74,23 +77,78 @@ function AppContent() {
     return getLiveHurricaneStatus(lastUpdated);
   }, [lastUpdated]);
 
+  // Reporte en tiempo real de presencia de fenómenos tropicales en NOAA MapServer
+  const [liveCycloneReport, setLiveCycloneReport] = useState<LiveCycloneReport | null>(null);
+  const [viewModeOverride, setViewModeOverride] = useState<'auto' | 'calm' | 'cyclone'>('auto');
+
+  // Evaluar presencia de ciclón activo (en vivo o mediante alternador)
+  const hasActiveCyclone = useMemo(() => {
+    if (viewModeOverride === 'calm') return false;
+    if (viewModeOverride === 'cyclone') return true;
+    return liveCycloneReport ? liveCycloneReport.hasActiveCyclone : true;
+  }, [viewModeOverride, liveCycloneReport]);
+
+  const handleToggleViewMode = () => {
+    setViewModeOverride((prev) => {
+      if (prev === 'auto') return hasActiveCyclone ? 'calm' : 'cyclone';
+      if (prev === 'calm') return 'cyclone';
+      return 'auto';
+    });
+  };
+
+  // Consultar resumen tropical oficial de NOAA periódicamente
+  useEffect(() => {
+    let isMounted = true;
+    fetchLiveNOAACyclone().then((report) => {
+      if (isMounted) {
+        setLiveCycloneReport(report);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTrigger]);
+
   // Merge live NOAA MapServer coordinates & intensity when available
   const effectiveStatus = useMemo(() => {
-    if (!liveNOAAData) return liveStatus;
-    return {
-      ...liveStatus,
-      lat: liveNOAAData.lat,
-      lng: liveNOAAData.lng,
-      windSpeedKmh: liveNOAAData.windKmh,
-      windGustsKmh: liveNOAAData.gustKmh,
-      pressureHpa: liveNOAAData.pressureHpa,
-      category: liveNOAAData.category,
-      movement: liveNOAAData.movement,
-      movementSpeedKmh: liveNOAAData.speedKmh,
-      coordinatesText: `${liveNOAAData.lat.toFixed(1)}°N, ${Math.abs(liveNOAAData.lng).toFixed(1)}°${language === 'en' ? 'W' : 'O'}`,
-      lastUpdate: liveNOAAData.advisoryDate || liveStatus.lastUpdate,
-    };
-  }, [liveStatus, liveNOAAData, language]);
+    const base = liveStatus;
+    if (liveCycloneReport && liveCycloneReport.hasActiveCyclone) {
+      return {
+        ...base,
+        name: liveCycloneReport.name,
+        category: liveCycloneReport.category,
+        categoryName: liveCycloneReport.categoryName,
+        classification: liveCycloneReport.classification,
+        windSpeedKmh: liveCycloneReport.windSpeedKmh,
+        windGustsKmh: liveCycloneReport.windGustsKmh,
+        pressureHpa: liveCycloneReport.pressureHpa,
+        lat: liveCycloneReport.lat,
+        lng: liveCycloneReport.lng,
+        coordinatesText: liveCycloneReport.coordinatesText,
+        distanceReference: liveCycloneReport.distanceReference,
+        movement: liveCycloneReport.movement,
+        movementSpeedKmh: liveCycloneReport.movementSpeedKmh,
+        waveHeightMeters: liveCycloneReport.waveHeightMeters,
+        lastUpdate: liveCycloneReport.lastUpdate,
+      };
+    }
+    if (liveNOAAData) {
+      return {
+        ...base,
+        lat: liveNOAAData.lat,
+        lng: liveNOAAData.lng,
+        windSpeedKmh: liveNOAAData.windKmh,
+        windGustsKmh: liveNOAAData.gustKmh,
+        pressureHpa: liveNOAAData.pressureHpa,
+        category: liveNOAAData.category,
+        movement: liveNOAAData.movement,
+        movementSpeedKmh: liveNOAAData.speedKmh,
+        coordinatesText: `${liveNOAAData.lat.toFixed(1)}°N, ${Math.abs(liveNOAAData.lng).toFixed(1)}°${language === 'en' ? 'W' : 'O'}`,
+        lastUpdate: liveNOAAData.advisoryDate || base.lastUpdate,
+      };
+    }
+    return base;
+  }, [liveStatus, liveNOAAData, liveCycloneReport, language]);
 
   const handleRefreshAll = () => {
     setIsRefreshing(true);
@@ -135,14 +193,14 @@ function AppContent() {
     const distToEye = calculateDistanceKm(
       resolved.lat,
       resolved.lng,
-      liveStatus.lat,
-      liveStatus.lng
+      effectiveStatus.lat,
+      effectiveStatus.lng
     );
 
     setLocationMessage(
       language === 'en'
-        ? `Selected location (${resolved.label}): Distance to Hurricane Simon eye: ${formatDistance(distToEye)}.`
-        : `Ubicación seleccionada (${resolved.label}): Distancia al centro actual de Simón: ${formatDistance(distToEye)}.`
+        ? `Selected location (${resolved.label}): Distance to ${effectiveStatus.name} center: ${formatDistance(distToEye)}.`
+        : `Ubicación seleccionada (${resolved.label}): Distancia al centro de ${effectiveStatus.name}: ${formatDistance(distToEye)}.`
     );
   };
 
@@ -163,8 +221,14 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[#F7F7F4] text-[#252A2E] flex flex-col font-['Montserrat',sans-serif] text-base leading-relaxed">
-      {/* 1. Aviso de Emergencia Superior (Alerta Roja) */}
-      <AlertBanner onOpenContacts={() => setIsContactsModalOpen(true)} />
+      {/* 1. Aviso de Emergencia / Estado en Calma Superior */}
+      <AlertBanner
+        onOpenContacts={() => setIsContactsModalOpen(true)}
+        hasActiveCyclone={hasActiveCyclone}
+        activeStormName={effectiveStatus.name}
+        activeCategory={effectiveStatus.category}
+        activeStorms={liveCycloneReport?.activeStorms}
+      />
 
       {/* 2. Barra de Navegación con Switch de Idioma y Botón Compartir */}
       <Navbar
@@ -202,7 +266,7 @@ function AppContent() {
 
       {/* 4. Área Principal del Dashboard: Prioridad Visual y Datos Digeribles */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
-        {/* Panel de Datos Duros y Alerta de Huracán */}
+        {/* Panel de Datos Duros y Alerta de Ciclón / Estado en Calma */}
         <LandfallAlertHero
           userCoords={userCoords}
           activeLocationLabel={activeLocationLabel}
@@ -214,8 +278,16 @@ function AppContent() {
           lastUpdated={lastUpdated}
           onRefreshNow={handleRefreshAll}
           isRefreshing={isRefreshing}
-          dynamicStatus={liveStatus}
+          dynamicStatus={effectiveStatus}
+          hasActiveCyclone={hasActiveCyclone}
+          activeStormName={effectiveStatus.name}
+          onToggleViewMode={handleToggleViewMode}
+          viewMode={viewModeOverride}
+          activeStorms={liveCycloneReport?.activeStorms}
         />
+
+        {/* Perspectiva Tropical a 7 Días de la NOAA NHC (Pronóstico Gráfico de Ciclones y Perturbaciones) */}
+        <TropicalOutlookSection externalRefreshTrigger={refreshTrigger} />
 
         {/* ORDEN SOLICITADO: 1. AL INICIO: Embed de Windy (Ráfagas de Viento y Radar) con Scroll Protegido */}
         <ZoomEarthSection externalRefreshTrigger={refreshTrigger} />
@@ -254,7 +326,10 @@ function AppContent() {
           />
         </section>
 
-        {/* ORDEN SOLICITADO: 5. REFUGIOS: Ocultos por defecto, solo a petición del usuario */}
+        {/* 5. Estadísticas Históricas de la Temporada con Recharts */}
+        <HistoricalStats />
+
+        {/* ORDEN SOLICITADO: 6. REFUGIOS: Ocultos por defecto, solo a petición del usuario */}
         <section id="refugios" className="space-y-3">
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[8px] p-5 sm:p-6 transition shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
