@@ -53,13 +53,13 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
   }, [userCoords, eyeLat, eyeLng]);
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#B84A45]/30 rounded-[6px] overflow-hidden text-[#252A2E] shadow-none">
-      {/* 1. Barra de Alerta Superior */}
-      <div className="bg-[#B84A45]/10 border-b border-[#B84A45]/20 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+    <div className="bg-[#FFFFFF] border border-amber-500/30 rounded-[6px] overflow-hidden text-[#252A2E] shadow-none">
+      {/* 1. Barra de Precaución Superior */}
+      <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#B84A45] animate-pulse shrink-0" />
-          <span className="font-bold text-[#B84A45] uppercase text-xs sm:text-sm tracking-wider flex items-center gap-1.5">
-            <ShieldAlert className="w-4 h-4 stroke-[2]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+          <span className="font-bold text-amber-800 uppercase text-xs sm:text-sm tracking-wider flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-amber-700 stroke-[2]" />
             {t.officialLiveAdvisory}
           </span>
         </div>
@@ -87,10 +87,16 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="text-sm font-bold text-[#245A66] uppercase tracking-wide">
-                {t.cycloneMajor}
+                {category >= 3 ? t.cycloneMajor : t.cycloneCategory}
               </span>
-              <span className="bg-[#B84A45] text-white font-bold text-xs px-2 py-0.5 rounded-[3px]">
-                {category === 3 ? t.category3 : (category === 4 ? t.category4 : `${t.categoryWord} ${category}`)}
+              <span className="bg-amber-600 text-white font-bold text-xs px-2.5 py-0.5 rounded-[3px]">
+                {category === 2
+                  ? t.category2
+                  : category === 3
+                  ? t.category3
+                  : category === 4
+                  ? t.category4
+                  : `${t.categoryWord} ${category}`}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#252A2E] tracking-tight">
@@ -101,14 +107,14 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
             </p>
           </div>
 
-          {/* Badges de Cierre de Aeropuertos y Puertos */}
+          {/* Badges de Cierre Preventivo de Aeropuertos y Puertos */}
           <div className="flex flex-col gap-2 shrink-0">
-            <div className="flex items-center gap-2 bg-[#B84A45]/10 border border-[#B84A45]/30 text-[#B84A45] font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
-              <PlaneTakeoff className="w-4 h-4 shrink-0" />
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-900 font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
+              <PlaneTakeoff className="w-4 h-4 text-amber-700 shrink-0" />
               <span>{t.airportsClosedBadge}</span>
             </div>
-            <div className="flex items-center gap-2 bg-[#B84A45]/10 border border-[#B84A45]/30 text-[#B84A45] font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
-              <Anchor className="w-4 h-4 shrink-0" />
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-900 font-bold text-xs sm:text-sm px-3 py-1.5 rounded-[4px]">
+              <Anchor className="w-4 h-4 text-amber-700 shrink-0" />
               <span>{t.portsClosedBadge}</span>
             </div>
           </div>
@@ -120,13 +126,13 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
           <div className="bg-[#FFFFFF] border-2 border-[#DDE1DF] hover:border-[#245A66] rounded-[6px] p-3.5 sm:p-4 transition">
             <div className="flex items-center justify-between text-xs sm:text-sm text-[#687078]">
               <span className="font-semibold">{t.maxWinds}</span>
-              <Wind className="w-4 h-4 text-[#B84A45]" />
+              <Wind className="w-4 h-4 text-amber-700" />
             </div>
-            <div className="text-2xl sm:text-3xl font-bold text-[#B84A45] font-tabular mt-1">
+            <div className="text-2xl sm:text-3xl font-bold text-amber-700 font-tabular mt-1">
               {windKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs sm:text-sm font-semibold text-[#252A2E] mt-0.5">
-              {t.gusts} <span className="text-[#B84A45] font-bold">{gustsKmh} km/h</span>
+              {t.gusts} <span className="text-amber-800 font-bold">{gustsKmh} km/h</span>
             </div>
           </div>
 

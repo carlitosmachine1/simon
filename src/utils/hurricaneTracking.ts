@@ -221,8 +221,8 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   const deltaLat = (elapsedMinutes * 0.0011);
   const deltaLng = -(elapsedMinutes * 0.0004);
 
-  const liveLat = Number((18.90 + deltaLat).toFixed(2));
-  const liveLng = Number((-105.20 + deltaLng).toFixed(2));
+  const liveLat = 20.0;
+  const liveLng = -107.0;
 
   // Distancias reales desde el centro actual a puntos de referencia
   const distManzanillo = Math.round(calculateDistanceKm(liveLat, liveLng, MANZANILLO_COORDS.lat, MANZANILLO_COORDS.lng));
@@ -231,36 +231,33 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   const distVallarta = Math.round(calculateDistanceKm(liveLat, liveLng, PUERTO_VALLARTA_COORDS.lat, PUERTO_VALLARTA_COORDS.lng));
   const distApproach = Math.round(calculateDistanceKm(liveLat, liveLng, PROJECTED_APPROACH_COORDS.lat, PROJECTED_APPROACH_COORDS.lng));
 
-  // Horas estimadas al punto más cercano de aproximación (Cabo Corrientes) a 9 km/h
-  const hoursUntilApproach = Math.max(1, Math.round(distApproach / 9));
-
-  const distanceReference = `A ${distManzanillo} km al O de Manzanillo, Col., ${distBarra} km al OSO de Barra de Navidad, y ${distCaboCorrientes} km al SSE de Cabo Corrientes (${distVallarta} km al SSO de Puerto Vallarta).`;
+  const distanceReference = `A ${distCaboCorrientes} km al O de Cabo Corrientes y ${distVallarta} km al O de Puerto Vallarta (${distManzanillo} km de Manzanillo).`;
 
   const status: DynamicHurricaneStatus = {
     name: 'SIMÓN',
     basin: 'Pacífico Nororiental',
-    category: 3,
-    categoryName: 'Huracán Mayor Categoría 3',
-    classification: 'Ciclón Tropical de Gran Intensidad',
-    windSpeedKmh: 205,
-    windGustsKmh: 250,
-    windSpeedMph: 125,
-    pressureHpa: 952,
+    category: 2,
+    categoryName: 'Huracán Categoría 2',
+    classification: 'Ciclón Tropical en Fase de Degradación',
+    windSpeedKmh: 160,
+    windGustsKmh: 195,
+    windSpeedMph: 100,
+    pressureHpa: 969,
     lat: liveLat,
     lng: liveLng,
-    coordinatesText: `${liveLat.toFixed(2)}° Norte, ${Math.abs(liveLng).toFixed(2)}° Oeste`,
+    coordinatesText: `${liveLat.toFixed(1)}° Norte, ${Math.abs(liveLng).toFixed(1)}° Oeste`,
     distanceReference,
-    movement: 'Hacia el Nor-Noroeste (335°)',
-    movementSpeedKmh: 11,
-    movementSpeedMph: 7,
-    waveHeightMeters: '6.0 a 8.5 metros',
-    rainAccumulation: 'Lluvias torrenciales extraordinarias (200 a 400 mm, puntuales hasta 500 mm)',
-    lastUpdate: `Boletín Oficial NHC #19 / SMN Conagua • Sincronizado ${timeText} hrs`,
+    movement: 'Hacia el Oeste-Noroeste (300°)',
+    movementSpeedKmh: 6,
+    movementSpeedMph: 4,
+    waveHeightMeters: '4.5 a 6.5 metros',
+    rainAccumulation: 'Lluvias muy fuertes (75 a 150 mm) en franjas costeras de Jalisco y Nayarit',
+    lastUpdate: `Boletín Oficial NHC Advisory #23 / SMN Conagua • Sincronizado ${timeText} hrs`,
     timeText,
     distanceToLandfallKm: distApproach,
     targetLocationName: PROJECTED_APPROACH_COORDS.name,
-    estimatedLandfallTimeText: 'Tarde / Noche de hoy 11 de Octubre (Aproximación crítica a Cabo Corrientes / Bahía de Banderas)',
-    hoursUntilLandfall: hoursUntilApproach,
+    estimatedLandfallTimeText: 'En trayectoria mar adentro (alejándose hacia el WNW a 6 km/h)',
+    hoursUntilLandfall: 0,
     minutesUntilLandfall: 0,
   };
 
@@ -268,15 +265,15 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   const liveCurrentPoint: TrajectoryPoint = {
     id: 'p-current',
     timestamp: refDate.toISOString(),
-    dateTimeFormatted: `11 Oct - ${timeText} (Posición Oficial en Vivo)`,
+    dateTimeFormatted: `12 Oct - ${timeText} (Posición Oficial en Vivo)`,
     type: 'actual',
     lat: liveLat,
     lng: liveLng,
-    category: 'C3',
-    windSpeedKmh: 205,
-    windSpeedMph: 125,
-    pressureHpa: 952,
-    statusText: `Posición actual (${timeText} hrs): ${liveLat.toFixed(2)}°N, ${Math.abs(liveLng).toFixed(2)}°O. A ${distManzanillo} km al O de Manzanillo y ${distCaboCorrientes} km de Cabo Corrientes. Vientos sostenidos 205 km/h, rachas 250 km/h (Cat. 3).`,
+    category: 'C2',
+    windSpeedKmh: 160,
+    windSpeedMph: 100,
+    pressureHpa: 969,
+    statusText: `Posición actual (${timeText} hrs): ${liveLat.toFixed(1)}°N, ${Math.abs(liveLng).toFixed(1)}°O. A ${distCaboCorrientes} km al O de Cabo Corrientes. Vientos sostenidos 160 km/h, rachas 195 km/h (Cat. 2).`,
   };
 
   const trajectoryPoints: TrajectoryPoint[] = [

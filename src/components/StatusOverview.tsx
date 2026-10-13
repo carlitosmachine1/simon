@@ -58,7 +58,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               <h1 className="text-2xl sm:text-3xl font-semibold text-[#252A2E] tracking-tight">
                 Huracán Simón
               </h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-[3px] bg-[#B84A45]/10 text-[#B84A45] border border-[#B84A45]/20">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-[3px] bg-amber-500/10 text-amber-800 border border-amber-500/30">
                 Categoría {status.category} (Saffir-Simpson)
               </span>
             </div>
@@ -78,7 +78,7 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
               {status.windSpeedKmh} <span className="text-sm font-normal text-[#687078]">km/h</span>
             </div>
             <div className="text-xs text-[#252A2E] font-tabular mt-0.5">
-              Rachas de <strong className="font-semibold text-[#B84A45]">{status.windGustsKmh} km/h</strong> ({status.windSpeedMph} mph)
+              Rachas de <strong className="font-semibold text-amber-800">{status.windGustsKmh} km/h</strong> ({status.windSpeedMph} mph)
             </div>
             <div className="text-[11px] text-[#687078] font-tabular mt-1 pt-1.5 border-t border-[#DDE1DF]">
               Posición actual: <strong className="text-[#245A66]">{status.coordinatesText}</strong>
@@ -179,19 +179,19 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
                 <div className="flex items-center justify-between">
                   <span
                     className={`text-xs font-semibold ${
-                      isRed
-                        ? 'text-[#B84A45]'
-                        : isOrange
+                      alert.color === '#d97706' || alert.color === '#b91c1c'
+                        ? 'text-amber-800'
+                        : isOrange || alert.color === '#ea580c'
+                        ? 'text-[#C2410C]'
+                        : isYellow || alert.color === '#ca8a04'
                         ? 'text-[#A66C19]'
-                        : isYellow
-                        ? 'text-[#D99A38]'
                         : 'text-[#3F8063]'
                     }`}
                   >
                     {alert.level}
                   </span>
                   <span
-                    className="w-2 h-2 rounded-[2px]"
+                    className="w-2.5 h-2.5 rounded-[2px]"
                     style={{ backgroundColor: alert.color }}
                   />
                 </div>
@@ -250,9 +250,9 @@ export const StatusOverview: React.FC<StatusOverviewProps> = ({ dynamicStatus })
                     {item.name}
                   </span>
                   <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-[3px] border ${
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-[3px] border ${
                       item.status === 'Cerrado / Restringido'
-                        ? 'bg-[#B84A45]/10 text-[#B84A45] border-[#B84A45]/20'
+                        ? 'bg-amber-500/15 text-amber-900 border-amber-500/30'
                         : item.status === 'Precaución'
                         ? 'bg-[#A66C19]/10 text-[#A66C19] border-[#A66C19]/20'
                         : 'bg-[#245A66]/10 text-[#245A66] border-[#245A66]/20'

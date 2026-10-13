@@ -50,6 +50,8 @@ export interface Translations {
   officialLiveAdvisory: string;
   activeMonitoring: string;
   cycloneMajor: string;
+  cycloneCategory: string;
+  category2: string;
   category3: string;
   category4: string;
   categoryWord: string;
@@ -183,10 +185,10 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     copied: 'Copiado',
 
     // Alert Banner
-    alertSituation: 'Aviso Meteorológico de Emergencia',
-    alertRed: 'Alerta Roja • Huracán Simón',
+    alertSituation: 'Aviso Meteorológico de Precaución',
+    alertRed: 'Aviso de Precaución • Huracán Simón (Cat. 2)',
     alertBannerText:
-      'Huracán Simón (Cat. 3) en trayectoria frente a costas de Jalisco y Colima. Aeropuertos PVR y ZLO cerrados. Alerta Roja en costas de Jalisco y Colima.',
+      'Huracán Simón se degrada a Categoría 2 (vientos sostenidos de 160 km/h, rachas de 195 km/h). Ubicado mar adentro a 20.0°N, 107.0°O al oeste de Cabo Corrientes. Se mantiene monitoreo preventivo.',
 
     // Navbar
     brandTitle: 'HURACÁN SIMÓN',
@@ -211,7 +213,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     shareFacebook: 'Compartir en Facebook',
     shareNative: 'Compartir mediante otra aplicación',
     shareTextMsg:
-      '🚨 Monitoreo en vivo del Huracán Simón (Cat. 3): Viento, fotos satelitales, webcams en directo y red de refugios temporales:',
+      '⚠️ Monitoreo preventivo del Huracán Simón (Cat. 2): Viento, fotos satelitales, webcams en directo y red de refugios temporales:',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Actualización continua de fuentes oficiales',
@@ -221,17 +223,19 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     emergencyCycle: 'Ciclo rápido de 2 min',
 
     // Landfall Alert Hero
-    officialLiveAdvisory: 'AVISO OFICIAL EN VIVO • NHC ADVISORY #19 & SMN CONAGUA',
+    officialLiveAdvisory: 'AVISO OFICIAL DE PRECAUCIÓN • NHC ADVISORY #23 & SMN CONAGUA',
     activeMonitoring: 'Monitoreo Activo',
     cycloneMajor: 'Huracán Mayor',
+    cycloneCategory: 'Huracán',
+    category2: 'Categoría 2 (Saffir-Simpson)',
     category3: 'Categoría 3 (Saffir-Simpson)',
     category4: 'Categoría 4 (Saffir-Simpson)',
     categoryWord: 'Categoría',
     hurricaneName: 'Huracán Simón',
     heroLocationSummary:
-      'Huracán Mayor Categoría 3 con vientos sostenidos de 205 km/h y rachas de 250 km/h frente al litoral de Jalisco, desplazándose al Nor-Noroeste.',
-    airportsClosedBadge: 'Aeropuertos PVR y ZLO: CERRADOS',
-    portsClosedBadge: 'Puertos de Manzanillo y Vallarta: CERRADOS',
+      'Huracán Categoría 2 con vientos sostenidos de 160 km/h y rachas de 195 km/h localizado en 20.0°N, 107.0°O mar adentro al oeste de Cabo Corrientes, desplazándose al Oeste-Noroeste a 6 km/h.',
+    airportsClosedBadge: 'Aeropuertos PVR y ZLO: Inspección y Normalización',
+    portsClosedBadge: 'Puertos Manzanillo y Vallarta: Precaución por Marejada',
     maxWinds: 'Vientos Máximos',
     gusts: 'Rachas:',
     centralPressure: 'Presión Central',
@@ -365,10 +369,10 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     copied: 'Copied',
 
     // Alert Banner
-    alertSituation: 'Severe Weather Emergency Advisory',
-    alertRed: 'Red Alert • Hurricane Simon',
+    alertSituation: 'Weather Precaution Advisory',
+    alertRed: 'Precaution Advisory • Hurricane Simon (Cat. 2)',
     alertBannerText:
-      'Hurricane Simon (Cat. 3) tracking along Jalisco & Colima coasts. PVR & ZLO airports closed. Red Alert along Jalisco & Colima coasts.',
+      'Hurricane Simon downgraded to Category 2 (winds 160 km/h / 100 mph, gusts 195 km/h). Positioned at 20.0°N, 107.0°W offshore west of Cabo Corrientes. Precautionary monitoring active.',
 
     // Navbar
     brandTitle: 'HURRICANE SIMON',
@@ -393,7 +397,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     shareFacebook: 'Share on Facebook',
     shareNative: 'Share with device apps',
     shareTextMsg:
-      '🚨 Live Hurricane Simon (Cat. 3) Tracker: Wind gusts, satellite imagery, live webcams, and designated storm shelters:',
+      '⚠️ Live Hurricane Simon (Cat. 2) Tracker: Wind gusts, satellite imagery, live webcams, and designated storm shelters:',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Continuous sync from official agencies',
@@ -403,17 +407,19 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     emergencyCycle: '2-min emergency cycle',
 
     // Landfall Alert Hero
-    officialLiveAdvisory: 'OFFICIAL LIVE ADVISORY • NHC ADVISORY #19 & SMN CONAGUA',
+    officialLiveAdvisory: 'OFFICIAL PRECAUTION ADVISORY • NHC ADVISORY #23 & SMN CONAGUA',
     activeMonitoring: 'Active Monitoring',
     cycloneMajor: 'Major Hurricane',
+    cycloneCategory: 'Hurricane',
+    category2: 'Category 2 (Saffir-Simpson)',
     category3: 'Category 3 (Saffir-Simpson)',
     category4: 'Category 4 (Saffir-Simpson)',
     categoryWord: 'Category',
     hurricaneName: 'Hurricane Simon',
     heroLocationSummary:
-      'Major Hurricane Category 3 with sustained winds of 205 km/h and gusts to 250 km/h off Jalisco coast, moving North-Northwest.',
-    airportsClosedBadge: 'Airports PVR and ZLO: CLOSED',
-    portsClosedBadge: 'Ports of Manzanillo and Vallarta: CLOSED',
+      'Category 2 Hurricane with sustained winds of 160 km/h (100 mph) and gusts to 195 km/h located at 20.0°N, 107.0°W offshore west of Cabo Corrientes, moving West-Northwest at 6 km/h.',
+    airportsClosedBadge: 'Airports PVR and ZLO: Inspection & Reopening',
+    portsClosedBadge: 'Ports of Manzanillo & Vallarta: High Surf Precaution',
     maxWinds: 'Max Sustained Winds',
     gusts: 'Gusts:',
     centralPressure: 'Central Pressure',
