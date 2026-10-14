@@ -211,12 +211,12 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
                 {/* Cabecera de la Tarjeta */}
                 <div className="p-3 bg-[#F7F7F4] border-b border-[#DDE1DF] flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#3F8063] animate-pulse"></span>
-                      <span className="text-xs font-bold text-[#245A66] uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-bold text-[#245A66] uppercase tracking-wider">
                         {photo.agency}
                       </span>
-                      <span className="text-xs text-[#687078]">• {format}</span>
+                      <span className="text-[#687078]" aria-hidden="true">·</span>
+                      <span className="text-[#687078]">{format}</span>
                     </div>
                     <h3 className="font-bold text-[#252A2E] text-sm sm:text-base truncate mt-0.5" title={fullTitle}>
                       {shortTitle}

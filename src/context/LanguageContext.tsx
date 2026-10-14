@@ -22,6 +22,7 @@ export interface Translations {
   basin: string;
   brandSubtitle: string;
   navWind: string;
+  navOutlook: string;
   navSatellite: string;
   navWebcams: string;
   navTrajectory: string;
@@ -240,6 +241,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     basin: 'Pacífico',
     brandSubtitle: 'Vigilancia Tropical y Costera • Fuentes Oficiales',
     navWind: 'Viento en Vivo',
+    navOutlook: 'Perspectiva 7D',
     navSatellite: 'Fotos Satelitales',
     navWebcams: 'Webcams en Vivo',
     navTrajectory: 'Trayectoria',
@@ -469,6 +471,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     basin: 'Pacific',
     brandSubtitle: 'Tropical & Coastal Surveillance • Official Sources',
     navWind: 'Live Wind',
+    navOutlook: '7-Day Outlook',
     navSatellite: 'Satellite Images',
     navWebcams: 'Live Webcams',
     navTrajectory: 'Trajectory',

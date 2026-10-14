@@ -20,6 +20,7 @@ export const AutoRefreshBar: React.FC<AutoRefreshBarProps> = ({
   onChangeInterval,
 }) => {
   const { language, t } = useLanguage();
+  const isEn = language === 'en';
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', {
@@ -38,27 +39,33 @@ export const AutoRefreshBar: React.FC<AutoRefreshBarProps> = ({
 
   return (
     <div className="bg-[#FFFFFF] border-b border-[#DDE1DF] text-xs sm:text-sm text-[#687078] py-2 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-        {/* Connection & Source Status */}
-        <div className="flex items-center gap-2.5">
-          <span className="flex items-center gap-1.5 text-[#3F8063] font-medium">
-            <span className="w-2 h-2 rounded-full bg-[#3F8063] animate-pulse" />
-            <span className="text-[#252A2E] font-bold">{t.autoSyncTitle}:</span>
-            <span className="text-xs">NHC • SMN Conagua • GOES-19</span>
-          </span>
-          <span className="text-[#DDE1DF] hidden sm:inline">|</span>
-          <span className="text-[#687078] hidden sm:inline flex items-center gap-1">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2.5">
+        {/* Connection & Source Status (Responsive truncation on mobile) */}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-[#3F8063] shrink-0" />
+          <div className="min-w-0 truncate text-xs">
+            <span className="text-[#252A2E] font-bold">
+              {isEn ? 'Official Live Feed' : 'Fuentes Oficiales'}:
+            </span>{' '}
+            <span className="text-[#687078] hidden sm:inline">NHC • SMN Conagua • GOES-19</span>
+            <span className="text-[#687078] sm:hidden">NHC / Conagua</span>
+          </div>
+          <span className="text-[#DDE1DF] hidden md:inline">|</span>
+          <span className="text-[#687078] hidden md:flex items-center gap-1 shrink-0 text-xs">
             <Clock className="w-3.5 h-3.5 text-[#687078] stroke-[2]" />
-            {t.updatedAt} <span className="text-[#252A2E] font-bold font-tabular">{formatTime(lastUpdated)}</span>
+            <span>{t.updatedAt}</span>
+            <span className="text-[#252A2E] font-bold font-tabular">{formatTime(lastUpdated)}</span>
           </span>
         </div>
 
         {/* Rapid Auto-refresh (< 5 min) and Manual Trigger */}
-        <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-          {/* Interval Mode Selector */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Interval Mode Selector (Desktop only) */}
           {onChangeInterval && (
-            <div className="hidden md:flex items-center gap-1 bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-0.5">
-              <span className="text-xs text-[#687078] px-1 font-semibold">{t.emergencyCycle}:</span>
+            <div className="hidden lg:flex items-center gap-1 bg-[#F7F7F4] border border-[#DDE1DF] rounded-[4px] p-0.5">
+              <span className="text-[11px] text-[#687078] px-1 font-semibold">
+                {t.emergencyCycle}:
+              </span>
               {[60, 120, 240].map((secs) => {
                 const mins = secs / 60;
                 const isSelected = refreshIntervalSeconds === secs;
@@ -80,8 +87,8 @@ export const AutoRefreshBar: React.FC<AutoRefreshBarProps> = ({
           )}
 
           {/* Countdown Pill */}
-          <div className="flex items-center gap-1.5 bg-[#F7F7F4] border border-[#DDE1DF] px-2 py-0.5 rounded-[3px] text-xs font-tabular">
-            <span>{t.nextSyncIn}</span>
+          <div className="flex items-center gap-1 bg-[#F7F7F4] border border-[#DDE1DF] px-2 py-1 rounded-[3px] text-xs font-tabular shrink-0">
+            <span className="hidden xs:inline">{t.nextSyncIn}</span>
             <span className="font-bold text-[#245A66]">{formatCountdown(secondsRemaining)}</span>
           </div>
 
@@ -89,11 +96,11 @@ export const AutoRefreshBar: React.FC<AutoRefreshBarProps> = ({
           <button
             onClick={onRefreshNow}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 bg-[#245A66] hover:bg-[#1D4852] text-white px-2.5 py-1 rounded-[4px] font-bold text-xs transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 bg-[#245A66] hover:bg-[#1D4852] text-white px-2.5 py-1 rounded-[4px] font-bold text-xs transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs shrink-0"
             title={t.refreshNow}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{t.refreshNow}</span>
+            <span className="hidden xs:inline">{t.refreshNow}</span>
           </button>
         </div>
       </div>

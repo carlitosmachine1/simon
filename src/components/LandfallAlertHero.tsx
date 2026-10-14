@@ -131,7 +131,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
 
           <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-tabular ml-auto">
             <span className="flex items-center gap-1.5 text-emerald-700 font-bold">
-              <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-600" />
+              <Radio className="w-3.5 h-3.5 text-emerald-600" />
               <span>{language === 'en' ? '24/7 Live Radar' : 'Vigilancia 24/7'}</span>
             </span>
 
@@ -273,7 +273,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
       {/* 1. Barra de Precaución Superior Oficial */}
       <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
           <span className="font-bold text-amber-800 uppercase text-xs sm:text-sm tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="w-4 h-4 text-amber-700 stroke-[2]" />
             {t.officialLiveAdvisory}
@@ -287,7 +287,7 @@ export const LandfallAlertHero: React.FC<LandfallAlertHeroProps> = ({
 
         <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-tabular ml-auto">
           <span className="flex items-center gap-1.5 text-[#3F8063] font-bold">
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <Radio className="w-3.5 h-3.5" />
             <span>{t.activeMonitoring}</span>
           </span>
 

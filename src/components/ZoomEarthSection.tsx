@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Lock,
   Unlock,
+  Compass,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -41,10 +42,7 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DDE1DF] pb-3">
           <div>
             <div className="flex items-center gap-2 text-[#245A66] font-semibold text-xs sm:text-sm uppercase tracking-wider">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#245A66] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#245A66]"></span>
-              </span>
+              <Compass className="w-4 h-4 stroke-[2]" />
               <span>{t.windyBadge}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#252A2E] mt-1 tracking-tight">

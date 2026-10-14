@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ActiveStormSystem } from '../utils/noaaFeed';
 
@@ -69,7 +69,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({
     <div className="bg-amber-500/10 border-b border-amber-500/30 text-[#252A2E] px-4 sm:px-6 py-2 text-xs sm:text-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-hidden">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
           <div className="truncate">
             <span className="font-bold text-amber-800 mr-1.5 uppercase text-xs tracking-wide">
               {stormLabel}:

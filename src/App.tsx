@@ -401,25 +401,6 @@ function AppContent() {
         onClose={() => setIsShareModalOpen(false)}
       />
 
-      {/* Barra de Acceso Rápido Móvil */}
-      <div className="md:hidden fixed bottom-3 left-3 right-3 z-30">
-        <div className="bg-[#FFFFFF] border border-[#DDE1DF] rounded-[6px] p-2 shadow-lg flex items-center gap-2">
-          <button
-            onClick={handleOpenShelters}
-            className="flex-1 bg-[#245A66] hover:bg-[#1D4852] text-white font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
-          >
-            <MapPin className="w-4 h-4 stroke-[2]" />
-            <span>{t.mobileBtnShelters}</span>
-          </button>
-          <button
-            onClick={() => setIsContactsModalOpen(true)}
-            className="flex-1 bg-[#F7F7F4] hover:bg-[#EAEAE4] border border-[#DDE1DF] text-[#252A2E] font-bold py-2.5 px-3 rounded-[4px] text-sm flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer"
-          >
-            <Phone className="w-4 h-4 text-[#B84A45] stroke-[2.5]" />
-            <span>{t.mobileBtn911}</span>
-          </button>
-        </div>
-      </div>
 
       {/* Vercel Web Analytics */}
       <Analytics />

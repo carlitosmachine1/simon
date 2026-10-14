@@ -65,10 +65,7 @@ export const TropicalOutlookSection: React.FC<TropicalOutlookSectionProps> = ({
         <div className="p-4 sm:p-5 border-b border-[#DDE1DF] flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-[#245A66] font-bold text-xs sm:text-sm uppercase tracking-wider">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#245A66] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#245A66]"></span>
-              </span>
+              <Eye className="w-4 h-4 stroke-[2]" />
               <span>
                 {isEn
                   ? '7-DAY TROPICAL OUTLOOK • NOAA NHC'
