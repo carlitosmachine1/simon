@@ -33,8 +33,8 @@ const WEBCAMS: WebcamFeed[] = [
   {
     id: 'webcam-3',
     label: 'Webcam 3',
-    sourceUrl: 'https://www.youtube.com/live/HCcubKg_giA?si=cza-Re7_CoGDQbOx',
-    youtubeId: 'HCcubKg_giA',
+    sourceUrl: 'https://www.youtube.com/live/zIHFaiBSe1k?si=XA8SM7Gmhv1VbEPp',
+    youtubeId: 'zIHFaiBSe1k',
   },
   {
     id: 'webcam-4',
