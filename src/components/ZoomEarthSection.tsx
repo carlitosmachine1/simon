@@ -15,7 +15,9 @@ interface WindyMapSectionProps {
   externalRefreshTrigger?: number;
 }
 
-export const ZoomEarthSection: React.FC<WindyMapSectionProps> = () => {
+export const ZoomEarthSection: React.FC<WindyMapSectionProps> = ({
+  externalRefreshTrigger,
+}) => {
   const { t } = useLanguage();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -25,15 +27,21 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = () => {
   const [isLockedForScroll, setIsLockedForScroll] = useState<boolean>(true);
 
   const WINDY_EMBED_URL =
-    'https://embed.windy.com/embed2.html?lat=20.278&lon=-105.317&zoom=7&level=surface&overlay=gust&product=icon&type=map&metricWind=default';
+    'https://embed.windy.com/embed2.html?lat=22.373&lon=-101.879&zoom=5&level=surface&overlay=wind&product=gfs&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
 
   const WINDY_EXTERNAL_URL =
-    'https://www.windy.com/?gust,20.278,-105.317,7,i:pressure';
+    'https://www.windy.com/?gfs,22.373,-101.879,5';
 
   const handleReload = () => {
     setIsLoading(true);
     setReloadKey((prev) => prev + 1);
   };
+
+  React.useEffect(() => {
+    if (externalRefreshTrigger) {
+      handleReload();
+    }
+  }, [externalRefreshTrigger]);
 
   return (
     <section id="mapa-viento-zoom" className="space-y-3">
@@ -132,7 +140,7 @@ export const ZoomEarthSection: React.FC<WindyMapSectionProps> = () => {
             <div className="bg-[#252A2E] text-white px-4 py-2 flex items-center justify-between border-b border-[#3E454D]">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Wind className="w-4 h-4 text-[#48A9A6]" />
-                <span>Windy • ICON</span>
+                <span>Windy • GFS</span>
               </div>
               <button
                 onClick={() => setIsFullscreen(false)}
