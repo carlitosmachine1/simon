@@ -323,6 +323,7 @@ function AppContent() {
             dynamicTrajectoryPoints={liveTrajectoryPoints}
             refreshTrigger={refreshTrigger}
             onLiveStormData={setLiveNOAAData}
+            activeStorms={liveCycloneReport?.activeStorms}
           />
         </section>
 

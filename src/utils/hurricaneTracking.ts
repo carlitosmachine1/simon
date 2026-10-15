@@ -34,166 +34,153 @@ export interface DynamicHurricaneStatus {
   minutesUntilLandfall: number;
 }
 
-// Histórico de posiciones oficiales NHC / SMN previas al boletín actual
+// Histórico de posiciones oficiales NHC previas al boletín actual para Huracán Trudy (ep212026)
 const BASE_TRAJECTORY_BEFORE_CURRENT: TrajectoryPoint[] = [
   {
     id: 'p-1',
-    timestamp: '2026-10-09T15:00:00Z',
-    dateTimeFormatted: '09 Oct - 09:00 (Histórico NHC)',
+    timestamp: '2026-10-14T18:00:00Z',
+    dateTimeFormatted: '14 Oct - 12:00 CST (Histórico NHC)',
     type: 'histórico',
-    lat: 16.0,
-    lng: -104.7,
-    category: 'C2',
-    windSpeedKmh: 165,
-    windSpeedMph: 105,
-    pressureHpa: 975,
-    statusText: 'Ubicado a 335 km al sur de Manzanillo, intensificación rápida',
+    lat: 10.8,
+    lng: -99.8,
+    category: 'DT',
+    windSpeedKmh: 50,
+    windSpeedMph: 31,
+    pressureHpa: 1008,
+    statusText: 'Organización como Depresión Tropical 21-E en el Pacífico Sur',
   },
   {
     id: 'p-2',
-    timestamp: '2026-10-10T03:00:00Z',
-    dateTimeFormatted: '09 Oct - 21:00 (Histórico NHC)',
+    timestamp: '2026-10-15T00:00:00Z',
+    dateTimeFormatted: '14 Oct - 18:00 CST (Histórico NHC)',
     type: 'histórico',
-    lat: 16.8,
-    lng: -104.6,
-    category: 'C3',
-    windSpeedKmh: 205,
-    windSpeedMph: 125,
-    pressureHpa: 955,
-    statusText: 'Ubicado a 245 km al sur de Manzanillo, avance continuo hacia el norte',
+    lat: 11.8,
+    lng: -100.8,
+    category: 'TT',
+    windSpeedKmh: 75,
+    windSpeedMph: 47,
+    pressureHpa: 1002,
+    statusText: 'Evolución a Tormenta Tropical con vientos de 75 km/h',
   },
   {
     id: 'p-3',
-    timestamp: '2026-10-10T12:00:00Z',
-    dateTimeFormatted: '10 Oct - 06:00 (Histórico NHC)',
+    timestamp: '2026-10-15T06:00:00Z',
+    dateTimeFormatted: '15 Oct - 00:00 CST (Histórico NHC)',
     type: 'histórico',
-    lat: 17.2,
-    lng: -104.7,
-    category: 'C4',
-    windSpeedKmh: 230,
-    windSpeedMph: 145,
-    pressureHpa: 948,
-    statusText: 'Alcanza Categoría 4, vientos destructivos frente a Colima y Michoacán',
-  },
-  {
-    id: 'p-4',
-    timestamp: '2026-10-10T18:00:00Z',
-    dateTimeFormatted: '10 Oct - 12:00 (Histórico NHC)',
-    type: 'histórico',
-    lat: 17.6,
-    lng: -104.8,
-    category: 'C4',
-    windSpeedKmh: 240,
-    windSpeedMph: 150,
-    pressureHpa: 942,
-    statusText: 'A 197 km al SSO de Manzanillo; avance lento al norte',
-  },
-  {
-    id: 'p-5',
-    timestamp: '2026-10-11T03:00:00Z',
-    dateTimeFormatted: '10 Oct - 21:00 (Boletín Oficial NHC #15)',
-    type: 'histórico',
-    lat: 18.2,
-    lng: -104.8,
-    category: 'C4',
-    windSpeedKmh: 245,
-    windSpeedMph: 155,
-    pressureHpa: 935,
-    statusText: 'Centro localizado cerca de 18.2N 104.8W, desplazándose al NNW',
-  },
-  {
-    id: 'p-6',
-    timestamp: '2026-10-11T09:00:00Z',
-    dateTimeFormatted: '11 Oct - 03:00 (Boletín Oficial NHC #16)',
-    type: 'histórico',
-    lat: 18.7,
-    lng: -105.2,
-    category: 'C4',
-    windSpeedKmh: 250,
-    windSpeedMph: 155,
-    pressureHpa: 930,
-    statusText: 'Centro localizado en 18.7N 105.2W frente a costas de Colima y Jalisco',
+    lat: 12.6,
+    lng: -101.2,
+    category: 'TT',
+    windSpeedKmh: 110,
+    windSpeedMph: 70,
+    pressureHpa: 990,
+    statusText: 'Tormenta Tropical Severa en rápida intensificación',
   },
 ];
 
-// Puntos de pronóstico posterior a la posición actual
+// Puntos de pronóstico posterior a la posición actual (Trayectoria Oficial NHC Boletín 9A)
 const BASE_TRAJECTORY_FORECAST: TrajectoryPoint[] = [
   {
-    id: 'p-7',
-    timestamp: '2026-10-11T18:00:00Z',
-    dateTimeFormatted: '11 Oct - 12:00 (Pronóstico NHC +6h)',
+    id: 'p-4',
+    timestamp: '2026-10-15T18:00:00Z',
+    dateTimeFormatted: '15 Oct - 18:00 CST (Pronóstico NHC +6h)',
     type: 'pronóstico',
-    lat: 19.60,
-    lng: -105.30,
+    lat: 13.6,
+    lng: -101.9,
+    category: 'C2',
+    windSpeedKmh: 175,
+    windSpeedMph: 110,
+    pressureHpa: 970,
+    statusText: 'Huracán Categoría 2 con vientos de 175 km/h mar adentro frente a Guerrero',
+  },
+  {
+    id: 'p-5',
+    timestamp: '2026-10-16T06:00:00Z',
+    dateTimeFormatted: '16 Oct - 06:00 CST (Pronóstico NHC +18h)',
+    type: 'pronóstico',
+    lat: 14.6,
+    lng: -102.2,
+    category: 'C4',
+    windSpeedKmh: 215,
+    windSpeedMph: 135,
+    pressureHpa: 948,
+    statusText: 'Huracán Mayor Categoría 4 en rápida intensificación mar adentro',
+  },
+  {
+    id: 'p-6',
+    timestamp: '2026-10-16T18:00:00Z',
+    dateTimeFormatted: '16 Oct - 18:00 CST (Pronóstico NHC +30h)',
+    type: 'pronóstico',
+    lat: 15.5,
+    lng: -102.5,
     category: 'C4',
     windSpeedKmh: 230,
     windSpeedMph: 145,
     pressureHpa: 940,
-    statusText: 'Aproximándose a Costa de Jalisco (frente a Tomatlán y Chamela)',
+    statusText: 'Pico de intensidad: Huracán Mayor Cat. 4 con vientos de 230 km/h y rachas de 280 km/h',
+  },
+  {
+    id: 'p-7',
+    timestamp: '2026-10-17T06:00:00Z',
+    dateTimeFormatted: '17 Oct - 06:00 CST (Pronóstico NHC +42h)',
+    type: 'pronóstico',
+    lat: 16.7,
+    lng: -103.4,
+    category: 'C4',
+    windSpeedKmh: 220,
+    windSpeedMph: 140,
+    pressureHpa: 944,
+    statusText: 'Frente a las costas de Michoacán (Lázaro Cárdenas, Caleta de Campos)',
   },
   {
     id: 'p-8',
-    timestamp: '2026-10-12T00:00:00Z',
-    dateTimeFormatted: '11 Oct - 18:00 (Pronóstico NHC +12h)',
+    timestamp: '2026-10-17T18:00:00Z',
+    dateTimeFormatted: '17 Oct - 18:00 CST (Pronóstico NHC +54h)',
     type: 'pronóstico',
-    lat: 20.30,
-    lng: -105.40,
+    lat: 18.0,
+    lng: -104.3,
     category: 'C3',
     windSpeedKmh: 195,
     windSpeedMph: 120,
-    pressureHpa: 955,
-    statusText: 'Paso muy cercano / posible impacto en Cabo Corrientes y Bahía de Banderas / Puerto Vallarta',
+    pressureHpa: 954,
+    statusText: 'Frente a las costas de Colima (Manzanillo) y sur de Jalisco (Melaque, Cihuatlán)',
   },
   {
     id: 'p-9',
-    timestamp: '2026-10-12T12:00:00Z',
-    dateTimeFormatted: '12 Oct - 06:00 (Pronóstico NHC +24h)',
+    timestamp: '2026-10-18T06:00:00Z',
+    dateTimeFormatted: '18 Oct - 06:00 CST (Pronóstico NHC +66h)',
     type: 'pronóstico',
-    lat: 21.40,
-    lng: -105.60,
+    lat: 19.4,
+    lng: -105.4,
     category: 'C2',
-    windSpeedKmh: 160,
+    windSpeedKmh: 165,
     windSpeedMph: 100,
-    pressureHpa: 970,
-    statusText: 'Costa de Nayarit (San Blas / Compostela / Islas Marías)',
-  },
-  {
-    id: 'p-10',
-    timestamp: '2026-10-12T21:00:00Z',
-    dateTimeFormatted: '12 Oct - 15:00 (Pronóstico NHC +33h)',
-    type: 'pronóstico',
-    lat: 22.50,
-    lng: -105.80,
-    category: 'TT',
-    windSpeedKmh: 100,
-    windSpeedMph: 65,
-    pressureHpa: 990,
-    statusText: 'Degradación a Tormenta Tropical sobre el sur de Sinaloa / norte de Nayarit',
+    pressureHpa: 966,
+    statusText: 'Paso cercano a Cabo Corrientes y Bahía de Banderas / Puerto Vallarta',
   },
 ];
 
-// Objetivo proyectado de máxima aproximación / impacto (Cabo Corrientes / Costa de Jalisco - Bahía de Banderas)
+// Objetivo proyectado de máxima aproximación costera (Costa de Colima / Jalisco)
 export const PROJECTED_APPROACH_COORDS = {
-  lat: 20.30,
-  lng: -105.40,
-  name: 'Cabo Corrientes / Bahía de Banderas (Costa Norte de Jalisco y Sur de Nayarit)',
+  lat: 19.0522,
+  lng: -104.316,
+  name: 'Litoral Central del Pacífico (Michoacán, Colima y Costa de Jalisco)',
 };
 
 // Referencias costeras oficiales
-const MANZANILLO_COORDS = { lat: 19.0522, lng: -104.3160 };
-const BARRA_NAVIDAD_COORDS = { lat: 19.2087, lng: -104.6834 };
-const CABO_CORRIENTES_COORDS = { lat: 20.3200, lng: -105.3280 };
+const ZIHUATANEJO_COORDS = { lat: 17.6406, lng: -101.5574 };
+const LAZARO_CARDENAS_COORDS = { lat: 17.9583, lng: -102.1969 };
+const MANZANILLO_COORDS = { lat: 19.0522, lng: -104.316 };
+const CABO_CORRIENTES_COORDS = { lat: 20.32, lng: -105.328 };
 const PUERTO_VALLARTA_COORDS = { lat: 20.6534, lng: -105.2253 };
 
 /**
- * Calcula el estado dinámico y verificado del huracán basado en el Aviso #16A del NHC / SMN
- * Ancla oficial: 11 Octubre 06:00 CST (18.90°N, 105.20°W) rumbo 335° (NNW) a 9 km/h.
+ * Calcula el estado dinámico y verificado del huracán basado en el Aviso Oficial #9A del NHC / SMN
+ * Ancla oficial: 15 Octubre 12:00 CST (13.40°N, 101.60°W) rumbo 335° (NNW) a 9 km/h.
  */
 export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   status: DynamicHurricaneStatus;
   trajectoryPoints: TrajectoryPoint[];
 } {
-  // Formato de hora en tiempo local (Zona Centro / Pacífico Mexicano UTC-6)
   const timeFormatter = new Intl.DateTimeFormat('es-MX', {
     hour: '2-digit',
     minute: '2-digit',
@@ -202,62 +189,44 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   });
   const timeText = timeFormatter.format(refDate);
 
-  const parts = timeFormatter.formatToParts(refDate);
-  let curHour = refDate.getHours();
-  let curMin = refDate.getMinutes();
-
-  for (const part of parts) {
-    if (part.type === 'hour') curHour = parseInt(part.value, 10);
-    if (part.type === 'minute') curMin = parseInt(part.value, 10);
-  }
-
-  // Minutos transcurridos desde las 06:00 CST (boletín oficial #16A)
-  let elapsedMinutes = (curHour - 6) * 60 + curMin;
-  if (elapsedMinutes < 0) elapsedMinutes = 45; // Valor seguro si la hora del sistema es previa
-  if (elapsedMinutes > 360) elapsedMinutes = 240; // Mantener dentro del ciclo actual
-
-  // Desplazamiento progresivo a 9 km/h (0.15 km por minuto)
-  // Rumbo 335° (norte-noroeste): delta lat ~ +0.0012°/min, delta lng ~ -0.0006°/min
-  const deltaLat = (elapsedMinutes * 0.0011);
-  const deltaLng = -(elapsedMinutes * 0.0004);
-
-  const liveLat = 20.0;
-  const liveLng = -107.0;
+  // Coordenadas oficiales en vivo (Huracán Trudy tau 0: 13.4°N, 101.6°O)
+  const liveLat = 13.4;
+  const liveLng = -101.6;
 
   // Distancias reales desde el centro actual a puntos de referencia
+  const distZihuatanejo = Math.round(calculateDistanceKm(liveLat, liveLng, ZIHUATANEJO_COORDS.lat, ZIHUATANEJO_COORDS.lng));
+  const distLazaro = Math.round(calculateDistanceKm(liveLat, liveLng, LAZARO_CARDENAS_COORDS.lat, LAZARO_CARDENAS_COORDS.lng));
   const distManzanillo = Math.round(calculateDistanceKm(liveLat, liveLng, MANZANILLO_COORDS.lat, MANZANILLO_COORDS.lng));
-  const distBarra = Math.round(calculateDistanceKm(liveLat, liveLng, BARRA_NAVIDAD_COORDS.lat, BARRA_NAVIDAD_COORDS.lng));
-  const distCaboCorrientes = Math.round(calculateDistanceKm(liveLat, liveLng, CABO_CORRIENTES_COORDS.lat, CABO_CORRIENTES_COORDS.lng));
   const distVallarta = Math.round(calculateDistanceKm(liveLat, liveLng, PUERTO_VALLARTA_COORDS.lat, PUERTO_VALLARTA_COORDS.lng));
   const distApproach = Math.round(calculateDistanceKm(liveLat, liveLng, PROJECTED_APPROACH_COORDS.lat, PROJECTED_APPROACH_COORDS.lng));
 
-  const distanceReference = `A ${distCaboCorrientes} km al O de Cabo Corrientes y ${distVallarta} km al O de Puerto Vallarta (${distManzanillo} km de Manzanillo).`;
+  const distanceReference = `A ~${distZihuatanejo} km al SO de Zihuatanejo (Guerrero), ~${distLazaro} km de Lázaro Cárdenas (Michoacán) y ~${distManzanillo} km al SSE de Manzanillo (Colima).`;
 
   const status: DynamicHurricaneStatus = {
-    name: 'SIMÓN',
+    name: 'TRUDY',
     basin: 'Pacífico Nororiental',
-    category: 2,
-    categoryName: 'Huracán Categoría 2',
-    classification: 'Ciclón Tropical en Fase de Degradación',
-    windSpeedKmh: 160,
-    windGustsKmh: 195,
-    windSpeedMph: 100,
-    pressureHpa: 969,
+    category: 1,
+    categoryName: 'Huracán Categoría 1 (Hacia Cat. 4)',
+    classification: 'Huracán en Rápida Intensificación hacia Huracán Mayor',
+    windSpeedKmh: 150,
+    windGustsKmh: 185,
+    windSpeedMph: 93,
+    pressureHpa: 979,
     lat: liveLat,
     lng: liveLng,
     coordinatesText: `${liveLat.toFixed(1)}° Norte, ${Math.abs(liveLng).toFixed(1)}° Oeste`,
     distanceReference,
-    movement: 'Hacia el Oeste-Noroeste (300°)',
-    movementSpeedKmh: 6,
-    movementSpeedMph: 4,
+    movement: 'Hacia el Nor-Noroeste (335°)',
+    movementSpeedKmh: 9,
+    movementSpeedMph: 5,
     waveHeightMeters: '4.5 a 6.5 metros',
-    rainAccumulation: 'Lluvias muy fuertes (75 a 150 mm) en franjas costeras de Jalisco y Nayarit',
-    lastUpdate: `Boletín Oficial NHC Advisory #23 / SMN Conagua • Sincronizado ${timeText} hrs`,
+    rainAccumulation: 'Lluvias torrenciales extraordinarias (> 250 mm) en Guerrero, Michoacán, Colima y Jalisco',
+    lastUpdate: `Boletín Oficial NHC Advisory #9A / SMN Conagua • Sincronizado ${timeText} hrs`,
     timeText,
     distanceToLandfallKm: distApproach,
     targetLocationName: PROJECTED_APPROACH_COORDS.name,
-    estimatedLandfallTimeText: 'En trayectoria mar adentro (alejándose hacia el WNW a 6 km/h)',
-    hoursUntilLandfall: 0,
+    estimatedLandfallTimeText: 'Trayectoria paralela al litoral con máxima cercanía a Manzanillo/Jalisco en 48-60 hrs',
+    hoursUntilLandfall: 48,
     minutesUntilLandfall: 0,
   };
 
@@ -265,15 +234,15 @@ export function getLiveHurricaneStatus(refDate: Date = new Date()): {
   const liveCurrentPoint: TrajectoryPoint = {
     id: 'p-current',
     timestamp: refDate.toISOString(),
-    dateTimeFormatted: `12 Oct - ${timeText} (Posición Oficial en Vivo)`,
+    dateTimeFormatted: `15 Oct - 12:00 CST (Posición Oficial en Vivo)`,
     type: 'actual',
     lat: liveLat,
     lng: liveLng,
-    category: 'C2',
-    windSpeedKmh: 160,
-    windSpeedMph: 100,
-    pressureHpa: 969,
-    statusText: `Posición actual (${timeText} hrs): ${liveLat.toFixed(1)}°N, ${Math.abs(liveLng).toFixed(1)}°O. A ${distCaboCorrientes} km al O de Cabo Corrientes. Vientos sostenidos 160 km/h, rachas 195 km/h (Cat. 2).`,
+    category: 'C1',
+    windSpeedKmh: 150,
+    windSpeedMph: 93,
+    pressureHpa: 979,
+    statusText: `Posición actual: 13.4°N, 101.6°O. Vientos sostenidos de 150 km/h, rachas de 185 km/h. A ~240 km al SO de Zihuatanejo. Rápida intensificación a Huracán Mayor.`,
   };
 
   const trajectoryPoints: TrajectoryPoint[] = [
