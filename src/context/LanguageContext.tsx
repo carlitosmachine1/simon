@@ -42,6 +42,11 @@ export interface Translations {
   shareFacebook: string;
   shareNative: string;
   shareTextMsg: string;
+  shareCardHeadline: string;
+  shareDigestibleSummary: string;
+  sharePreviewBadge: string;
+  shareCopySummaryBtn: string;
+  shareSummaryCopiedSuccess: string;
 
   // Auto Refresh Bar
   autoSyncTitle: string;
@@ -253,15 +258,21 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Share Modal
     shareTitle: 'Compartir Monitor Pacífico',
-    shareSubtitle: 'Difunde el monitoreo meteorológico y costero en tiempo real.',
+    shareSubtitle: 'Difunde información oficial y satelital en tiempo real para redes y mensajería.',
     shareCopyUrl: 'Copiar enlace',
     shareCopiedSuccess: '¡Enlace copiado al portapapeles!',
-    shareWhatsapp: 'Compartir por WhatsApp',
-    shareX: 'Compartir en X (Twitter)',
-    shareFacebook: 'Compartir en Facebook',
-    shareNative: 'Compartir mediante otra aplicación',
+    shareWhatsapp: 'WhatsApp',
+    shareX: 'X (Twitter)',
+    shareFacebook: 'Facebook',
+    shareNative: 'Compartir mediante otra app',
     shareTextMsg:
-      '🌊 Monitor Pacífico: Monitoreo meteorológico en tiempo real, viento, satélite GOES-19, webcams costeras y red de refugios:',
+      '🌀 Monitor Pacífico: Monitoreo en vivo de ciclones con fotos satelitales GOES-19, trayectoria oficial NOAA, viento y refugios:',
+    shareCardHeadline: 'Monitor Pacífico • Seguimiento Satelital y de Huracanes en Vivo',
+    shareDigestibleSummary:
+      'Monitoreo en tiempo real de ciclones en el Pacífico Mexicano: fotos satelitales GOES-19, cono oficial de trayectoria NOAA/SMN, viento en vivo, webcams y red de refugios.',
+    sharePreviewBadge: 'Vista previa al compartir (OpenGraph / X Card)',
+    shareCopySummaryBtn: 'Copiar texto con resumen',
+    shareSummaryCopiedSuccess: '¡Resumen y enlace copiados!',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Actualización continua de fuentes oficiales',
@@ -483,15 +494,21 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Share Modal
     shareTitle: 'Share Pacific Monitor',
-    shareSubtitle: 'Broadcast real-time Pacific weather & coastal monitoring.',
+    shareSubtitle: 'Broadcast real-time Pacific weather & satellite monitoring.',
     shareCopyUrl: 'Copy Link',
     shareCopiedSuccess: 'Link copied to clipboard!',
-    shareWhatsapp: 'Share via WhatsApp',
-    shareX: 'Share on X (Twitter)',
-    shareFacebook: 'Share on Facebook',
+    shareWhatsapp: 'WhatsApp',
+    shareX: 'X (Twitter)',
+    shareFacebook: 'Facebook',
     shareNative: 'Share with device apps',
     shareTextMsg:
-      '🌊 Pacific Monitor: Real-time tropical weather tracking, wind gusts, GOES-19 satellite, coastal webcams, and shelters:',
+      '🌀 Pacific Monitor: Real-time tropical cyclone tracking with GOES-19 satellite, official NOAA forecast track, live wind & emergency shelters:',
+    shareCardHeadline: 'Pacific Monitor • Live Satellite & Cyclone Tracking',
+    shareDigestibleSummary:
+      'Live cyclone monitoring off the Mexican Pacific: GOES-19 satellite imagery, official NOAA/SMN forecast track cone, real-time wind gusts, webcams, and emergency shelters.',
+    sharePreviewBadge: 'Social Share Preview (OpenGraph / X Card)',
+    shareCopySummaryBtn: 'Copy text with summary',
+    shareSummaryCopiedSuccess: 'Summary and link copied!',
 
     // Auto Refresh Bar
     autoSyncTitle: 'Continuous sync from official agencies',

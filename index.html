@@ -3,20 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <title>Monitor Pacífico — Seguimiento Tropical y Costero</title>
-    <meta name="description" content="Monitor del Océano Pacífico Mexicano: seguimiento en tiempo real de ciclones tropicales, satélite GOES-19, viento en vivo, webcams costeras y red de refugios temporales." />
-    <meta property="og:title" content="Monitor Pacífico — Seguimiento Tropical y Costero" />
-    <meta property="og:description" content="Monitor del Océano Pacífico Mexicano: seguimiento en tiempo real de ciclones tropicales, satélite GOES-19, viento en vivo, webcams costeras y red de refugios temporales." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- Título y SEO Primario -->
+    <title>Monitor Pacífico — Seguimiento Satelital y de Huracanes en Vivo</title>
+    <meta
+      name="description"
+      content="Monitoreo en vivo de ciclones en el Pacífico Mexicano: fotos satelitales GOES-19, cono oficial de trayectoria NOAA/SMN, viento, webcams costeras y refugios."
+    />
+    <meta
+      name="keywords"
+      content="monitor pacifico, huracanes mexico, satelite goes 19, fotos satelitales huracan, noaa nhc pacifico, trayectoria oficial, refugios temporales, windy pacifico, proteccion civil"
+    />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#245A66" />
+    <meta name="author" content="Monitor Pacífico" />
+
+    <!-- OpenGraph (Facebook, WhatsApp, LinkedIn, iMessage) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Monitor Pacífico" />
+    <meta
+      property="og:title"
+      content="Monitor Pacífico — Seguimiento Satelital y de Huracanes en Vivo"
+    />
+    <meta
+      property="og:description"
+      content="Sigue en tiempo real los ciclones del Pacífico Mexicano: fotos satelitales GOES-19 en vivo, cono oficial de trayectoria NOAA/SMN, viento en vivo, webcams y red de refugios."
+    />
+    <meta property="og:image" content="/og-satellite.png" />
+    <meta property="og:image:secure_url" content="/og-satellite.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="1166" />
+    <meta
+      property="og:image:alt"
+      content="Perspectiva satelital oficial NOAA y cono de trayectoria en el Pacífico Mexicano"
+    />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Monitor Pacífico — Seguimiento Satelital y de Huracanes en Vivo"
+    />
+    <meta
+      name="twitter:description"
+      content="Sigue en tiempo real los ciclones del Pacífico Mexicano: fotos satelitales GOES-19 en vivo, cono oficial de trayectoria NOAA/SMN, viento en vivo, webcams y red de refugios."
+    />
+    <meta name="twitter:image" content="/og-satellite.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Perspectiva satelital oficial NOAA y cono de trayectoria en el Pacífico Mexicano"
+    />
+
+    <!-- Favicon & Map CSS -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <!-- Datos Estructurados Schema.org (JSON-LD) para SEO Avanzado -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Monitor Pacífico",
+      "applicationCategory": "WeatherApplication",
+      "operatingSystem": "All",
+      "description": "Monitoreo en tiempo real del Océano Pacífico Mexicano: fotos satelitales GOES-19, trayectoria oficial pronosticada de ciclones por NOAA/SMN, modelo de viento, webcams costeras y red de refugios temporales de emergencia.",
+      "image": "/og-satellite.png",
+      "inLanguage": ["es-MX", "en-US"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
   </head>
   <body class="bg-[#F7F7F4] text-[#252A2E] antialiased selection:bg-[#245A66] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

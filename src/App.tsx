@@ -293,7 +293,10 @@ function AppContent() {
         <ZoomEarthSection externalRefreshTrigger={refreshTrigger} />
 
         {/* ORDEN SOLICITADO: 2. DESPUÉS: Fotos Satelitales Oficiales (GOES-19 y Cono NHC) */}
-        <SatellitePhotosSection externalRefreshTrigger={refreshTrigger} />
+        <SatellitePhotosSection
+          externalRefreshTrigger={refreshTrigger}
+          onOpenShare={() => setIsShareModalOpen(true)}
+        />
 
         {/* ORDEN SOLICITADO: 3. ENSEGUIDA: Webcams en Vivo con Pestañas */}
         <WebcamsSection />

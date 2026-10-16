@@ -6,6 +6,7 @@ import {
   RefreshCw,
   X,
   Radio,
+  Share2,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -79,10 +80,12 @@ const SATELLITE_PHOTOS: SatellitePhotoItem[] = [
 
 interface SatellitePhotosSectionProps {
   externalRefreshTrigger?: number;
+  onOpenShare?: () => void;
 }
 
 export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
   externalRefreshTrigger,
+  onOpenShare,
 }) => {
   const { t, language } = useLanguage();
   const [cacheBuster, setCacheBuster] = useState<number>(Date.now());
@@ -165,7 +168,7 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
             <button
               onClick={handleRefreshAll}
               disabled={isRefreshingAll}
@@ -179,6 +182,17 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
               <span>{t.updatePhotos}</span>
             </button>
 
+            {onOpenShare && (
+              <button
+                onClick={onOpenShare}
+                className="bg-[#FFFFFF] hover:bg-[#F7F7F4] text-[#252A2E] border border-[#DDE1DF] text-xs sm:text-sm font-semibold px-3 py-2 rounded-[4px] flex items-center gap-1.5 transition cursor-pointer"
+                title={language === 'en' ? 'Share satellite image & summary' : 'Compartir imagen satelital y resumen'}
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#245A66]" />
+                <span>{t.shareBtn}</span>
+              </button>
+            )}
+
             <a
               href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=mex"
               target="_blank"
@@ -189,6 +203,26 @@ export const SatellitePhotosSection: React.FC<SatellitePhotosSectionProps> = ({
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
+        </div>
+
+        {/* Banner Informativo OpenGraph & Resumen */}
+        <div className="mb-4 bg-[#F0F5F4] border border-[#BCD4D0] rounded-[6px] p-2.5 sm:p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-[#245A66]">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#3F8063] shrink-0" />
+            <span>
+              {language === 'en'
+                ? 'Official satellite view is active as the OpenGraph card (/og-satellite.png) for social previews on WhatsApp, X & Facebook.'
+                : 'Esta imagen satelital oficial funge como tarjeta OpenGraph (/og-satellite.png) para compartir en redes con resumen digerible.'}
+            </span>
+          </div>
+          {onOpenShare && (
+            <button
+              onClick={onOpenShare}
+              className="font-bold underline text-[#245A66] hover:text-[#1b434c] cursor-pointer shrink-0 self-end sm:self-auto text-xs"
+            >
+              {language === 'en' ? 'Preview & Share Card →' : 'Ver Tarjeta y Compartir →'}
+            </button>
+          )}
         </div>
 
         {/* 3 Fotos en la Vista */}
