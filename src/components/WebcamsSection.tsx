@@ -19,16 +19,10 @@ export interface WebcamFeed {
 
 const WEBCAMS: WebcamFeed[] = [
   {
-    id: 'webcam-1',
-    label: 'Webcam 1',
-    sourceUrl: 'https://www.youtube.com/live/V6Co4YdL25Q?si=w7iju0g6S1IhJrAG',
-    youtubeId: 'V6Co4YdL25Q',
-  },
-  {
-    id: 'webcam-2',
-    label: 'Webcam 2',
-    sourceUrl: 'https://www.youtube.com/live/ac5AU4B10ak?si=_W9OCI9Mbl37u0sJ',
-    youtubeId: 'ac5AU4B10ak',
+    id: 'webcam-4',
+    label: 'Webcam 4',
+    sourceUrl: 'https://www.youtube.com/live/NyLfXeGDYCY?si=dBCF5k52z8EI9dpZ',
+    youtubeId: 'NyLfXeGDYCY',
   },
   {
     id: 'webcam-3',
@@ -36,17 +30,11 @@ const WEBCAMS: WebcamFeed[] = [
     sourceUrl: 'https://www.youtube.com/live/zIHFaiBSe1k?si=XA8SM7Gmhv1VbEPp',
     youtubeId: 'zIHFaiBSe1k',
   },
-  {
-    id: 'webcam-4',
-    label: 'Webcam 4',
-    sourceUrl: 'https://www.youtube.com/live/NyLfXeGDYCY?si=dBCF5k52z8EI9dpZ',
-    youtubeId: 'NyLfXeGDYCY',
-  },
 ];
 
 export const WebcamsSection: React.FC = () => {
   const { t } = useLanguage();
-  const [activeCamId, setActiveCamId] = useState<string>('webcam-1');
+  const [activeCamId, setActiveCamId] = useState<string>('webcam-4');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -79,9 +67,9 @@ export const WebcamsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Pestañas de Selección: Solo Webcam 1, Webcam 2, etc. */}
+        {/* Pestañas de Selección: Webcam 4 y Webcam 3 */}
         <div className="mt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
             {WEBCAMS.map((cam) => {
               const isActive = cam.id === activeCam.id;
               return (
